@@ -1,0 +1,106 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://roads_system/IntersectionRenderer.gd" type="Script" id=1]
+[ext_resource path="res://Camera.gd" type="Script" id=2]
+[ext_resource path="res://roads_system/QuadRing.gd" type="Script" id=3]
+[ext_resource path="res://Boulevard.png" type="Texture" id=4]
+[ext_resource path="res://ground_asphalt_new_02.png" type="Texture" id=5]
+
+[sub_resource type="SpatialMaterial" id=1]
+albedo_texture = ExtResource( 5 )
+
+[sub_resource type="SpatialMaterial" id=2]
+albedo_texture = ExtResource( 5 )
+
+[sub_resource type="SpatialMaterial" id=3]
+flags_unshaded = true
+albedo_texture = ExtResource( 4 )
+
+[sub_resource type="ArrayMesh" id=4]
+surfaces/0 = {
+"aabb": AABB( -4, 0, -3.99803, 7.99619, 1e-05, 7.99708 ),
+"array_data": PoolByteArray( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 192, 0, 0, 0, 0, 46, 189, 59, 180, 32, 205, 126, 192, 0, 0, 0, 0, 186, 245, 197, 62, 95, 55, 123, 192, 0, 0, 0, 0, 104, 8, 69, 63, 86, 71, 117, 192, 0, 0, 0, 0, 205, 158, 146, 63, 66, 11, 109, 192, 0, 0, 0, 0, 222, 89, 193, 63, 222, 150, 98, 192, 0, 0, 0, 0, 101, 69, 238, 63, 62, 3, 86, 192, 0, 0, 0, 0, 213, 122, 12, 64, 136, 110, 71, 192, 0, 0, 0, 0, 44, 130, 32, 64, 175, 251, 54, 192, 0, 0, 0, 0, 179, 8, 51, 64, 37, 210, 36, 192, 0, 0, 0, 0, 0, 226, 67, 64, 116, 29, 17, 192, 0, 0, 0, 0, 174, 229, 82, 64, 180, 25, 248, 191, 0, 0, 0, 0, 189, 239, 95, 64, 176, 165, 203, 191, 0, 0, 0, 0, 235, 224, 106, 64, 112, 73, 157, 191, 0, 0, 0, 0, 252, 158, 115, 64, 50, 232, 90, 191, 0, 0, 0, 0, 251, 20, 122, 64, 98, 97, 242, 190, 0, 0, 0, 0, 105, 51, 126, 64, 33, 181, 178, 189, 0, 0, 0, 0, 103, 240, 127, 64, 239, 113, 153, 62, 0, 0, 0, 0, 203, 71, 127, 64, 162, 16, 47, 63, 0, 0, 0, 0, 40, 59, 124, 64, 76, 226, 135, 63, 0, 0, 0, 0, 206, 209, 118, 64, 126, 246, 182, 63, 0, 0, 0, 0, 182, 24, 111, 64, 12, 84, 228, 63, 0, 0, 0, 0, 100, 34, 101, 64, 25, 199, 7, 64, 0, 0, 0, 0, 187, 6, 89, 64, 166, 30, 28, 64, 0, 0, 0, 0, 193, 226, 74, 64, 232, 255, 46, 64, 0, 0, 0, 0, 95, 216, 58, 64, 155, 61, 64, 64, 0, 0, 0, 0, 9, 14, 41, 64, 108, 174, 79, 64, 0, 0, 0, 0, 100, 174, 21, 64, 83, 45, 93, 64, 0, 0, 0, 0, 229, 231, 0, 64, 247, 153, 104, 64, 0, 0, 0, 0, 176, 216, 213, 63, 243, 216, 113, 64, 0, 0, 0, 0, 234, 224, 167, 63, 30, 212, 120, 64, 0, 0, 0, 0, 74, 173, 112, 63, 185, 122, 125, 64, 0, 0, 0, 0, 195, 87, 15, 63, 160, 193, 127, 64, 0, 0, 0, 0, 48, 170, 50, 62, 91, 163, 127, 64, 0, 0, 0, 0, 229, 182, 89, 190, 53, 32, 125, 64, 0, 0, 0, 0, 137, 3, 25, 191, 50, 62, 120, 64, 0, 0, 0, 0, 120, 42, 122, 191, 8, 9, 113, 64, 0, 0, 0, 0, 210, 124, 172, 191, 254, 145, 103, 64, 0, 0, 0, 0, 227, 70, 218, 191, 198, 239, 91, 64, 0, 0, 0, 0, 210, 2, 3, 192, 69, 62, 78, 64, 0, 0, 0, 0, 24, 168, 23, 192, 76, 158, 62, 64, 0, 0, 0, 0, 201, 225, 42, 192, 82, 53, 45, 64, 0, 0, 0, 0, 203, 129, 60, 192, 22, 45, 26, 64, 0, 0, 0, 0, 220, 93, 76, 192, 59, 179, 5, 64, 0, 0, 0, 0, 245, 79, 90, 192, 165, 241, 223, 63, 0, 0, 0, 0, 171, 54, 102, 192, 238, 99, 178, 63, 0, 0, 0, 0, 115, 245, 111, 192, 135, 42, 131, 63, 0, 0, 0, 0, 240, 116, 119, 192, 98, 109, 37, 63, 0, 0, 0, 0, 39, 163, 124, 192, 22, 242, 133, 62, 0, 0, 0, 0, 175, 115, 127, 192, 116, 111, 0, 190, 0, 0, 0, 0, 198, 223, 127, 192, 202, 227, 2, 191, 0, 0, 0, 0, 106, 230, 125, 192, 217, 113, 100, 191, 0, 0, 0, 0, 88, 140, 121, 192, 36, 238, 161, 191, 0, 0, 0, 0, 252, 219, 114, 192, 35, 31, 208, 191, 0, 0, 0, 0, 97, 229, 105, 192, 42, 93, 252, 191, 0, 0, 0, 0, 4, 190, 94, 192, 17, 31, 19, 192, 0, 0, 0, 0, 165, 128, 81, 192, 217, 174, 38, 192, 0, 0, 0, 0, 254, 76, 66, 192, 2, 175, 56, 192, 0, 0, 0, 0, 129, 71, 49, 192, 102, 244, 72, 192, 0, 0, 0, 0, 0, 153, 30, 192, 2, 88, 87, 192, 0, 0, 0, 0, 67, 110, 10, 192, 82, 183, 99, 192, 0, 0, 0, 0, 85, 239, 233, 191, 181, 244, 109, 192, 0, 0, 0, 0, 61, 209, 188, 191, 154, 247, 117, 192, 0, 0, 0, 0, 118, 238, 141, 191, 205, 172, 123, 192, 0, 0, 0, 0, 209, 110, 59, 191, 158, 6, 127, 192, 0, 0, 0, 0, 178, 126, 178, 190 ),
+"array_index_data": PoolByteArray( 0, 0, 2, 0, 1, 0, 0, 0, 3, 0, 2, 0, 0, 0, 4, 0, 3, 0, 0, 0, 5, 0, 4, 0, 0, 0, 6, 0, 5, 0, 0, 0, 7, 0, 6, 0, 0, 0, 8, 0, 7, 0, 0, 0, 9, 0, 8, 0, 0, 0, 10, 0, 9, 0, 0, 0, 11, 0, 10, 0, 0, 0, 12, 0, 11, 0, 0, 0, 13, 0, 12, 0, 0, 0, 14, 0, 13, 0, 0, 0, 15, 0, 14, 0, 0, 0, 16, 0, 15, 0, 0, 0, 17, 0, 16, 0, 0, 0, 18, 0, 17, 0, 0, 0, 19, 0, 18, 0, 0, 0, 20, 0, 19, 0, 0, 0, 21, 0, 20, 0, 0, 0, 22, 0, 21, 0, 0, 0, 23, 0, 22, 0, 0, 0, 24, 0, 23, 0, 0, 0, 25, 0, 24, 0, 0, 0, 26, 0, 25, 0, 0, 0, 27, 0, 26, 0, 0, 0, 28, 0, 27, 0, 0, 0, 29, 0, 28, 0, 0, 0, 30, 0, 29, 0, 0, 0, 31, 0, 30, 0, 0, 0, 32, 0, 31, 0, 0, 0, 33, 0, 32, 0, 0, 0, 34, 0, 33, 0, 0, 0, 35, 0, 34, 0, 0, 0, 36, 0, 35, 0, 0, 0, 37, 0, 36, 0, 0, 0, 38, 0, 37, 0, 0, 0, 39, 0, 38, 0, 0, 0, 40, 0, 39, 0, 0, 0, 41, 0, 40, 0, 0, 0, 42, 0, 41, 0, 0, 0, 43, 0, 42, 0, 0, 0, 44, 0, 43, 0, 0, 0, 45, 0, 44, 0, 0, 0, 46, 0, 45, 0, 0, 0, 47, 0, 46, 0, 0, 0, 48, 0, 47, 0, 0, 0, 49, 0, 48, 0, 0, 0, 50, 0, 49, 0, 0, 0, 51, 0, 50, 0, 0, 0, 52, 0, 51, 0, 0, 0, 53, 0, 52, 0, 0, 0, 54, 0, 53, 0, 0, 0, 55, 0, 54, 0, 0, 0, 56, 0, 55, 0, 0, 0, 57, 0, 56, 0, 0, 0, 58, 0, 57, 0, 0, 0, 59, 0, 58, 0, 0, 0, 60, 0, 59, 0, 0, 0, 61, 0, 60, 0, 0, 0, 62, 0, 61, 0, 0, 0, 63, 0, 62, 0, 0, 0, 64, 0, 63, 0, 0, 0, 65, 0, 64, 0 ),
+"blend_shape_data": [  ],
+"format": 97537,
+"index_count": 192,
+"primitive": 4,
+"skeleton_aabb": [  ],
+"vertex_count": 66
+}
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="CSGTorus" type="CSGTorus" parent="."]
+visible = false
+inner_radius = 2.29686
+sides = 42
+ring_sides = 9
+smooth_faces = false
+
+[node name="MeshInstance" type="MeshInstance" parent="."]
+material_override = SubResource( 1 )
+
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="."]
+material_override = SubResource( 2 )
+
+[node name="ImmediateGeometry2" type="ImmediateGeometry" parent="."]
+material_override = SubResource( 3 )
+
+[node name="Spatial" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 15 )
+script = ExtResource( 2 )
+camera/enabled = true
+edge_scroll/enabled = false
+movement/enabled = true
+rotation/enabled = true
+tilting/enabled = true
+zooming/enabled = true
+looking/enabled = false
+panning/enabled = true
+edge_scroll/detection_area = 0.06
+edge_scroll/time = 5
+edge_scroll/speed = 1
+movement/time = 5
+movement/speed = 1
+rotation/time = 5
+rotation/speed = 6.0
+tilting/time = 5
+tilting/speed = 3
+tilting/min_angle = -90
+tilting/max_angle = -20
+zooming/time = 5
+zooming/speed = 1
+zooming/min_distance = 10
+zooming/max_distance = 80
+looking/speed = 8
+panning/speed = 20
+perspective_panning/enabled = false
+perspective_panning/speed = 10
+mouse/sensitivity = 0.03
+option/disable_edge_scrolling_when_using_mouse = true
+option/target_zoom = true
+option/zoom_to_cursor = false
+option/invert/zooming = null
+option/invert/panning = null
+option/invert/rotation = null
+option/invert/rotation_keys = null
+option/invert/tilting = null
+limits/enabled = false
+limits/rect = Rect2( -2450, -2450, 4900, 4900 )
+
+[node name="CameraTilt" type="Spatial" parent="Spatial"]
+transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0 )
+
+[node name="CameraZoom" type="Camera" parent="Spatial/CameraTilt"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5 )
+
+[node name="MeshInstance2" type="MeshInstance" parent="."]
+mesh = SubResource( 4 )
+material/0 = null
+script = ExtResource( 3 )
+angular_segment = 64
+outer_radius = 4
+start_angle = 0
+end_angle = 355

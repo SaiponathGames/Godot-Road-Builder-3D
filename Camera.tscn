@@ -1,0 +1,51 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://Camera.gd" type="Script" id=1]
+
+[node name="Camera" type="Camera"]
+script = ExtResource( 1 )
+camera/enabled = true
+edge_scroll/enabled = true
+movement/enabled = true
+rotation/enabled = true
+tilting/enabled = true
+zooming/enabled = true
+looking/enabled = true
+panning/enabled = true
+edge_scroll/detection_area = 0.06
+edge_scroll/time = 5
+edge_scroll/speed = 1
+movement/time = 5
+movement/speed = 1
+rotation/time = 5
+rotation/speed = 3
+tilting/time = 5
+tilting/speed = 3
+tilting/min_angle = -90
+tilting/max_angle = -20
+zooming/time = 5
+zooming/speed = 1
+zooming/min_distance = 10
+zooming/max_distance = 80
+looking/speed = 8
+panning/speed = 20
+perspective_panning/enabled = false
+perspective_panning/speed = 10
+mouse/sensitivity = 0.03
+option/disable_edge_scrolling_when_using_mouse = true
+option/target_zoom = true
+option/zoom_to_cursor = false
+option/invert/zooming = null
+option/invert/panning = null
+option/invert/rotation = null
+option/invert/rotation_keys = null
+option/invert/tilting = null
+limits/enabled = true
+limits/rect = Rect2( -2450, -2450, 4900, 4900 )
+
+[node name="CameraTilt" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0 )
+
+[node name="CameraZoom" type="Camera" parent="CameraTilt"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 5 )
+current = true

@@ -1,0 +1,105 @@
+[gd_scene load_steps=14 format=2]
+
+[ext_resource path="res://terrain_data/data.hterrain" type="Resource" id=1]
+[ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=2]
+[ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=3]
+[ext_resource path="res://Test_RoadSystem.gd" type="Script" id=4]
+[ext_resource path="res://Boulevard.png" type="Texture" id=5]
+
+[sub_resource type="Resource" id=1]
+script = ExtResource( 3 )
+mode = 0
+textures = [ [  ], [  ] ]
+
+[sub_resource type="Curve3D" id=2]
+_data = {
+"points": PoolVector3Array(  ),
+"tilts": PoolRealArray(  )
+}
+
+[sub_resource type="SpatialMaterial" id=3]
+albedo_color = Color( 0.427451, 0.427451, 0.427451, 1 )
+
+[sub_resource type="Curve3D" id=4]
+bake_interval = 0.5
+_data = {
+"points": PoolVector3Array(  ),
+"tilts": PoolRealArray(  )
+}
+
+[sub_resource type="SpatialMaterial" id=5]
+albedo_texture = ExtResource( 5 )
+
+[sub_resource type="SpatialMaterial" id=6]
+albedo_color = Color( 0.588235, 0.905882, 0.0705882, 1 )
+
+[sub_resource type="CubeMesh" id=7]
+material = SubResource( 6 )
+size = Vector3( 500, 0.5, 500 )
+
+[sub_resource type="BoxShape" id=8]
+extents = Vector3( 250, 0.125, 250 )
+
+[node name="Spatial" type="Spatial"]
+
+[node name="HTerrain" type="Spatial" parent="."]
+script = ExtResource( 2 )
+_terrain_data = ExtResource( 1 )
+chunk_size = 32
+collision_enabled = true
+collision_layer = 1
+collision_mask = 1
+shader_type = "Classic4Lite"
+custom_shader = null
+custom_globalmap_shader = null
+texture_set = SubResource( 1 )
+shader_params/u_ground_uv_scale = 20
+shader_params/u_depth_blending = true
+shader_params/u_triplanar = false
+shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 0.573576, 0.819152, 0, -0.819152, 0.573576, 74.442, 9.25591, 67.6121 )
+
+[node name="RoadSystem" type="Spatial" parent="."]
+script = ExtResource( 4 )
+
+[node name="Path2" type="Path" parent="RoadSystem"]
+curve = SubResource( 2 )
+
+[node name="CSGPolygon" type="CSGPolygon" parent="RoadSystem/Path2"]
+invert_faces = true
+polygon = PoolVector2Array( -0.25, 0, 0, -0.01, 0.25, 0 )
+mode = 2
+path_node = NodePath("..")
+path_interval = 1.0
+path_rotation = 2
+path_local = true
+path_continuous_u = true
+path_joined = false
+material = SubResource( 3 )
+
+[node name="Path" type="Path" parent="RoadSystem"]
+curve = SubResource( 4 )
+
+[node name="CSGPolygon" type="CSGPolygon" parent="RoadSystem/Path"]
+invert_faces = true
+polygon = PoolVector2Array( -0.25, 0, 0, -0.01, 0.25, 0 )
+mode = 2
+path_node = NodePath("..")
+path_interval = 1.0
+path_rotation = 2
+path_local = true
+path_continuous_u = true
+path_joined = false
+material = SubResource( 5 )
+
+[node name="StaticBody" type="StaticBody" parent="."]
+visible = false
+
+[node name="MeshInstance" type="MeshInstance" parent="StaticBody"]
+mesh = SubResource( 7 )
+material/0 = null
+
+[node name="CollisionShape" type="CollisionShape" parent="StaticBody"]
+shape = SubResource( 8 )
