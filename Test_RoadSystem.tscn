@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=19 format=2]
 
 [ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
@@ -11,6 +11,7 @@
 [ext_resource path="res://roads_system/RoadTool.gd" type="Script" id=9]
 [ext_resource path="res://roads_system/PathVisualizer.gd" type="Script" id=10]
 [ext_resource path="res://roads_system/RoadRenderer.gd" type="Script" id=11]
+[ext_resource path="res://roads_system/RoadRemover.gd" type="Script" id=12]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -35,7 +36,11 @@ _data = {
 
 [sub_resource type="SpatialMaterial" id=5]
 flags_transparent = true
-albedo_color = Color( 0, 1, 1, 0.5 )
+albedo_color = Color( 0, 1, 1, 0.501961 )
+
+[sub_resource type="SpatialMaterial" id=6]
+flags_transparent = true
+albedo_color = Color( 1, 1, 0, 0.501961 )
 
 [node name="Spatial" type="Spatial"]
 
@@ -89,6 +94,9 @@ visible = false
 
 [node name="RoadPreview" parent="RoadSystem" instance=ExtResource( 3 )]
 curve = SubResource( 4 )
+road_polygon = PoolVector2Array( -0.5, 0, 0, -0.02, 0.5, 0 )
+road_interval = 1.0
+material = ExtResource( 6 )
 
 [node name="Camera" parent="." instance=ExtResource( 8 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3, 20 )
@@ -114,7 +122,7 @@ script = ExtResource( 7 )
 immediate_geo_node = NodePath("ImmediateGeometry")
 use_quad_tree = false
 
-[node name="MeshInstance" type="MeshInstance" parent="Tools/RoadTool/RoadNetwork"]
+[node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadTool/RoadNetwork"]
 material_override = SubResource( 5 )
 script = ExtResource( 11 )
 
@@ -136,8 +144,23 @@ use_quad_tree = false
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="Tools/PathVisualizer/RoadNetwork"]
 material_override = SubResource( 2 )
 
+[node name="RoadRemover" type="Spatial" parent="Tools"]
+script = ExtResource( 12 )
+world_road_network_node = NodePath("../../HTerrain/RoadNetwork")
+
+[node name="RoadNetwork" type="Spatial" parent="Tools/RoadRemover"]
+script = ExtResource( 7 )
+use_immediate_geo = false
+use_quad_tree = false
+
+[node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadRemover/RoadNetwork"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0 )
+material_override = SubResource( 6 )
+script = ExtResource( 11 )
+
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, -0.707107, 0.707107, 0, -0.707107, -0.707107, 0, 0, 0 )
 
 [connection signal="graph_changed" from="HTerrain/RoadNetwork" to="HTerrain/RoadNetwork/RoadSystemDrawer" method="_on_RoadNetwork_graph_changed"]
-[connection signal="graph_changed" from="Tools/RoadTool/RoadNetwork" to="Tools/RoadTool/RoadNetwork/MeshInstance" method="_on_RoadNetwork_graph_changed"]
+[connection signal="graph_changed" from="Tools/RoadTool/RoadNetwork" to="Tools/RoadTool/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
+[connection signal="graph_changed" from="Tools/RoadRemover/RoadNetwork" to="Tools/RoadRemover/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]

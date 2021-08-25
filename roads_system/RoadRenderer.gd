@@ -265,12 +265,15 @@ func sort_by_angle(a, b, origin):
 func draw_triangle_with_uv(_surface_tool: SurfaceTool, v0: Vector3, uv0: Vector2, v1: Vector3, uv1: Vector2, v2: Vector3, uv2: Vector2, color: Color = Color()):
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv0)
+	_surface_tool.add_normal(Vector3.UP)
 	_surface_tool.add_vertex(v0)
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv1)
+	_surface_tool.add_normal(Vector3.UP)
 	_surface_tool.add_vertex(v1)
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv2)
+	_surface_tool.add_normal(Vector3.UP)
 	_surface_tool.add_vertex(v2)
 
 func draw_triangle(_surface_tool: SurfaceTool, v0: Vector3, v1: Vector3, v2: Vector3, color: Color = Color()):
@@ -302,12 +305,14 @@ func quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 
 func draw_filled_arc(_surface_tool: SurfaceTool, radius: float, center: Vector3, resolution: int = 64, start_angle: float = 0, end_angle: float = 360):
 	var angular_segment = resolution
+	_surface_tool.add_normal(Vector3.UP)
 	_surface_tool.add_vertex(center)
 	
 	for i in range(angular_segment+1):
 		var t = i / float(angular_segment)
 		var angle = deg2rad(start_angle + i * (end_angle-start_angle) / float(angular_segment) - 90)
 		var position_outer = Vector3(0, 0, radius)
+		_surface_tool.add_normal(Vector3.UP)
 		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle)+center)
 	
 	for i in range(angular_segment):

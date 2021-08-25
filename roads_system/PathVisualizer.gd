@@ -12,9 +12,9 @@ var pathfind_current: RoadIntersection
 var enable_tool = false
 func _input(event):
 	if event is InputEventKey:
-		if event.scancode == KEY_T:
+		if event.scancode == KEY_B:
 			enable_tool = true
-		if event.scancode == KEY_Y:
+		if event.scancode == KEY_N:
 			enable_tool = false
 
 	if !enable_tool:

@@ -47,6 +47,21 @@ class RoadSegment:
 		self.road_network = _road_network
 		self.distance = start_position.distance_to(end_position)
 	
+	func distance_to(to_position: Vector3):
+		var closest_point = project_point(to_position)
+		return closest_point.distance_to(to_position)
+	
+	func distance_squared_to(to_position: Vector3):
+		var closest_point = project_point(to_position)
+		return closest_point.distance_squared_to(to_position)
+	
+	func direction_to(to_position: Vector3):
+		var closest_point = project_point(to_position)
+		return closest_point.direction_to(to_position)
+	
+	func project_point(to_position: Vector3):
+		return Geometry.get_closest_point_to_segment(to_position, start_position.position, end_position.position)
+	
 	func get_points(spacing = 0.5, resolution = 1):
 		var points = [start_position.position]
 		var previous_point = start_position.position
@@ -91,7 +106,7 @@ func _ready():
 	if use_immediate_geo:
 		immediate_geo = get_node(immediate_geo_node)
 
-func add_intersection(intersection: RoadIntersection):
+func add_intersection(intersection: RoadIntersection, do_update: bool = true):
 	if intersection.road_network == self:
 		push_error("Intersection is already present.")
 		return
@@ -109,30 +124,38 @@ func add_intersection(intersection: RoadIntersection):
 		var _intersection_id = _generate_id(intersection)
 		astar_intersection_map[_intersection_id] = intersection
 		astar.add_point(_intersection_id, intersection.position)
-	emit_signal("graph_changed")
+	if do_update:
+		emit_signal("graph_changed")
 
-func remove_intersection(intersection: RoadIntersection, check_when_remove = false):
+func remove_intersection(intersection: RoadIntersection, check_when_remove = false, do_update: bool = true):
 	if !intersection.road_network:
 		push_error("Intersection not in network.")
+		return
+	
+	if intersection.road_network != self:
+		push_error("Can't remove intersection, intersection is in different road network.")
 		return
 	
 #	print(_generate_id(intersection), "remove")
 	if intersection.connections:
 		for connection in intersection.connections:
 # warning-ignore:return_value_discarded
-			if connection.end_position in intersection or !check_when_remove:
-				disconnect_intersections(connection.start_position, connection.end_position)
+			if connection.end_position in intersections or !check_when_remove:
+				disconnect_intersections(connection.start_position, connection.end_position, false)
 	intersections.erase(intersection)
+	intersection.road_network = null
 	if use_quad_tree:
 		if intersection.has_meta("_qt_node"):
 			quad_tree.remove_body(intersection.get_meta("_qt_node"))
 	if use_astar:
 		var _intersection_id = _generate_id(intersection)
-		astar_intersection_map.erase(_intersection_id)
-		astar.remove_point(_intersection_id)
-	emit_signal("graph_changed")
+		if astar.has_point(_intersection_id):
+			astar_intersection_map.erase(_intersection_id)
+			astar.remove_point(_intersection_id)
+	if do_update:
+		emit_signal("graph_changed")
 	
-func disconnect_intersections(start_intersection: RoadIntersection, end_intersection: RoadIntersection):
+func disconnect_intersections(start_intersection: RoadIntersection, end_intersection: RoadIntersection, do_update: bool = true):
 	if start_intersection.road_network != self:
 		push_error("Can't connect, please add start_intersection to this road network.")
 		return null
@@ -146,15 +169,16 @@ func disconnect_intersections(start_intersection: RoadIntersection, end_intersec
 	start_intersection.connections.erase(segment)
 	end_intersection.connections.erase(segment)
 	if use_astar:
-		if astar.has_point(_generate_id(end_intersection)):
+		if astar.has_point(_generate_id(end_intersection)) and astar.has_point(_generate_id(end_intersection)):
 			astar.disconnect_points(_generate_id(start_intersection), _generate_id(end_intersection))
 	network.erase([start_intersection, end_intersection])
-	emit_signal("graph_changed")
+	if do_update:
+		emit_signal("graph_changed")
 
 func split_at_postion(segment: RoadSegment, _position: RoadIntersection):
-	disconnect_intersections(segment.start_position, segment.end_position)
-	var first_segment = connect_intersections(segment.start_position, _position)
-	var second_segment = connect_intersections(_position, segment.end_position)
+	disconnect_intersections(segment.start_position, segment.end_position, false)
+	var first_segment = connect_intersections(segment.start_position, _position, false)
+	var second_segment = connect_intersections(_position, segment.end_position, false)
 	return [first_segment, second_segment]
 
 func are_intersections_connected(start_intersection, end_intersection):
@@ -166,7 +190,7 @@ func are_intersections_connected(start_intersection, end_intersection):
 		return
 	return network.has([start_intersection, end_intersection])
 	
-func connect_intersections(start_intersection, end_intersection) -> RoadSegment:
+func connect_intersections(start_intersection, end_intersection, do_update: bool = true) -> RoadSegment:
 	if start_intersection.road_network != self:
 		push_error("Can't connect, please add start_intersection to this road network.")
 		return null
@@ -184,7 +208,8 @@ func connect_intersections(start_intersection, end_intersection) -> RoadSegment:
 	if use_astar and _generate_id(start_intersection) != _generate_id(end_intersection):
 		astar.connect_points(_generate_id(start_intersection), _generate_id(end_intersection))
 
-	emit_signal("graph_changed")
+	if do_update:
+		emit_signal("graph_changed")
 	return network[[start_intersection, end_intersection]]
 
 func find_path(start_intersection, end_intersection):
@@ -257,13 +282,33 @@ func get_closest_node(to_position: Vector3, distance: float = 0.5):
 			snapped = object.get_meta("_intersection")
 	return snapped
 
-func clear():
+func get_closest_segment(to_position: Vector3, distance: float = 1.5):
+	var snapped_segment: RoadSegment
+	for segment in network.values():
+		var dist = segment.distance_to(to_position)
+		if abs(dist) < distance:
+			snapped_segment = segment
+	return snapped_segment
+
+func clear(do_update: bool = true):
 	if use_astar:
 		quad_tree.clear()
 	if use_astar:
 		astar.clear()
 	network.clear()
 	intersections.clear()
+	if do_update:
+		emit_signal("graph_changed")
+
+func delete_connection(connection: RoadSegment, with_orpha_intersection: bool = true, do_update: bool = true):
+	disconnect_intersections(connection.start_position, connection.end_position, false)
+	if connection.start_position.connections.size() < 1:
+		remove_intersection(connection.start_position, false, false)
+	if connection.end_position.connections.size() < 1:
+		remove_intersection(connection.end_position, false, false)
+	if do_update:
+		emit_signal("graph_changed")
+	
 
 #func _ready():
 #	var intersect_1 = RoadIntersection.new(Vector3(2, 0, 3), [])
