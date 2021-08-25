@@ -70,6 +70,7 @@ func _input(event):
 					$RoadNetwork.add_intersection(_drag_end)
 				else:
 					var new_intersection = create_new_intersection(_cast_ray_to(event.position))
+					new_intersection = snap_to_length_and_angle(_drag_start, new_intersection)
 					_drag_end = new_intersection
 					$RoadNetwork.add_intersection(_drag_end)
 					$RoadNetwork.connect_intersections(_drag_start, _drag_end)
@@ -125,16 +126,22 @@ func _input(event):
 		_snapped_segment = null
 		_snapped = null
 		
+		# snap to intersection
 		var closest_segment = world_road_network.get_closest_segment(new_intersection.position, 0.5)
 		if closest_segment:
 			_drag_current.position = closest_segment.project_point(new_intersection.position)
 			_snapped_segment = closest_segment
 		
+		# snap to edge
 		var closest_node = world_road_network.get_closest_node(new_intersection.position)
 		if closest_node:
 			_snapped = closest_node
 			_drag_current.position = _snapped.position
-#			print("working?")
+		
+		# snap to length
+		if _is_dragging:
+			_drag_current = snap_to_length_and_angle(_drag_start, _drag_current)
+				
 		if _is_dragging:
 			if _drag_start.distance_to(_drag_current) < 1:
 				$RoadNetwork/RoadRenderer.material_override.albedo_color = Color(1, 0, 0, 0.5)
@@ -185,3 +192,17 @@ func _cast_ray_to(postion: Vector2):
 func create_new_intersection(position) -> RoadIntersection:
 	return RoadIntersection.new(position)
 
+func snap_to_length_and_angle(from, to):
+	var length = from.distance_to(to)
+	var direction = from.direction_to(to)
+	var angle = rad2deg(atan2(direction.z, direction.x))
+	var new_length = round(length / 2.5) * 2.5
+	var new_angle = round(angle / 45.0) * 45.0
+	if abs(angle - new_angle) < 10:
+		angle = new_angle
+		direction = Vector3(cos(deg2rad(angle)), 0, sin(deg2rad(angle)))
+		to.position = from.position + direction * length
+	if abs(length - new_length) < 0.25 and new_length != 0:
+		length = new_length
+		to.position = from.position + direction * length
+	return to

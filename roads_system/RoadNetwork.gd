@@ -33,6 +33,9 @@ class RoadIntersection:
 			connected_nodes.append(connection.end_position)
 		return connected_nodes
 	
+	func angle_to(to_intersection: RoadIntersection):
+		return self.position.angle_to(to_intersection.position)
+	
 class RoadSegment:
 	var start_position: RoadIntersection
 	var end_position: RoadIntersection
