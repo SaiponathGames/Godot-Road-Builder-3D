@@ -126,6 +126,10 @@ func _input(event):
 		_snapped_segment = null
 		_snapped = null
 		
+		# snap the length and angle
+		if _is_dragging:
+			_drag_current = snap_to_length_and_angle(_drag_start, _drag_current)
+		
 		# snap to intersection
 		var closest_segment = world_road_network.get_closest_segment(new_intersection.position, 0.5)
 		if closest_segment:
@@ -138,10 +142,6 @@ func _input(event):
 			_snapped = closest_node
 			_drag_current.position = _snapped.position
 		
-		# snap to length
-		if _is_dragging:
-			_drag_current = snap_to_length_and_angle(_drag_start, _drag_current)
-				
 		if _is_dragging:
 			if _drag_start.distance_to(_drag_current) < 1:
 				$RoadNetwork/RoadRenderer.material_override.albedo_color = Color(1, 0, 0, 0.5)
@@ -151,7 +151,8 @@ func _input(event):
 				buildable = true
 		else:
 			$RoadNetwork/RoadRenderer.material_override.albedo_color = Color(0, 1, 1, 0.5)
-			
+		
+		
 		$RoadNetwork.draw()
 		$RoadNetwork/RoadRenderer.update()
 

@@ -83,9 +83,12 @@ var intersection_1 = null
 
 var surface_tool = SurfaceTool.new()
 
+var rendering_mode = Mesh.PRIMITIVE_TRIANGLES
+
 func _render_road(road_network):
 	surface_tool.clear()
-	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+#	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	surface_tool.begin(rendering_mode)
 	# sort the angles
 	for intersection in road_network.intersections:
 		if intersection.connections.size() > 1:
@@ -94,7 +97,7 @@ func _render_road(road_network):
 	var vertex_array = {}
 	for intersection in road_network.intersections:
 		if !intersection.connections:
-			draw_filled_circle(surface_tool, 0.5, intersection.position)
+			draw_filled_circle(surface_tool, 0.25, intersection.position)
 			continue
 #			draw_filled_circle(surface_tool, 1, intersection.position)
 		var v1dict = draw_intersection(intersection)
@@ -177,15 +180,31 @@ func draw_intersection(intersection: RoadIntersection):
 		
 	return [intersection_verts, mid_points]
 
-func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary):
-	draw_triangle(_surface_tool,
-		i1.v1,
-		i2.v1,
-		i2.v2)
-	draw_triangle(_surface_tool,
-		i1.v2,
-		i2.v1,
-		i1.v1)
+func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary, resolution: int = 20):
+	var last_v1 = i1.v1
+	var last_v2 = i1.v2
+	for i in resolution+1:
+		var t = i/float(resolution)
+		var v1 = lerp(i1.v2, i2.v1, t)
+		var v2 = lerp(i1.v1, i2.v2, t)
+		draw_triangle(_surface_tool,
+			last_v1,
+			v1,
+			v2)
+		draw_triangle(_surface_tool, 
+			last_v2,
+			v1,
+			last_v1)
+		last_v1 = v2
+		last_v2 = v1
+#	draw_triangle(_surface_tool,
+#		i1.v1,
+#		i2.v1,
+#		i2.v2)
+#	draw_triangle(_surface_tool,
+#		i1.v2,
+#		i2.v1,
+#		i1.v1)
 
 func draw_complete_intersection(_surface_tool, intersection, vertex_data, mid_point_data):
 	if intersection.connections.size() == 1:
@@ -330,3 +349,12 @@ func _on_RoadNetwork_graph_changed():
 
 func update():
 	_render_road(get_parent())
+
+func _input(event):
+	if event is InputEventKey:
+		if event.scancode == KEY_K:
+			rendering_mode = Mesh.PRIMITIVE_TRIANGLES
+			_render_road(get_parent())
+		elif event.scancode == KEY_L:
+			rendering_mode = Mesh.PRIMITIVE_LINES
+			_render_road(get_parent())

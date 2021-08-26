@@ -42,7 +42,7 @@ class RoadSegment:
 	var distance: float
 	
 	var road_network: RoadNetwork
-	var width = 1
+	var width = 0.5
 	
 	func _init(_start_position: RoadIntersection, _end_position: RoadIntersection, _road_network: RoadNetwork):
 		self.start_position = _start_position
