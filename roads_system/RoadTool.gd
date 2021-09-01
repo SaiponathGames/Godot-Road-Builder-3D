@@ -50,6 +50,11 @@ func _input(event):
 			disable_tool = false
 			show()
 		
+		if event.scancode == KEY_V:
+			is_curve_tool_on = true
+		if event.scancode == KEY_B:
+			is_curve_tool_on = false
+		
 		if event.scancode == KEY_1:
 			current_info = RoadNetworkInfo.new("test_id", "Test Road", 1, 0.5, 1)
 		if event.scancode == KEY_2:
@@ -83,7 +88,7 @@ func _input(event):
 				_snapped_segment = null
 
 			elif _is_dragging: # end the dragging, and create new road in world
-				if !is_curve_tool_on:
+				if (_drag_middle and is_curve_tool_on) or !is_curve_tool_on:
 					if !_drag_middle and is_curve_tool_on:
 						return
 					if !buildable:
@@ -102,27 +107,34 @@ func _input(event):
 						$RoadNetwork.add_intersection(_drag_end)
 						$RoadNetwork.connect_intersections(_drag_start, _drag_end, current_info)
 					var start_intersection = world_road_network.get_closest_node(_drag_start.position)
+					var middle_intersection = null
 					var end_intersection = world_road_network.get_closest_node(_drag_end.position)
 					if !start_intersection:
 						start_intersection = create_new_intersection(_drag_start.position)
 					if !end_intersection:
 						end_intersection = create_new_intersection(_drag_end.position)
+					if _drag_middle:
+						middle_intersection = create_new_intersection(_drag_middle.position)
 					
 					# add to world
 					if !world_road_network.has_intersection(start_intersection):
 						world_road_network.add_intersection(start_intersection)
 					if !world_road_network.has_intersection(end_intersection):
 						world_road_network.add_intersection(end_intersection)
-					
+					if _drag_middle and is_curve_tool_on:
+						if !world_road_network.has_intersection(middle_intersection):
+							world_road_network.add_intersection(middle_intersection)
+						
 					if _start_segment:
 						world_road_network.split_at_postion(_start_segment, start_intersection, _start_segment.road_network_info)
 					if _end_segment:
 						world_road_network.split_at_postion(_end_segment, end_intersection, _end_segment.road_network_info)
 					
-					if start_intersection.position != end_intersection.position:
+					if start_intersection.position != end_intersection.position and !is_curve_tool_on:
 						var connection = world_road_network.connect_intersections(start_intersection, end_intersection, current_info)
 						print(connection.get_bounds())
-					
+					if middle_intersection and is_curve_tool_on:
+						world_road_network.connect_intersections_with_bezier(start_intersection, middle_intersection, end_intersection, current_info)
 	#				world_road_network.draw()
 					$RoadNetwork.clear()
 					_is_dragging = continue_dragging
@@ -152,7 +164,7 @@ func _input(event):
 		if _drag_current:
 			$RoadNetwork.remove_intersection(_drag_current)
 			_drag_current = null
-	
+		
 		var new_intersection = create_new_intersection(_cast_ray_to(event.position))
 		_drag_current = new_intersection
 		$RoadNetwork.add_intersection(_drag_current)
@@ -160,7 +172,10 @@ func _input(event):
 			$RoadNetwork.connect_intersections(_drag_start, _drag_current, current_info)
 		_snapped_segment = null
 		_snapped = null
-		
+		if _is_dragging and _drag_middle and is_curve_tool_on:
+			$RoadNetwork.connect_intersections_with_bezier(_drag_start, _drag_middle, _drag_current, current_info)
+		if _is_dragging and !_drag_middle and is_curve_tool_on:
+			$RoadNetwork.connect_intersections(_drag_start, _drag_current, current_info)
 		# snap the length and angle
 		if _is_dragging:
 			_drag_current = snap_to_length_and_angle(_drag_start, _drag_current)

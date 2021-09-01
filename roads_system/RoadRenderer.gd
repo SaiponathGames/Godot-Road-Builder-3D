@@ -77,15 +77,19 @@ extends MeshInstance
 #
 const RoadIntersection = RoadNetwork.RoadIntersection
 const RoadSegment = RoadNetwork.RoadSegment
+const RoadBezier = RoadNetwork.RoadBezier
 
 
 var intersection_1 = null
 
+export(NodePath) var immediate_geometry_node_path
+onready var immediate_geometry_node = get_node(immediate_geometry_node_path)
 var surface_tool = SurfaceTool.new()
 
 var rendering_mode = Mesh.PRIMITIVE_TRIANGLES
 
 func _render_road(road_network):
+	immediate_geometry_node.clear()
 	surface_tool.clear()
 #	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface_tool.begin(rendering_mode)
@@ -102,23 +106,35 @@ func _render_road(road_network):
 #			draw_filled_circle(surface_tool, 1, intersection.position)
 		var v1dict = draw_intersection(intersection)
 		
-		draw_complete_intersection(surface_tool, intersection, v1dict[0], v1dict[1])
+		if intersection.visible:
+			draw_complete_intersection(surface_tool, intersection, v1dict[0], v1dict[1])
 #		print(v1dict[0], v1dict[1])
 		vertex_array[intersection] = v1dict
 		
-	
+#	print(vertex_array)
 #	var connection_index = 0
 #	print(road_network.network.values().size())
 #	print(road_network.network.keys())
 	for connection in road_network.network.values():
+		if connection is RoadBezier:
+			var start_dict = vertex_array[connection.start_position]
+			var middle_dict = vertex_array[connection.middle_position]
+			var end_dict = vertex_array[connection.end_position]
+			
+			var start_connection_intersection = start_dict[0][connection]
+			var middle_connection_intersection = middle_dict[0][connection]
+			var end_connection_intersection = end_dict[0][connection]
+			draw_bezier_connection(surface_tool, start_connection_intersection, middle_connection_intersection, end_connection_intersection)
+			continue
+		if !(connection.start_position.visible or connection.end_position.visible):
+			continue
 		var start_dict = vertex_array[connection.start_position]
 		var end_dict = vertex_array[connection.end_position]
 		
 		var start_connection_intersection = start_dict[0][connection]
 		var end_connection_intersection = end_dict[0][connection]
-		
 		draw_connection(surface_tool, start_connection_intersection, end_connection_intersection)
-	
+
 	mesh = surface_tool.commit()
 
 func compute_intersection(p0, angle0, p1, angle1, end_radius) -> Vector3:
@@ -146,8 +162,16 @@ func draw_intersection(intersection: RoadIntersection):
 	for connection in intersection.connections:
 		if connection.road_network_info.width != 0:
 			var vert = {}
-			var intersection_bound_for = connection.start_position if intersection == connection.end_position else connection.end_position
-			var direction = intersection.direction_to(intersection_bound_for)
+			var intersection_bound_for
+			if connection is RoadBezier:
+				intersection_bound_for = connection.middle_position if intersection == connection.start_position else connection.end_position if intersection == connection.middle_position else connection.middle_position if intersection == connection.end_position else connection.start_position
+			else:
+				intersection_bound_for = connection.start_position if intersection == connection.end_position else connection.end_position
+			var direction
+			if (connection is RoadBezier and intersection != connection.middle_position) or not connection is RoadBezier:
+				direction = intersection.direction_to(intersection_bound_for)
+			else:
+				direction = ((intersection.direction_to(connection.start_position) + connection.end_position.direction_to(intersection))).normalized()
 			var start_point = intersection.position
 			if intersection.connections.size() > 1:
 				start_point += direction * intersection.road_network_info.length
@@ -162,8 +186,8 @@ func draw_intersection(intersection: RoadIntersection):
 			vert["v1"] = v1
 			vert["v2"] = v2
 			vert["angle"] = atan2(direction.x, direction.z)
-#			DrawingUtils.draw_empty_circle($ImmediateGeometry, v1, 0.125, Color.red)
-#			DrawingUtils.draw_empty_circle($ImmediateGeometry, v2, 0.125, Color.green)
+			DrawingUtils.draw_empty_circle(immediate_geometry_node, v1, 0.125, Color.red)
+			DrawingUtils.draw_empty_circle(immediate_geometry_node, v2, 0.125, Color.green)
 			intersection_verts[connection] = vert
 
 	var connections = intersection.connections
@@ -197,6 +221,26 @@ func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary,
 			last_v1)
 		last_v1 = v2
 		last_v2 = v1
+
+func draw_bezier_connection(_surface_tool, i1: Dictionary, m_i: Dictionary, i2: Dictionary, resolution: int = 20):
+#	print(m_i.v1, m_i.v2)
+	var last_v1 = i1.v1
+	var last_v2 = i1.v2
+	for i in resolution+1:
+		var t = i/float(resolution)
+		var v1 = quadratic_bezier(i1.v2, m_i.v1, i2.v1, t)
+		var v2 = quadratic_bezier(i1.v1, m_i.v2, i2.v2, t)
+		draw_triangle(_surface_tool,
+			last_v1,
+			v1,
+			v2)
+		draw_triangle(_surface_tool, 
+			last_v2,
+			v1,
+			last_v1)
+		last_v1 = v2
+		last_v2 = v1
+
 #	draw_triangle(_surface_tool,
 #		i1.v1,
 #		i2.v1,

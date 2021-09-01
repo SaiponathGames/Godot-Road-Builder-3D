@@ -73,10 +73,10 @@ quad_tree_node_edge_path = NodePath("QuadTreeNodeEdges")
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
 material_override = ExtResource( 6 )
 script = ExtResource( 11 )
+immediate_geometry_node_path = NodePath("../RoadSystemGeometry")
 
 [node name="RoadSystemGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0 )
-visible = false
 material_override = SubResource( 2 )
 
 [node name="QuadTreeNode" type="Spatial" parent="HTerrain/RoadNetwork"]
@@ -138,6 +138,7 @@ use_quad_tree = false
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadTool/RoadNetwork"]
 material_override = SubResource( 5 )
 script = ExtResource( 11 )
+immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="Tools/RoadTool/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0 )
@@ -170,6 +171,7 @@ use_quad_tree = false
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0 )
 material_override = SubResource( 6 )
 script = ExtResource( 11 )
+immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
 [node name="RoadUpgrade" type="Spatial" parent="Tools"]
 script = ExtResource( 13 )
@@ -184,6 +186,7 @@ use_quad_tree = false
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0 )
 material_override = SubResource( 5 )
 script = ExtResource( 11 )
+immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, -0.707107, 0.707107, 0, -0.707107, -0.707107, 0, 0, 0 )

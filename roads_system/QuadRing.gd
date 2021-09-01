@@ -69,7 +69,6 @@ func _generate():
 			surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle))
 		
 		for i in range(angular_segment):
-			
 			surface_tool.add_index(0)
 			surface_tool.add_index(i + 2)
 			surface_tool.add_index(i + 1)
