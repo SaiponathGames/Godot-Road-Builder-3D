@@ -8,10 +8,10 @@ const RoadSegment = RoadNetwork.RoadSegment
 const RoadNetworkInfo = RoadNetwork.RoadNetworkInfo
 
 var _snapped: RoadIntersection
-var _snapped_segment: RoadSegment
+var _snapped_segment
 
-var _start_segment: RoadSegment
-var _end_segment: RoadSegment
+var _start_segment
+var _end_segment
 
 var _drag_start: RoadIntersection
 var _drag_middle: RoadIntersection
@@ -125,9 +125,9 @@ func _input(event):
 						if !world_road_network.has_intersection(middle_intersection):
 							world_road_network.add_intersection(middle_intersection)
 						
-					if _start_segment:
+					if _start_segment and _start_segment is RoadSegment:
 						world_road_network.split_at_postion(_start_segment, start_intersection, _start_segment.road_network_info)
-					if _end_segment:
+					if _end_segment and _end_segment is RoadSegment:
 						world_road_network.split_at_postion(_end_segment, end_intersection, _end_segment.road_network_info)
 					
 					if start_intersection.position != end_intersection.position and !is_curve_tool_on:
@@ -185,6 +185,12 @@ func _input(event):
 		if closest_segment:
 			_drag_current.position = closest_segment.project_point(new_intersection.position)
 			_snapped_segment = closest_segment
+		
+		var closest_bezier_seg = world_road_network.get_closest_bezier_segment(new_intersection.position, 0.51)
+#		print(closest_bezier_seg)
+		if closest_bezier_seg:
+			_drag_current.position = closest_bezier_seg.project_point(new_intersection.position)
+			_snapped_segment = closest_bezier_seg
 		
 		# snap to edge
 		var closest_node = world_road_network.get_closest_node(new_intersection.position)

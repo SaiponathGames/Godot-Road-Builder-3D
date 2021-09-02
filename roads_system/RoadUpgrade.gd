@@ -7,7 +7,7 @@ const RoadIntersection = RoadNetwork.RoadIntersection
 const RoadSegment = RoadNetwork.RoadSegment
 const RoadNetworkInfo = RoadNetwork.RoadNetworkInfo
 
-var _snapped_segment: RoadSegment
+var _snapped_segment
 
 var enabled = false
 
@@ -45,6 +45,9 @@ func _input(event):
 			var closest_segment = world_road_network.get_closest_segment(position, 0.5)
 			if closest_segment:
 				world_road_network.upgrade_connection(closest_segment.start_position, closest_segment.end_position, current_info)
+			var closest_bezier_segment = world_road_network.get_closest_bezier_segment(position, 0.5)
+			if closest_bezier_segment:
+				world_road_network.upgrade_bezier_connection(closest_bezier_segment.start_position, closest_bezier_segment.middle_position, closest_bezier_segment.end_position, current_info)
 			_snapped_segment = null
 			$RoadNetwork.clear()
 		
@@ -61,6 +64,22 @@ func _input(event):
 			$RoadNetwork.add_intersection(start_position)
 			$RoadNetwork.add_intersection(end_position)
 			$RoadNetwork.connect_intersections(start_position, end_position, current_info)
+		
+		var closest_bezier_seg = world_road_network.get_closest_bezier_segment(position, 0.5)
+		if closest_bezier_seg:
+			_snapped_segment = closest_bezier_seg
+			
+			var start_position = create_new_intersection(closest_bezier_seg.start_position.position, current_info)
+			var mid_position = create_new_intersection(closest_bezier_seg.middle_position.position, current_info)
+			mid_position.visible = false
+			var end_position = create_new_intersection(closest_bezier_seg.end_position.position, current_info)
+			
+			$RoadNetwork.add_intersection(start_position)
+			$RoadNetwork.add_intersection(mid_position)
+			$RoadNetwork.add_intersection(end_position)
+			$RoadNetwork.connect_intersections_with_bezier(start_position, mid_position, end_position, current_info)
+			
+			
 
 func reset():
 	_snapped_segment = null
