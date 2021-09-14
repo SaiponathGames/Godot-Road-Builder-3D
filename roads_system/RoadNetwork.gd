@@ -4,8 +4,12 @@ class_name RoadNetwork
 signal graph_changed()
 
 class RoadIntersection:
-	var position: Vector3
+	
+	signal position_changed(before_position, position)
+	
+	var position: Vector3 setget set_position
 	var connections: Array
+	var visible_connections: Array
 	var length: float = 1
 	
 	var road_network: RoadNetwork
@@ -18,6 +22,18 @@ class RoadIntersection:
 		self.length = _road_net_info.length
 		self.road_network_info = _road_net_info
 	
+	func update_visiblity_connections():
+		visible_connections = []
+		for connection in connections:
+			if connection.visible:
+				visible_connections.append(connection)
+	
+	func set_position(value: Vector3):
+		var before_position = position
+		position = value
+		if before_position and position:
+			emit_signal("position_changed", before_position, position)
+		
 	func distance_to(to_intersection: RoadIntersection):
 		return self.position.distance_to(to_intersection.position)
 	
@@ -62,6 +78,7 @@ class RoadSegment:
 	var road_network: RoadNetwork
 	var road_network_info: RoadNetworkInfo
 	var width = 0.5
+	var visible = true
 	
 	func _init(_start_position: RoadIntersection, _end_position: RoadIntersection, _road_network: RoadNetwork, _road_net_info: RoadNetworkInfo):
 		self.start_position = _start_position
@@ -136,6 +153,7 @@ class RoadBezier:
 	var road_network: RoadNetwork
 	var road_network_info: RoadNetworkInfo
 	var width = 0.5
+	var visible = true
 	
 	func _init(p_start_position, p_middle_position, p_end_position, p_road_net_info: RoadNetworkInfo, p_road_network: RoadNetwork):
 		self.start_position = p_start_position
@@ -160,6 +178,7 @@ class RoadBezier:
 			sum += previous_point.distance_to(point)
 			previous_point = point
 		return sum
+
 		
 	func distance_to(position: Vector3):
 		var closest_point = project_point(position)
@@ -299,9 +318,10 @@ func add_intersection(intersection: RoadIntersection, do_update: bool = true):
 		intersection.set_meta("_qt_node", qt_node)
 	intersections.append(intersection)
 	intersection.road_network = self
+	intersection.connect("position_changed", self, "move_intersection", [intersection])
 #	print(_generate_id(intersection), "add")
 	if use_astar:
-		var _intersection_id = _generate_id(intersection)
+		var _intersection_id = _generate_id(intersection.position)
 		astar_intersection_map[_intersection_id] = intersection
 		astar.add_point(_intersection_id, intersection.position)
 	if do_update:
@@ -335,13 +355,27 @@ func remove_intersection(intersection: RoadIntersection, check_when_remove = fal
 		if intersection.has_meta("_qt_node"):
 			quad_tree.remove_body(intersection.get_meta("_qt_node"))
 	if use_astar:
-		var _intersection_id = _generate_id(intersection)
+		var _intersection_id = _generate_id(intersection.position)
 		if astar.has_point(_intersection_id):
 			astar_intersection_map.erase(_intersection_id)
 			astar.remove_point(_intersection_id)
 	if do_update:
 		emit_signal("graph_changed")
+
+func move_intersection(before_position: Vector3, current_position: Vector3, intersection: RoadIntersection):
+	if use_astar:
+		var old_id = _generate_id(before_position)
+		var new_id = _generate_id(current_position)
+		var point_connections = astar.get_point_connections(old_id)
+		astar.add_point(new_id, current_position)
+		for point in point_connections:
+			astar.disconnect_points(old_id, point)
+			astar.connect_points(new_id, point)
+		astar.remove_point(old_id)
+		astar_intersection_map.erase(old_id)
+		astar_intersection_map[new_id] = intersection
 	
+
 func disconnect_intersections(start_intersection: RoadIntersection, end_intersection: RoadIntersection, do_update: bool = true):
 	if !are_intersections_connected(start_intersection, end_intersection):
 		push_error("Intersections not connected, connect it before disconnecting.")
@@ -351,8 +385,8 @@ func disconnect_intersections(start_intersection: RoadIntersection, end_intersec
 	start_intersection.connections.erase(segment)
 	end_intersection.connections.erase(segment)
 	if use_astar:
-		if astar.has_point(_generate_id(end_intersection)) and astar.has_point(_generate_id(end_intersection)):
-			astar.disconnect_points(_generate_id(start_intersection), _generate_id(end_intersection))
+		if astar.has_point(_generate_id(end_intersection.position)) and astar.has_point(_generate_id(end_intersection.position)):
+			astar.disconnect_points(_generate_id(start_intersection.position), _generate_id(end_intersection.position))
 	if use_quad_tree:
 		quad_tree_edge.remove_body(segment.get_meta("_qt_edge"))
 	network.erase([start_intersection, end_intersection])
@@ -382,8 +416,8 @@ func connect_intersections(start_intersection: RoadIntersection, end_intersectio
 	network[[start_intersection, end_intersection]] = segment
 	start_intersection.connections.append(segment)
 	end_intersection.connections.append(segment)
-	if use_astar and _generate_id(start_intersection) != _generate_id(end_intersection):
-		astar.connect_points(_generate_id(start_intersection), _generate_id(end_intersection))
+	if use_astar and _generate_id(start_intersection.position) != _generate_id(end_intersection.position):
+		astar.connect_points(_generate_id(start_intersection.position), _generate_id(end_intersection.position))
 	if use_quad_tree:
 		var qt_edge = _create_quad_tree_edge(segment)
 		quad_tree_edge.add_body(qt_edge, qt_edge.get_meta("_aabb"))
@@ -466,8 +500,8 @@ func upgrade_connection(start_intersection: RoadIntersection, end_intersection: 
 		emit_signal("graph_changed")
 	return network[[start_intersection, end_intersection]]
 
-func _generate_id(road_intersection: RoadIntersection):
-	var _position: Vector3 = road_intersection.position
+func _generate_id(road_intersection: Vector3):
+	var _position: Vector3 = road_intersection
 #	_position -= Vector3(-4096, -4096, -4096)
 	return int((_position.x + _position.y + _position.z))
 
@@ -515,7 +549,8 @@ func get_closest_node(to_position: Vector3, distance: float = 0.5):
 	var query = quad_tree.query(aabb)
 	for object in query:
 		if to_position.distance_to(object.translation) < distance and object.has_meta("_intersection"):
-			snapped = object.get_meta("_intersection")
+			if object.get_meta("_intersection").visible:
+				snapped = object.get_meta("_intersection")
 	return snapped
 
 func get_closest_segment(to_position: Vector3, distance: float = 1.5) -> RoadSegment:
@@ -524,7 +559,8 @@ func get_closest_segment(to_position: Vector3, distance: float = 1.5) -> RoadSeg
 	var query = quad_tree_edge.query(aabb)
 	for object in query:
 		if object.has_meta("_connection") and object.get_meta("_connection").distance_to(to_position) < distance:
-			snapped_segment = object.get_meta("_connection")
+			if object.get_meta("_connection").visible:
+				snapped_segment = object.get_meta("_connection")
 	return snapped_segment
 
 func get_closest_bezier_segment(to_position: Vector3, distance: float = 1.5) -> RoadBezier:
@@ -534,7 +570,8 @@ func get_closest_bezier_segment(to_position: Vector3, distance: float = 1.5) -> 
 	for object in query:
 #		print(object.get_meta("_connection").distance_to(to_position))
 		if object.has_meta("_connection") and object.get_meta("_connection").distance_to(to_position) < distance:
-			snapped_bezier = object.get_meta("_connection")
+			if object.get_meta("_connection").visible:
+				snapped_bezier = object.get_meta("_connection")
 	return snapped_bezier
 	
 

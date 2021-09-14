@@ -77,6 +77,19 @@ func _input(event):
 			$RoadNetwork.add_intersection(start_position)
 			$RoadNetwork.add_intersection(mid_position)
 			$RoadNetwork.add_intersection(end_position)
+			if closest_bezier_seg.start_position.connections.size() > 1 and closest_bezier_seg.end_position.connections.size() > 1:
+				var invisible_position_start = create_new_intersection(start_position.position+Vector3(10, 0, 10), current_info)
+				var invisible_position_end = create_new_intersection(end_position.position+Vector3(10, 0, 10), current_info)
+				
+				invisible_position_start.visible = false
+				invisible_position_end.visible = false
+				$RoadNetwork.add_intersection(invisible_position_start)
+				$RoadNetwork.add_intersection(invisible_position_end)
+				var con_1 = $RoadNetwork.connect_intersections(start_position, invisible_position_start, current_info)
+				con_1.visible = false
+				var con_2 = $RoadNetwork.connect_intersections(end_position, invisible_position_end, current_info)
+				con_2.visible = false
+			
 			$RoadNetwork.connect_intersections_with_bezier(start_position, mid_position, end_position, current_info)
 			
 			

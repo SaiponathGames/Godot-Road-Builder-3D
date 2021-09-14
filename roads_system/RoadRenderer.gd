@@ -80,8 +80,6 @@ const RoadSegment = RoadNetwork.RoadSegment
 const RoadBezier = RoadNetwork.RoadBezier
 
 
-var intersection_1 = null
-
 export(NodePath) var immediate_geometry_node_path
 onready var immediate_geometry_node = get_node(immediate_geometry_node_path)
 var surface_tool = SurfaceTool.new()
@@ -97,6 +95,7 @@ func _render_road(road_network):
 	for intersection in road_network.intersections:
 		if intersection.connections.size() > 1:
 			var _sorter = Sorter.new(self, "sort_by_angle", intersection.connections, [intersection])
+			intersection.update_visiblity_connections()
 #	road_network.draw(Color.white, Color.aqua)
 	var vertex_array = {}
 	for intersection in road_network.intersections:
@@ -116,6 +115,10 @@ func _render_road(road_network):
 #	print(road_network.network.values().size())
 #	print(road_network.network.keys())
 	for connection in road_network.network.values():
+		if !(connection.start_position.visible or connection.end_position.visible) or !connection.visible:
+			print('not visible')
+			continue
+		print(connection.start_position.visible, connection.end_position.visible)
 		if connection is RoadBezier:
 			var start_dict = vertex_array[connection.start_position]
 			var middle_dict = vertex_array[connection.middle_position]
@@ -125,8 +128,6 @@ func _render_road(road_network):
 			var middle_connection_intersection = middle_dict[0][connection]
 			var end_connection_intersection = end_dict[0][connection]
 			draw_bezier_connection(surface_tool, start_connection_intersection, middle_connection_intersection, end_connection_intersection)
-			continue
-		if !(connection.start_position.visible or connection.end_position.visible):
 			continue
 		var start_dict = vertex_array[connection.start_position]
 		var end_dict = vertex_array[connection.end_position]
@@ -250,13 +251,15 @@ func draw_bezier_connection(_surface_tool, i1: Dictionary, m_i: Dictionary, i2: 
 #		i2.v1,
 #		i1.v1)
 
-func draw_complete_intersection(_surface_tool, intersection, vertex_data, mid_point_data):
+func draw_complete_intersection(_surface_tool, intersection: RoadIntersection, vertex_data, mid_point_data):
+	print(intersection.visible_connections)
 	if intersection.connections.size() == 1:
 		var v1 = vertex_data[vertex_data.keys()[0]].v1
 		var v2 = vertex_data[vertex_data.keys()[0]].v2
-		var offset_midpoint =  mid_point_data[0]
+		var offset_midpoint = mid_point_data[0]
 		var real_midpoint = (v1 + v2) / 2.0
 		var offset = offset_midpoint - real_midpoint
+		prints(v1, v2, offset_midpoint, offset)
 		draw_curve_triangles(_surface_tool, v1, v1 + offset, offset_midpoint, real_midpoint)
 		draw_curve_triangles(_surface_tool, offset_midpoint, v2 + offset, v2, real_midpoint)
 	elif intersection.connections.size() > 1:
@@ -270,7 +273,7 @@ func draw_complete_intersection(_surface_tool, intersection, vertex_data, mid_po
 
 		var number_of_connections = intersection.connections.size()
 		for connection_idx in number_of_connections:
-			if intersection.connections[connection_idx].road_network_info.width != 0:
+			if intersection.connections[connection_idx].road_network_info.width != 0 and intersection.connections[connection_idx].visible and intersection.connections[(connection_idx+1) % number_of_connections].visible:
 				draw_curve_triangles(_surface_tool,
 					vertex_data[vertex_data.keys()[connection_idx]].v1,
 					mid_point_data[connection_idx],
