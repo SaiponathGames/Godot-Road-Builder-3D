@@ -9,6 +9,16 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Node",
+"class": "GraphResource",
+"language": "GDScript",
+"path": "res://roads_system/Graph.gd"
+}, {
+"base": "Node",
+"class": "GraphResourceNode",
+"language": "GDScript",
+"path": "res://roads_system/GraphNode.gd"
+}, {
 "base": "ResourceFormatLoader",
 "class": "HTerrainDataLoader",
 "language": "GDScript",
@@ -30,6 +40,8 @@ _global_script_classes=[ {
 "path": "res://roads_system/RoadNetwork.gd"
 } ]
 _global_script_class_icons={
+"GraphResource": "",
+"GraphResourceNode": "",
 "HTerrainDataLoader": "",
 "HTerrainDataSaver": "",
 "QuadTreeNode": "",
@@ -50,8 +62,7 @@ MetaStaticFuncs="*res://addons/sairam.quadtree/Meta_Static_Funcs.gd"
 
 [display]
 
-window/size/test_width=300
-window/size/test_height=512
+window/size/fullscreen.release=true
 
 [editor_plugins]
 

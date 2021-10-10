@@ -13,10 +13,10 @@ var enabled = false
 
 func _input(event):
 	if event is InputEventKey:
-		if event.scancode == KEY_T:
+		if event.scancode == KEY_T and event.pressed and !enabled:
 			enabled = true
 			show()
-		if event.scancode == KEY_Y:
+		elif event.scancode == KEY_T and event.pressed and enabled:
 			enabled = false
 			hide()
 			reset()

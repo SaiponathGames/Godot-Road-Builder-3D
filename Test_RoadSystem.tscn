@@ -48,7 +48,7 @@ albedo_color = Color( 1, 1, 0, 0.501961 )
 [node name="HTerrain" type="Spatial" parent="."]
 script = ExtResource( 1 )
 _terrain_data = ExtResource( 5 )
-chunk_size = 32
+chunk_size = 64
 collision_enabled = true
 collision_layer = 1
 collision_mask = 1
@@ -64,17 +64,21 @@ shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 [node name="RoadNetwork" type="Spatial" parent="HTerrain"]
 script = ExtResource( 7 )
 use_astar = true
-use_immediate_geo = false
-immediate_geo_node = NodePath("RoadSystemGeometry")
+immediate_geo_node = NodePath("ImmediateGeometry")
 quad_tree_node_path = NodePath("QuadTreeNode")
 quad_tree_edge_node_path = NodePath("QuadTreeNodeEdges")
 quad_tree_edge_bezier_node_path = NodePath("QuadTreeNodeEdgeBezier")
+auto_clear_when_draw = false
 
-[node name="RoadSystemDrawer" type="MeshInstance" parent="HTerrain/RoadNetwork"]
+[node name="GlobalRoadSystemDrawer" type="MeshInstance" parent="HTerrain/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
 material_override = ExtResource( 6 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../RoadSystemGeometry")
+
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
+material_override = SubResource( 2 )
 
 [node name="RoadSystemGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0 )
@@ -202,7 +206,7 @@ immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSy
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, -0.707107, 0.707107, 0, -0.707107, -0.707107, 0, 0, 0 )
 
-[connection signal="graph_changed" from="HTerrain/RoadNetwork" to="HTerrain/RoadNetwork/RoadSystemDrawer" method="_on_RoadNetwork_graph_changed"]
+[connection signal="graph_changed" from="HTerrain/RoadNetwork" to="HTerrain/RoadNetwork/GlobalRoadSystemDrawer" method="_on_RoadNetwork_graph_changed"]
 [connection signal="graph_changed" from="Tools/RoadTool/RoadNetwork" to="Tools/RoadTool/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
 [connection signal="graph_changed" from="Tools/RoadRemover/RoadNetwork" to="Tools/RoadRemover/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
 [connection signal="graph_changed" from="Tools/RoadUpgrade/RoadNetwork" to="Tools/RoadUpgrade/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]

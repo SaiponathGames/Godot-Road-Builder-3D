@@ -15,10 +15,10 @@ var current_info: RoadNetworkInfo = RoadNetworkInfo.new("test_id", "Test Road", 
 
 func _input(event):
 	if event is InputEventKey:
-		if event.scancode == KEY_G:
+		if event.scancode == KEY_U and event.pressed and !enabled:
 			enabled = true
 			show()
-		if event.scancode == KEY_H:
+		elif event.scancode == KEY_U and event.pressed and enabled:
 			enabled = false
 			hide()
 			reset()
