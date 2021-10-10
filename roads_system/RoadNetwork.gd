@@ -107,7 +107,6 @@ class RoadSegment:
 		var aabb: AABB
 		if int(start_position.position.x) == int(end_position.position.x):
 			if int(start_position.position.z) == int(end_position.position.z):
-				print("is a point")
 				return AABB()
 			else:
 				aabb = AABB(start_position.position + (Vector3(1, 0, 1) * space_around_bounds), Vector3(1, 0, 1))
@@ -154,6 +153,7 @@ class RoadBezier:
 	var road_network_info: RoadNetworkInfo
 	var width = 0.5
 	var visible = true
+	var current_resolution setget set_current_resolution
 	
 	func _init(p_start_position, p_middle_position, p_end_position, p_road_net_info: RoadNetworkInfo, p_road_network: RoadNetwork):
 		self.start_position = p_start_position
@@ -164,13 +164,18 @@ class RoadBezier:
 		calculate_lut()
 		self.distance = get_distance()
 		
-		
+	func set_current_resolution(value):
+		current_resolution = value
+		calculate_lut(value, false)
+	
 	func quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 		var q0 = p0.linear_interpolate(p1, t)
 		var q1 = p1.linear_interpolate(p2, t)
 		return q0.linear_interpolate(q1, t)
-		
+	
 	func get_distance(resolution = 16):
+		if current_resolution != resolution:
+			calculate_lut(resolution, false)
 		var sum = 0
 		var previous_point = start_position.position
 		for point_t in lut:
@@ -179,7 +184,6 @@ class RoadBezier:
 			previous_point = point
 		return sum
 
-		
 	func distance_to(position: Vector3):
 		var closest_point = project_point(position)
 		return closest_point.distance_to(position)
@@ -192,6 +196,9 @@ class RoadBezier:
 		var closest_point = project_point(position)
 		return closest_point.direction_to(position)
 	
+	func get_point(t) -> Vector3:
+		return quadratic_bezier(start_position.position, middle_position.position, end_position.position, t)
+	
 	func get_bounds():
 		var minima = Vector3.INF
 		var maxima = -Vector3.INF
@@ -199,11 +206,10 @@ class RoadBezier:
 			var point = point_t[0]
 			minima = Vector3(min(minima.x, point.x), min(minima.y, point.y), min(minima.z, point.z))
 			maxima = Vector3(max(maxima.x, point.x), max(maxima.y, point.y), max(maxima.z, point.z))
-		print(maxima == minima)
 		var aabb = AABB((minima + maxima)/2, maxima - minima)
 		return aabb
 	
-	func project_point(position):
+	func project_point(position: Vector3, send_time = false):
 		var i = 0
 		var min_dist = INF
 		var k = 0
@@ -214,61 +220,59 @@ class RoadBezier:
 				i = k
 			k += 1
 		
-		return refine_binary(position, i)
+		return refine_binary(position, i, send_time)
 	
-	func refine_binary(point: Vector3, index: int, max_iters = 25, span = 0.001):
+	func refine_binary(point: Vector3, index: int, send_time = false,  max_iters = 25, span = 0.001):
 		var _lut = self.lut.duplicate()
-#		print(_lut, "main lut")
 		var count = 0
 		var dist = INF
 		var point_on_curve = _lut[index][0]
+		var return_t = 0
 		while count < max_iters:
 			var i1 = wrapi(index-1, 0, _lut.size())
 			var i2 = wrapi(index+1, 0, _lut.size())
+			
 			var t1 = _lut[i1][1]
-#			print(_lut[i1])
 			var t2 = _lut[i2][1]
-#			print(t2)
-#			print(t2-t1, "t2-t1")
+			
 			var lut_out = []
 			var step = (t2-t1)/5.0
 			
-#			print("something's going on?")
-#			print(step)
 			if step < span:
-#				print("failing")
 				break
 			
 			lut_out.append(_lut[i1])
 			for j in range(1, 4):
-				var new_point = quadratic_bezier(start_position.position, middle_position.position, end_position.position, t1 + j * step)
+				var test_t = t1 + j * step
+				var new_point = quadratic_bezier(start_position.position, middle_position.position, end_position.position, test_t)
 				var point_dist = point.distance_to(new_point)
-#				print(new_point)
-#				print(point_dist)
 				if point_dist < dist:
 					dist = point_dist
 					point_on_curve = new_point
+					return_t = test_t
+#					prints(return_t, "test")
 					index = j
 				lut_out.append([new_point, t1 + j * step])
 			lut_out.append(_lut[i2])
 			
 			_lut = lut_out.duplicate()
 			count += 1
-#			print(_lut, "new lut")
-#			print(count < max_iters)
-#		print(point_on_curve)
+		if send_time:
+#			print(return_t)
+			return [point_on_curve, return_t]
 		return point_on_curve
 	
 		
 	
-	func calculate_lut(resolution = 20) -> void:
+	func calculate_lut(resolution = 20, change_resolution = true) -> void:
 		var t = 0
 		while t <= 0.9:
 			t += 1/float(resolution)
 			t = clamp(t, 0, 1)
 			var position = quadratic_bezier(start_position.position, middle_position.position, end_position.position, t)
 			lut.append([position, t])
-#			print(position, t)
+		if change_resolution:
+			current_resolution = resolution
 	
 var intersections: Array
 var network: Dictionary
@@ -303,6 +307,7 @@ func _ready():
 		quad_tree_edge_bezier = get_node(quad_tree_edge_bezier_node_path)
 	if use_immediate_geo:
 		immediate_geo = get_node(immediate_geo_node)
+	
 
 func add_intersection(intersection: RoadIntersection, do_update: bool = true):
 	if intersection.road_network == self:
@@ -319,7 +324,6 @@ func add_intersection(intersection: RoadIntersection, do_update: bool = true):
 	intersections.append(intersection)
 	intersection.road_network = self
 	intersection.connect("position_changed", self, "move_intersection", [intersection])
-#	print(_generate_id(intersection), "add")
 	if use_astar:
 		var _intersection_id = _generate_id(intersection.position)
 		astar_intersection_map[_intersection_id] = intersection
@@ -336,15 +340,11 @@ func remove_intersection(intersection: RoadIntersection, check_when_remove = fal
 		push_error("Can't remove intersection, intersection is in different road network.")
 		return
 	
-#	print(_generate_id(intersection), "remove")
 	if intersection.connections:
 		for connection in intersection.connections:
-#			print(connection is RoadBezier)
 			if connection is RoadBezier:
-#				print(are_intersections_connected_with_bezier(connection.start_position, connection.middle_position, connection.end_position))
 				if are_intersections_connected_with_bezier(connection.start_position, connection.middle_position, connection.end_position) or !check_when_remove:
 					disconnect_intersections_with_bezier(connection.start_position, connection.middle_position, connection.end_position)
-#					print("test")
 					continue
 			if are_intersections_connected(connection.start_position, connection.end_position) or !check_when_remove:
 				disconnect_intersections(connection.start_position, connection.end_position, false)
@@ -398,6 +398,78 @@ func split_at_postion(segment: RoadSegment, _position: RoadIntersection, road_ne
 	var first_segment = connect_intersections(segment.start_position, _position, road_net_info, false)
 	var second_segment = connect_intersections(_position, segment.end_position, road_net_info, false)
 	return [first_segment, second_segment]
+
+func hull(segment: RoadBezier, t):
+	var list = []
+	var positions = [segment.start_position.position, segment.middle_position.position, segment.end_position.position]
+	var test_p = []
+	list.append_array(positions)
+	while positions.size() > 1:
+		var _p = []
+		for i in range(positions.size()-1):
+			print(i)
+			var pt = lerp(positions[i], positions[i+1], t)
+			list.append(pt)
+			_p.push_back(pt)
+		positions = _p.duplicate()
+	return list
+	
+
+func split_at_position_with_bezier(segment: RoadBezier, _position: RoadIntersection, road_net_info: RoadNetworkInfo):
+	print("writing", immediate_geo)
+	var t = segment.project_point(_position.position, true)[1]
+	print(t, "failing..")
+	var points = hull(segment, t)
+	print(points)
+	
+	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
+	var previous_point
+	for point in points:
+		if !previous_point:
+			DrawingUtils.draw_line(immediate_geo, previous_point, point, Color.blueviolet)
+		previous_point = point
+
+	immediate_geo.end()
+	for point in points:
+		DrawingUtils.draw_empty_circle(immediate_geo, point, 0.125, Color.red)
+#	DrawingUtils.draw_empty_circle(immediate_geo, p1, 0.125, Color.black)
+#	DrawingUtils.draw_empty_circle(immediate_geo, p2, 0.125, Color.blue)
+#	DrawingUtils.draw_empty_circle(immediate_geo, p3, 0.125, Color.darkblue)
+#	DrawingUtils.draw_empty_circle(immediate_geo, p4, 0.125, Color.violet)
+#	DrawingUtils.draw_empty_circle(immediate_geo, p5, 0.125, Color.magenta)
+#
+#	delete_connection_with_bezier(segment, true, false)
+	var intersection_list = []
+	for point in points:
+		var intersection = road_net_info.create_intersection(point)
+		add_intersection(intersection)
+		intersection_list.append(intersection)
+	emit_signal("graph_changed")
+#	var p1_int = road_net_info.create_intersection(p1)
+#	var p2_int = road_net_info.create_intersection(p2)
+#
+#	var p3_int = road_net_info.create_intersection(p3)
+#	var p4_int = road_net_info.create_intersection(p4)
+#	var p5_int = road_net_info.create_intersection(p5)
+#
+#	add_intersection(p0_int, false)
+#	add_intersection(p1_int, false)
+#	add_intersection(p2_int, false)
+#
+#	add_intersection(p3_int, false)
+#	add_intersection(p4_int, false)
+#	add_intersection(p5_int, false)
+#
+#	connect_intersections_with_bezier(intersection_list[0], intersection_list[1], intersection_list[2], road_net_info)
+#	connect_intersections_with_bezier(p5_int, p4_int, p2_int, road_net_info)
+
+
+func join_segments(segment_1: RoadSegment, segment_2: RoadSegment, network_info: RoadNetworkInfo):
+	disconnect_intersections(segment_1.start_position, segment_1.end_position)
+	disconnect_intersections(segment_2.start_position, segment_2.end_position)
+	var joined_seg = connect_intersections(segment_1.start_position, segment_2.end_position, network_info)
+	return joined_seg
+	
 
 func are_intersections_connected(start_intersection, end_intersection):
 	if start_intersection.road_network != self:
@@ -460,7 +532,7 @@ func are_intersections_connected_with_bezier(start_intersection: RoadIntersectio
 		push_error("Can't connect, please add start_intersection to this road network.")
 		return
 	if middle_intersection.road_network != self:
-		push_error("Can't connect, please add end_intersection to this road network.")
+		push_error("Can't connect, please add middle_intersection to this road network.")
 		return
 	if end_intersection.road_network != self:
 		push_error("Can't connect, please add end_intersection to this road network.")
@@ -568,7 +640,6 @@ func get_closest_bezier_segment(to_position: Vector3, distance: float = 1.5) -> 
 	var aabb = _get_aabb_for_query(to_position)
 	var query = quad_tree_edge_bezier.query(aabb)
 	for object in query:
-#		print(object.get_meta("_connection").distance_to(to_position))
 		if object.has_meta("_connection") and object.get_meta("_connection").distance_to(to_position) < distance:
 			if object.get_meta("_connection").visible:
 				snapped_bezier = object.get_meta("_connection")
@@ -611,9 +682,9 @@ func delete_connection_with_bezier(connection: RoadBezier, clear_orphans: bool =
 func _get_aabb_for_query(position: Vector3, radius: int = 10, height: int = 20) -> AABB:
 	var mesh_inst = MeshInstance.new()
 	var cylinder = CylinderMesh.new()
-	cylinder.top_radius = 10
-	cylinder.bottom_radius = 10
-	cylinder.height = 20
+	cylinder.top_radius = radius
+	cylinder.bottom_radius = radius
+	cylinder.height = height
 	mesh_inst.mesh = cylinder
 	var aabb = mesh_inst.get_aabb()
 	aabb.position.x += position.x

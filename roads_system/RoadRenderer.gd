@@ -90,6 +90,7 @@ func _render_road(road_network):
 	immediate_geometry_node.clear()
 	surface_tool.clear()
 #	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	
 	surface_tool.begin(rendering_mode)
 	# sort the angles
 	for intersection in road_network.intersections:
@@ -107,18 +108,12 @@ func _render_road(road_network):
 		
 		if intersection.visible:
 			draw_complete_intersection(surface_tool, intersection, v1dict[0], v1dict[1])
-#		print(v1dict[0], v1dict[1])
 		vertex_array[intersection] = v1dict
 		
-#	print(vertex_array)
-#	var connection_index = 0
-#	print(road_network.network.values().size())
-#	print(road_network.network.keys())
 	for connection in road_network.network.values():
 		if !(connection.start_position.visible or connection.end_position.visible) or !connection.visible:
-			print('not visible')
 			continue
-		print(connection.start_position.visible, connection.end_position.visible)
+		
 		if connection is RoadBezier:
 			var start_dict = vertex_array[connection.start_position]
 			var middle_dict = vertex_array[connection.middle_position]
@@ -142,13 +137,11 @@ func compute_intersection(p0, angle0, p1, angle1, end_radius) -> Vector3:
 	var midpoint = (p0+p1)/2.0
 	var arc = abs(angle0 - angle1)
 	var midangle = (angle0 + angle1)/2.0
-	# print("angle: ", midangle, ", distance: ", midpoint.distance_to(vert0.v1))
 	var offset = Vector3()
 	if not is_zero_approx(arc):
 		offset = Vector3(sin(midangle), 0, cos(midangle))*midpoint.distance_to(p0)/tan(arc/2)
 	else:
 		offset = Vector3(sin(midangle), 0, cos(midangle))*midpoint.distance_to(p0) * end_radius
-	# print("offset: ", offset)
 	return midpoint - offset
 
 
@@ -175,8 +168,8 @@ func draw_intersection(intersection: RoadIntersection):
 				direction = ((intersection.direction_to(connection.start_position) + connection.end_position.direction_to(intersection))).normalized()
 			var start_point = intersection.position
 			if intersection.connections.size() > 1:
-				start_point += direction * intersection.road_network_info.length
-#				print("anything wrong?", intersection, intersection_bound_for)
+				start_point += direction * (intersection.road_network_info.length + ((connection.road_network_info.width-1)/3) + (pow(intersection.connections.size(), 0.3)/3.0))
+				print(intersection.road_network_info.length + (connection.road_network_info.width-1) + (pow(intersection.connections.size(), 0.3)/3.0))
 			start_points.append(start_point)
 #			DrawingUtils.draw_empty_circle($ImmediateGeometry, start_point, 0.25, Color.yellow)
 			vert["start_position"] = start_point
@@ -224,7 +217,6 @@ func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary,
 		last_v2 = v1
 
 func draw_bezier_connection(_surface_tool, i1: Dictionary, m_i: Dictionary, i2: Dictionary, resolution: int = 20):
-#	print(m_i.v1, m_i.v2)
 	var last_v1 = i1.v1
 	var last_v2 = i1.v2
 	for i in resolution+1:
@@ -252,14 +244,14 @@ func draw_bezier_connection(_surface_tool, i1: Dictionary, m_i: Dictionary, i2: 
 #		i1.v1)
 
 func draw_complete_intersection(_surface_tool, intersection: RoadIntersection, vertex_data, mid_point_data):
-	print(intersection.visible_connections)
+#	if self.name == "GlobalRoadSystemDrawer":
+#		push_warning("%s %s %s %s" % [intersection.visible_connections, intersection.visible_connections.size(), intersection.connections, intersection.connections.size()])
 	if intersection.connections.size() == 1:
 		var v1 = vertex_data[vertex_data.keys()[0]].v1
 		var v2 = vertex_data[vertex_data.keys()[0]].v2
 		var offset_midpoint = mid_point_data[0]
 		var real_midpoint = (v1 + v2) / 2.0
 		var offset = offset_midpoint - real_midpoint
-		prints(v1, v2, offset_midpoint, offset)
 		draw_curve_triangles(_surface_tool, v1, v1 + offset, offset_midpoint, real_midpoint)
 		draw_curve_triangles(_surface_tool, offset_midpoint, v2 + offset, v2, real_midpoint)
 	elif intersection.connections.size() > 1:
