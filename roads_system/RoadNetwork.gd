@@ -59,13 +59,15 @@ class RoadNetworkInfo extends Resource:
 	var length: float = 1
 	var width: float = 0.5
 	var end_radius: float = 0.5
+	var subdivide_length = 5.0
 	
-	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float):
+	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _subdivide_length = 5):
 		self.id = _id
 		self.name = _name
 		self.length = _length
 		self.width = _width
 		self.end_radius = _end_radius
+		self.subdivide_length = _subdivide_length
 	
 	func create_intersection(position: Vector3) -> RoadIntersection:
 		return RoadIntersection.new(position, self)
@@ -381,7 +383,7 @@ func disconnect_intersections(start_intersection: RoadIntersection, end_intersec
 		push_error("Intersections not connected, connect it before disconnecting.")
 		return
 	
-	var segment = network[[start_intersection, end_intersection]]
+	var segment = get_connection(start_intersection, end_intersection)
 	start_intersection.connections.erase(segment)
 	end_intersection.connections.erase(segment)
 	if use_astar:
@@ -399,6 +401,9 @@ func split_at_postion(segment: RoadSegment, _position: RoadIntersection, road_ne
 	var second_segment = connect_intersections(_position, segment.end_position, road_net_info, false)
 	return [first_segment, second_segment]
 
+func _rec_split_at_position(segment: RoadSegment, _position: RoadIntersection, road_net_info: RoadNetworkInfo):
+	pass
+
 func hull(segment: RoadBezier, t):
 	var list = []
 	var positions = [segment.start_position.position, segment.middle_position.position, segment.end_position.position]
@@ -407,7 +412,6 @@ func hull(segment: RoadBezier, t):
 	while positions.size() > 1:
 		var _p = []
 		for i in range(positions.size()-1):
-			print(i)
 			var pt = lerp(positions[i], positions[i+1], t)
 			list.append(pt)
 			_p.push_back(pt)
@@ -423,28 +427,33 @@ func split_at_position_with_bezier(segment: RoadBezier, _position: RoadIntersect
 	print(points)
 	
 	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
-	var previous_point
+	var colors = [Color.darkturquoise, Color.blue, Color.black, Color.darkred, Color.darkgoldenrod, Color.darkgreen]
+	var previous_point = points[0]
+	var i = 0
 	for point in points:
-		if !previous_point:
-			DrawingUtils.draw_line(immediate_geo, previous_point, point, Color.blueviolet)
+		if previous_point != point:
+			print("drawing line", previous_point, point)
+			DrawingUtils.draw_line(immediate_geo, previous_point, point, colors[i])
 		previous_point = point
-
+		i+=1
+	i = 0
 	immediate_geo.end()
 	for point in points:
-		DrawingUtils.draw_empty_circle(immediate_geo, point, 0.125, Color.red)
+		DrawingUtils.draw_empty_circle(immediate_geo, point, 0.125, colors[i])
+		i+=1
 #	DrawingUtils.draw_empty_circle(immediate_geo, p1, 0.125, Color.black)
 #	DrawingUtils.draw_empty_circle(immediate_geo, p2, 0.125, Color.blue)
 #	DrawingUtils.draw_empty_circle(immediate_geo, p3, 0.125, Color.darkblue)
 #	DrawingUtils.draw_empty_circle(immediate_geo, p4, 0.125, Color.violet)
 #	DrawingUtils.draw_empty_circle(immediate_geo, p5, 0.125, Color.magenta)
 #
-#	delete_connection_with_bezier(segment, true, false)
-	var intersection_list = []
-	for point in points:
-		var intersection = road_net_info.create_intersection(point)
-		add_intersection(intersection)
-		intersection_list.append(intersection)
-	emit_signal("graph_changed")
+	delete_connection_with_bezier(segment, true, false)
+#	var intersection_list = []
+#	for point in points:
+#		var intersection = road_net_info.create_intersection(point)
+#		add_intersection(intersection)
+#		intersection_list.append(intersection)
+#	emit_signal("graph_changed")
 #	var p1_int = road_net_info.create_intersection(p1)
 #	var p2_int = road_net_info.create_intersection(p2)
 #
@@ -459,8 +468,24 @@ func split_at_position_with_bezier(segment: RoadBezier, _position: RoadIntersect
 #	add_intersection(p3_int, false)
 #	add_intersection(p4_int, false)
 #	add_intersection(p5_int, false)
-#
-#	connect_intersections_with_bezier(intersection_list[0], intersection_list[1], intersection_list[2], road_net_info)
+	var left_intersection_list = []
+	for _i in [0, 3, 5]:
+		var intersection = road_net_info.create_intersection(points[_i])
+		if _i == 3:
+			intersection.visible = false
+		add_intersection(intersection, false)
+		left_intersection_list.append(intersection)
+	print(left_intersection_list)
+	var right_intersection_list = []
+	for _i in [2, 4, 5]:
+		var intersection = road_net_info.create_intersection(points[_i])
+		if _i == 4:
+			intersection.visible = false
+		add_intersection(intersection, false)
+		right_intersection_list.append(intersection)
+	
+	
+	connect_intersections_with_bezier(left_intersection_list[0], left_intersection_list[1], left_intersection_list[2], road_net_info, false)
 #	connect_intersections_with_bezier(p5_int, p4_int, p2_int, road_net_info)
 
 
@@ -485,7 +510,8 @@ func connect_intersections(start_intersection: RoadIntersection, end_intersectio
 		push_error("Intersections already connected, disconnect the intersection and reconnect again.")
 	
 	var segment = RoadSegment.new(start_intersection, end_intersection, self, road_net_info)
-	network[[start_intersection, end_intersection]] = segment
+	_set_connection(start_intersection, end_intersection, segment)
+	subdivide_intersections(start_intersection, end_intersection, road_net_info)
 	start_intersection.connections.append(segment)
 	end_intersection.connections.append(segment)
 	if use_astar and _generate_id(start_intersection.position) != _generate_id(end_intersection.position):
@@ -496,7 +522,27 @@ func connect_intersections(start_intersection: RoadIntersection, end_intersectio
 		segment.set_meta("_qt_edge", qt_edge)
 	if do_update:
 		emit_signal("graph_changed")
-	return network[[start_intersection, end_intersection]]
+	return get_connection(start_intersection, end_intersection)
+
+func _rec_connect_intersections(start_intersection: RoadIntersection, end_intersection: RoadIntersection, road_net_info: RoadNetworkInfo, do_update: bool = true, recursive_count: int = 0):
+	if are_intersections_connected(start_intersection, end_intersection):
+		push_error("Intersections already connected, disconnect the intersection and reconnect again.")
+	if recursive_count == 4:
+		return
+	var segment = RoadSegment.new(start_intersection, end_intersection, self, road_net_info)
+	_set_connection(start_intersection, end_intersection, segment)
+	subdivide_intersections(start_intersection, end_intersection, road_net_info)
+	start_intersection.connections.append(segment)
+	end_intersection.connections.append(segment)
+	if use_astar and _generate_id(start_intersection.position) != _generate_id(end_intersection.position):
+		astar.connect_points(_generate_id(start_intersection.position), _generate_id(end_intersection.position))
+	if use_quad_tree:
+		var qt_edge = _create_quad_tree_edge(segment)
+		quad_tree_edge.add_body(qt_edge, qt_edge.get_meta("_aabb"))
+		segment.set_meta("_qt_edge", qt_edge)
+	if do_update:
+		emit_signal("graph_changed")
+	return get_connection(start_intersection, end_intersection)
 
 func find_path(start_intersection, end_intersection):
 	if use_astar:
@@ -518,7 +564,7 @@ func connect_intersections_with_bezier(start_intersection: RoadIntersection, mid
 	middle_intersection.visible = false
 	middle_intersection.connections.append(segment)
 	
-	network[[start_intersection, middle_intersection, end_intersection]] = segment
+	_set_connection_with_bezier(start_intersection, middle_intersection, end_intersection, segment)
 	if use_quad_tree:
 		var _qt_bedge = _create_quad_tree_edge(segment)
 		quad_tree_edge_bezier.add_body(_qt_bedge, _qt_bedge.get_meta("_aabb"))
@@ -542,7 +588,7 @@ func are_intersections_connected_with_bezier(start_intersection: RoadIntersectio
 func disconnect_intersections_with_bezier(start_intersection: RoadIntersection, middle_intersection: RoadIntersection, end_intersection: RoadIntersection, do_update: bool = true):
 	if !are_intersections_connected_with_bezier(start_intersection, middle_intersection, end_intersection):
 		push_error("Intersections not connected, connect it before disconnecting.")
-	var segment = network[[start_intersection, middle_intersection, end_intersection]]
+	var segment = get_connection_with_bezier(start_intersection, middle_intersection, end_intersection)
 	start_intersection.connections.erase(segment)
 	middle_intersection.connections.erase(segment)
 	end_intersection.connections.erase(segment)
@@ -560,7 +606,7 @@ func upgrade_bezier_connection(start_intersection: RoadIntersection, middle_inte
 	
 	if do_update:
 		emit_signal("graph_changed")
-	return network[[start_intersection, middle_intersection, end_intersection]]
+	return get_connection_with_bezier(start_intersection, middle_intersection, end_intersection)
 
 func upgrade_connection(start_intersection: RoadIntersection, end_intersection: RoadIntersection, new_road_net_info: RoadNetworkInfo, do_update: bool = true):
 	if !are_intersections_connected(start_intersection, end_intersection):
@@ -570,12 +616,23 @@ func upgrade_connection(start_intersection: RoadIntersection, end_intersection: 
 	
 	if do_update:
 		emit_signal("graph_changed")
-	return network[[start_intersection, end_intersection]]
+	return get_connection(start_intersection, end_intersection)
 
 func _generate_id(road_intersection: Vector3):
 	var _position: Vector3 = road_intersection
 #	_position -= Vector3(-4096, -4096, -4096)
 	return int((_position.x + _position.y + _position.z))
+
+func subdivide_intersections(start_intersection: RoadIntersection, end_intersection: RoadIntersection, road_net_info: RoadNetworkInfo):
+	var segment = get_connection(start_intersection, end_intersection)
+	if segment.distance > road_net_info.subdivide_length:
+		# find position at distance from start
+		var t = range_lerp(road_net_info.subdivide_length, 0, segment.distance, 0, 1.0)
+		var position = road_net_info.create_intersection(start_intersection.linear_interpolate(end_intersection, t))
+		add_intersection(position, false)
+		var segments = split_at_postion(segment, position, road_net_info)
+		print(segments)
+		
 
 #	var visited = [end_intersection]
 #	var segment
@@ -645,6 +702,21 @@ func get_closest_bezier_segment(to_position: Vector3, distance: float = 1.5) -> 
 				snapped_bezier = object.get_meta("_connection")
 	return snapped_bezier
 	
+func get_connection(start_intersection: RoadIntersection, end_intersection: RoadIntersection) -> RoadSegment:
+	if are_intersections_connected(start_intersection, end_intersection):
+		return network[[start_intersection, end_intersection]]
+	return null
+
+func _set_connection(start_intersection: RoadIntersection, end_intersection: RoadIntersection, connection: RoadSegment):
+	network[[start_intersection, end_intersection]] = connection
+
+func get_connection_with_bezier(start_intersection: RoadIntersection, middle_intersection: RoadIntersection, end_intersection: RoadIntersection) -> RoadBezier:
+	if are_intersections_connected_with_bezier(start_intersection, middle_intersection, end_intersection):
+		return network[[start_intersection, middle_intersection, end_intersection]]
+	return null
+
+func _set_connection_with_bezier(start_intersection: RoadIntersection, middle_intersection: RoadIntersection, end_intersection: RoadIntersection, connection: RoadSegment):
+	network[[start_intersection, middle_intersection, end_intersection]] = connection
 
 func clear(do_update: bool = true):
 	if use_astar:

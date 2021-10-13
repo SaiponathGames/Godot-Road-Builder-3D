@@ -60,10 +60,6 @@ DrawingUtils="*res://drawing_tools/DrawingUtils.gd"
 AABBUtils="*res://addons/sairam.quadtree/AABBUtils.gd"
 MetaStaticFuncs="*res://addons/sairam.quadtree/Meta_Static_Funcs.gd"
 
-[display]
-
-window/size/fullscreen.release=true
-
 [editor_plugins]
 
 enabled=PoolStringArray( "res://addons/sairam.quadtree/plugin.cfg", "res://addons/zylann.hterrain/plugin.cfg" )

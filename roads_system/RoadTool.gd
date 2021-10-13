@@ -128,7 +128,7 @@ func _input(event):
 						elif _end_segment is RoadBezier:
 							world_road_network.split_at_position_with_bezier(_end_segment, end_intersection, _end_segment.road_network_info)
 					if start_intersection.position != end_intersection.position and !is_curve_tool_on:
-						var connection = world_road_network.connect_intersections(start_intersection, end_intersection, current_info)
+						world_road_network.connect_intersections(start_intersection, end_intersection, current_info)
 #						print(connection.get_bounds())
 					if middle_intersection and is_curve_tool_on:
 						world_road_network.connect_intersections_with_bezier(start_intersection, middle_intersection, end_intersection, current_info)
