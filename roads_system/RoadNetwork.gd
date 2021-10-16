@@ -275,6 +275,11 @@ class RoadBezier:
 			lut.append([position, t])
 		if change_resolution:
 			current_resolution = resolution
+#
+#class RoadLane:
+#	enum Direction {FORWARD, BACKWARD}
+#	var direction
+	
 	
 var intersections: Array
 var network: Dictionary
@@ -511,7 +516,7 @@ func connect_intersections(start_intersection: RoadIntersection, end_intersectio
 	
 	var segment = RoadSegment.new(start_intersection, end_intersection, self, road_net_info)
 	_set_connection(start_intersection, end_intersection, segment)
-	subdivide_intersections(start_intersection, end_intersection, road_net_info)
+#	subdivide_intersections(start_intersection, end_intersection, road_net_info)
 	start_intersection.connections.append(segment)
 	end_intersection.connections.append(segment)
 	if use_astar and _generate_id(start_intersection.position) != _generate_id(end_intersection.position):
