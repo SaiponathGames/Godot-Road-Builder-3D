@@ -71,3 +71,14 @@ func draw_curve_triangles(immediate_geo: ImmediateGeometry, p0: Vector3, mp: Vec
 			center,
 			color)
 		last_point = new_point
+
+func draw_box(immediate_geo: ImmediateGeometry, position: Vector3, extents: Vector3, color: Color = Color.skyblue):
+#	immediate_geo.add_vertex(Vector3(position.x+extents.x, position.y, position.z+extents.z))
+	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
+	immediate_geo.set_color(color)
+	immediate_geo.add_vertex(position)
+	immediate_geo.set_color(color)
+	immediate_geo.add_vertex(Vector3(position.x+extents.x, position.y+extents.y, position.z+extents.z))
+	immediate_geo.set_color(color)
+	immediate_geo.add_vertex(Vector3(position.x-extents.x, position.y+extents.y, position.z+extents.z))
+	immediate_geo.end()

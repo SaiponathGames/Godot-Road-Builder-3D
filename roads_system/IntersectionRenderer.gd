@@ -20,28 +20,28 @@ func _ready():
 	road_network.immediate_geo_node = $ImmediateGeometry.get_path()
 	add_child(road_network)
 	
-	var intersect_1 = RoadIntersection.new(Vector3(2, 0, 3) * 5, [])
-	var intersect_2 = RoadIntersection.new(Vector3(6, 0, 5.3) * 3, [])
-	var intersect_3 = RoadIntersection.new(Vector3(5, 0, 3) * 3, [])
-	var intersect_4 = RoadIntersection.new(Vector3(3, 0, 8) * 3, [])
-	var intersect_5 = RoadIntersection.new(Vector3(5, 0, -2) * 3, [])
-	var intersect_6 = RoadIntersection.new(Vector3(16.3, 0, 18) * 3, [])
-
-	road_network.add_intersection(intersect_1)
-	road_network.add_intersection(intersect_2)
-	road_network.add_intersection(intersect_3)
-	road_network.add_intersection(intersect_4)
-#	road_network.add_intersection(intersect_5)
-#	road_network.add_intersection(intersect_6)
-
-	road_network.connect_intersections(intersect_1, intersect_2)
-	road_network.connect_intersections(intersect_2, intersect_3)
-	road_network.connect_intersections(intersect_1, intersect_4)
-#	road_network.connect_intersections(intersect_3, intersect_5)
-#	road_network.connect_intersections(intersect_4, intersect_5)
-#	road_network.connect_intersections(intersect_5, intersect_6)
-#	road_network.connect_intersections(intersect_3, intersect_6)
-	
+#	var intersect_1 = RoadIntersection.new(Vector3(2, 0, 3) * 5, [])
+#	var intersect_2 = RoadIntersection.new(Vector3(6, 0, 5.3) * 3, [])
+#	var intersect_3 = RoadIntersection.new(Vector3(5, 0, 3) * 3, [])
+#	var intersect_4 = RoadIntersection.new(Vector3(3, 0, 8) * 3, [])
+#	var intersect_5 = RoadIntersection.new(Vector3(5, 0, -2) * 3, [])
+#	var intersect_6 = RoadIntersection.new(Vector3(16.3, 0, 18) * 3, [])
+#
+#	road_network.add_intersection(intersect_1)
+#	road_network.add_intersection(intersect_2)
+#	road_network.add_intersection(intersect_3)
+#	road_network.add_intersection(intersect_4)
+##	road_network.add_intersection(intersect_5)
+##	road_network.add_intersection(intersect_6)
+#
+#	road_network.connect_intersections(intersect_1, intersect_2)
+#	road_network.connect_intersections(intersect_2, intersect_3)
+#	road_network.connect_intersections(intersect_1, intersect_4)
+##	road_network.connect_intersections(intersect_3, intersect_5)
+##	road_network.connect_intersections(intersect_4, intersect_5)
+##	road_network.connect_intersections(intersect_5, intersect_6)
+##	road_network.connect_intersections(intersect_3, intersect_6)
+#
 	# sort the angles
 	for intersection in road_network.intersections:
 		if intersection.connections.size() > 1:

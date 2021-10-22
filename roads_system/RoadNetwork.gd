@@ -3,6 +3,8 @@ class_name RoadNetwork
 
 signal graph_changed()
 
+enum Direction {FORWARD, BACKWARD}
+
 class RoadIntersection:
 	
 	signal position_changed(before_position, position)
@@ -53,15 +55,15 @@ class RoadIntersection:
 		return self.position.angle_to(to_intersection.position)
 
 class RoadNetworkInfo extends Resource:
-	var name: String
-	var id: String
-	var lanes = [] # planned feature
-	var length: float = 1
-	var width: float = 0.5
-	var end_radius: float = 0.5
-	var subdivide_length = 5.0
+	export var name: String
+	export var id: String
+	export var lanes = [] # Array[RoadLaneInfo]
+	export var length: float = 1
+	export var width: float = 0.5
+	export var end_radius: float = 0.5
+	export var subdivide_length = 5.0
 	
-	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _subdivide_length = 5):
+	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _subdivide_length = 5, lanes = []):
 		self.id = _id
 		self.name = _name
 		self.length = _length
@@ -79,6 +81,7 @@ class RoadSegment:
 	
 	var road_network: RoadNetwork
 	var road_network_info: RoadNetworkInfo
+	var lanes = [] # Array[RoadLanes]
 	var width = 0.5
 	var visible = true
 	
@@ -89,6 +92,11 @@ class RoadSegment:
 		self.road_network_info = _road_net_info
 		self.width = road_network_info.width
 		self.distance = start_position.distance_to(end_position)
+		self.instance_lanes()
+	
+	func instance_lanes():
+		for lane in self.road_network_info.lanes:
+			lanes.append(lane.instance(self))
 	
 	func distance_to(to_position: Vector3):
 		var closest_point = project_point(to_position)
@@ -275,10 +283,39 @@ class RoadBezier:
 			lut.append([position, t])
 		if change_resolution:
 			current_resolution = resolution
-#
-#class RoadLane:
-#	enum Direction {FORWARD, BACKWARD}
-#	var direction
+
+class RoadLane:
+	var lane_info: RoadLaneInfo
+	var segment: RoadSegment
+	
+	var start_point: RoadIntersection
+	var end_point: RoadIntersection
+	
+	var road_network: RoadNetwork
+	
+	func _init(_lane_info: RoadLaneInfo, _segment: RoadSegment):
+		self.segment = _segment
+		self.start_point = _segment.start_position
+		self.end_point = _segment.end_position
+		self.road_network = _segment.road_network
+	
+class RoadLaneInfo extends Resource:
+	export var direction: int = Direction.FORWARD
+	export var width: float
+	export var offset: float
+	
+	func _init(_direction, _width, _offset):
+		self.direction = _direction
+		self.width = _width
+		self.offset = _offset
+	
+	func instance(_segment: RoadSegment):
+		return RoadLane.new(self, _segment)
+		
+
+class RoadLaneIntersection:
+	var out_lanes: Array = [] # Array[RoadLane]
+	var in_lanes = [] # Array[RoadLane]
 	
 	
 var intersections: Array

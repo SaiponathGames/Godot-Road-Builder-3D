@@ -5,6 +5,8 @@ export(NodePath) var road_network_path
 onready var road_network = get_node(road_network_path) as RoadNetwork
 export(NodePath) var buildings_path
 onready var buildings = get_node(buildings_path)
+export(NodePath) var quad_tree_path
+onready var quad_tree = get_node(quad_tree_path)
 
 var ghost_instance: Spatial
 var enabled
@@ -64,6 +66,7 @@ func _input(event):
 	
 	if event is InputEventMouseButton:
 		if current_building and event.button_index == BUTTON_LEFT and event.pressed:
+			
 			var building_point = _cast_ray_to(event.position)
 			if is_vec_nan(building_point):
 				return
@@ -88,6 +91,9 @@ func _input(event):
 				var new_building = current_building.instance()
 				buildings.add_child(new_building)
 				new_building.global_transform = building_transform
+				quad_tree.add_body(new_building, new_building.get_aabb())
+				var expanded_aabb = new_building.get_aabb().grow(0.45)
+				DrawingUtils.draw_box($"ImmediateGeometry", point, expanded_aabb.size/2)
 	
 # attempt - 1: failed
 #var building_transform = Transform.IDENTITY

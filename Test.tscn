@@ -11,10 +11,8 @@ extents = Vector3( 3.079, 2.348, 3.109 )
 
 [node name="QuadTreeNode" type="Spatial" parent="."]
 script = ExtResource( 1 )
-bounds = AABB( 0.962, 0, 1.134, 0, 0, 10 )
 
 [node name="Particles" type="Particles" parent="QuadTreeNode"]
-visible = false
 visibility_aabb = AABB( -5.85627, -5.04551, -6.59382, 11.7125, 10.091, 13.1876 )
 process_material = SubResource( 1 )
 

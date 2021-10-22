@@ -7,6 +7,7 @@ const RoadIntersection = RoadNetwork.RoadIntersection
 const RoadSegment = RoadNetwork.RoadSegment
 const RoadBezier = RoadNetwork.RoadBezier
 const RoadNetworkInfo = RoadNetwork.RoadNetworkInfo
+const RoadLaneInfo = RoadNetwork.RoadLaneInfo
 
 var _snapped: RoadIntersection
 var _snapped_segment
@@ -49,7 +50,7 @@ func _input(event):
 			is_curve_tool_on = false
 		
 		if event.scancode == KEY_1:
-			current_info = RoadNetworkInfo.new("test_id", "Test Road", 1, 0.5, 1)
+			current_info = RoadNetworkInfo.new("test_id", "Test Road", 1, 0.5, 1, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
 		if event.scancode == KEY_2:
 			current_info = RoadNetworkInfo.new("test_id_2", "Test Road 2", 1, 1, 1)
 		if event.scancode == KEY_3:

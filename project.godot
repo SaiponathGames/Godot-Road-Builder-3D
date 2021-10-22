@@ -9,6 +9,11 @@
 config_version=4
 
 _global_script_classes=[ {
+"base": "Spatial",
+"class": "BuildingInstance",
+"language": "GDScript",
+"path": "res://building_system/building_instance.gd"
+}, {
 "base": "Resource",
 "class": "BuildingType",
 "language": "GDScript",
@@ -45,6 +50,7 @@ _global_script_classes=[ {
 "path": "res://roads_system/RoadNetwork.gd"
 } ]
 _global_script_class_icons={
+"BuildingInstance": "",
 "BuildingType": "",
 "GraphResource": "",
 "GraphResourceNode": "",
