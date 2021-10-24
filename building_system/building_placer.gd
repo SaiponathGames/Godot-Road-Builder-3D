@@ -21,6 +21,7 @@ func _input(event):
 			elif !enabled:
 				if ghost_instance:
 					buildings.remove_child(ghost_instance)
+					ghost_instance.queue_free()
 	if !enabled:
 		return
 	if event is InputEventKey:
@@ -28,6 +29,7 @@ func _input(event):
 			current_building = BuildingType.new("test_id", "Test Name", load("res://models/building1.tscn"))
 			if ghost_instance:
 				buildings.remove_child(ghost_instance)
+				ghost_instance.queue_free()
 			ghost_instance = current_building.instance()
 			buildings.add_child(ghost_instance)
 
@@ -92,8 +94,13 @@ func _input(event):
 				buildings.add_child(new_building)
 				new_building.global_transform = building_transform
 				quad_tree.add_body(new_building, new_building.get_aabb())
-				var expanded_aabb = new_building.get_aabb().grow(0.45)
-				DrawingUtils.draw_box($"ImmediateGeometry", point, expanded_aabb.size/2)
+				var expanded_aabb = new_building.get_aabb()
+				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb)
+
+func _process(delta):
+	print("------------------------------------------")
+	print_stray_nodes()
+	print("-------------------------------------------")
 	
 # attempt - 1: failed
 #var building_transform = Transform.IDENTITY

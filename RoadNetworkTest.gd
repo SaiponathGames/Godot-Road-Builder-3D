@@ -1,16 +1,77 @@
+tool
 extends MeshInstance
 
 
+# 	surface_tool.add_vertex(Vector3(0, 0, 0))
+#	surface_tool.add_vertex(Vector3(1, 0, 0))
+#	surface_tool.add_vertex(Vector3(1, 0, 1))
+#	surface_tool.add_vertex(Vector3(0, 0, 1))
+#	surface_tool.add_vertex(Vector3(0, 1, 0))
+#	surface_tool.add_vertex(Vector3(1, 1, 0))
+#	surface_tool.add_vertex(Vector3(1, 1, 1))
+#	surface_tool.add_vertex(Vector3(0, 1, 1))
+
 func _ready():
-	var arr = []
-	arr.resize(ArrayMesh.ARRAY_MAX)
-	var vertices = PoolVector3Array([Vector3(0, 0, 0), Vector3(0, 0, 1), Vector3(1, 0, 1), Vector3(1, 0, 0)])
-	var indices = PoolIntArray([3, 1, 0, 2, 1, 3])
-	var uvs = PoolVector2Array([Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0)])
-	arr[ArrayMesh.ARRAY_VERTEX] = vertices
-	arr[ArrayMesh.ARRAY_INDEX] = indices
-	arr[ArrayMesh.ARRAY_TEX_UV] = uvs
+	var surface_tool = SurfaceTool.new()
+	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	surface_tool.add_vertex(Vector3(0, 0, 0))
+	surface_tool.add_vertex(Vector3(1, 0, 0))
+	surface_tool.add_vertex(Vector3(1, 0, 1))
+	surface_tool.add_vertex(Vector3(0, 0, 0))
 	
-	(mesh as ArrayMesh).add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arr)
+	surface_tool.add_vertex(Vector3(0, 1, 1))
+	surface_tool.add_vertex(Vector3(0, 1, 0))
+	surface_tool.add_vertex(Vector3(0, 0, 0))
+	
+	surface_tool.add_vertex(Vector3(0, 0, 1))
+	surface_tool.add_vertex(Vector3(0, 1, 0))
+	surface_tool.add_vertex(Vector3(1, 1, 0))
+	surface_tool.add_vertex(Vector3(1, 1, 1))
+	surface_tool.add_vertex(Vector3(0, 1, 1))
+	
+	surface_tool.add_index(0)
+	surface_tool.add_index(1)
+	surface_tool.add_index(3)
+	surface_tool.add_index(3)
+	surface_tool.add_index(1)
+	surface_tool.add_index(2)
+	
+	surface_tool.add_index(3 + 4 * 1)
+	surface_tool.add_index(1 + 4 * 1)
+	surface_tool.add_index(0 + 4 * 1)
+	surface_tool.add_index(3 + 4 * 1)
+	surface_tool.add_index(2 + 4 * 1)
+	surface_tool.add_index(1 + 4 * 1)
+	
+	surface_tool.add_index(3 + 4 * 2)
+	surface_tool.add_index(1 + 4 * 2)
+	surface_tool.add_index(0 + 4 * 2)
+	surface_tool.add_index(3 + 4 * 2)
+	surface_tool.add_index(2 + 4 * 2)
+	surface_tool.add_index(1 + 4 * 2)
+	
+	surface_tool.add_index(3 + 4 * 3)
+	surface_tool.add_index(1 + 4 * 3)
+	surface_tool.add_index(0 + 4 * 3)
+	surface_tool.add_index(3 + 4 * 3)
+	surface_tool.add_index(2 + 4 * 3)
+	surface_tool.add_index(1 + 4 * 3)
+	
+	surface_tool.add_index(3 + 4 * 4)
+	surface_tool.add_index(1 + 4 * 4)
+	surface_tool.add_index(0 + 4 * 4)
+	surface_tool.add_index(3 + 4 * 4)
+	surface_tool.add_index(2 + 4 * 4)
+	surface_tool.add_index(1 + 4 * 4)
+	
+	surface_tool.add_index(3 + 4 * 5)
+	surface_tool.add_index(1 + 4 * 5)
+	surface_tool.add_index(0 + 4 * 5)
+	surface_tool.add_index(3 + 4 * 5)
+	surface_tool.add_index(2 + 4 * 5)
+	surface_tool.add_index(1 + 4 * 5)
+	
+	surface_tool.commit(mesh)
 
 # 0, 1, 3, 3, 1, 2
+# 3, 1, 0, 2, 1, 3

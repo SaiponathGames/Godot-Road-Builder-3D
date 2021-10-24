@@ -17,7 +17,7 @@ func get_edge(aabb: AABB, edge: int) -> Array:
 				Vector3(aabb.position.x, aabb.position.y, aabb.end.z)]
 		4:
 			return [Vector3(aabb.position.x, aabb.end.y, aabb.position.z),
-				Vector3(aabb.end.x, aabb.position.y, aabb.position.z)]
+				Vector3(aabb.end.x, aabb.end.y, aabb.position.z)]
 		5:
 			return [Vector3(aabb.end.x, aabb.end.y, aabb.position.z), 
 				Vector3(aabb.end.x, aabb.end.y, aabb.end.z)]
@@ -39,4 +39,5 @@ func get_edge(aabb: AABB, edge: int) -> Array:
 		11:
 			return [Vector3(aabb.end.x, aabb.position.y, aabb.end.z), 
 				Vector3(aabb.end.x, aabb.end.y, aabb.end.z)]
+				
 	return [Vector3(NAN, NAN, NAN), Vector3(NAN, NAN, NAN)]

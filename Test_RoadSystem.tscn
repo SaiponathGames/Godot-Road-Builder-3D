@@ -30,11 +30,11 @@ flags_unshaded = true
 vertex_color_use_as_albedo = true
 albedo_color = Color( 1, 0, 0, 1 )
 
-[sub_resource type="SpatialMaterial" id=5]
+[sub_resource type="SpatialMaterial" id=4]
 flags_transparent = true
 albedo_color = Color( 0, 1, 1, 0.501961 )
 
-[sub_resource type="SpatialMaterial" id=6]
+[sub_resource type="SpatialMaterial" id=5]
 flags_transparent = true
 albedo_color = Color( 1, 1, 0, 0.501961 )
 
@@ -134,6 +134,7 @@ panning/enabled = false
 edge_scroll/detection_area = 0.01
 edge_scroll/speed = 1.1
 movement/speed = 1.1
+tilting/max_angle = 90.0
 zooming/min_distance = 2.0
 looking/speed = 9.2
 perspective_panning/enabled = true
@@ -152,7 +153,7 @@ immediate_geo_node = NodePath("ImmediateGeometry")
 use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadTool/RoadNetwork"]
-material_override = SubResource( 5 )
+material_override = SubResource( 4 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -185,7 +186,7 @@ use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadRemover/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0 )
-material_override = SubResource( 6 )
+material_override = SubResource( 5 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -200,7 +201,7 @@ use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadUpgrade/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0 )
-material_override = SubResource( 5 )
+material_override = SubResource( 4 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 

@@ -75,10 +75,56 @@ func draw_curve_triangles(immediate_geo: ImmediateGeometry, p0: Vector3, mp: Vec
 func draw_box(immediate_geo: ImmediateGeometry, position: Vector3, extents: Vector3, color: Color = Color.skyblue):
 #	immediate_geo.add_vertex(Vector3(position.x+extents.x, position.y, position.z+extents.z))
 	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
-	immediate_geo.set_color(color)
-	immediate_geo.add_vertex(position)
-	immediate_geo.set_color(color)
-	immediate_geo.add_vertex(Vector3(position.x+extents.x, position.y+extents.y, position.z+extents.z))
-	immediate_geo.set_color(color)
-	immediate_geo.add_vertex(Vector3(position.x-extents.x, position.y+extents.y, position.z+extents.z))
+	var aabb = AABB(-extents+position, extents*2)
+	for i in range(12):
+		for point in AABBUtils.get_edge(aabb, i):
+			immediate_geo.set_color(color)
+			immediate_geo.add_vertex(point)
+#	var v0 = Vector3(-extents.x, -extents.y, extents.z) + position
+#	var v1 = Vector3(extents.x, -extents.y, extents.z) + position
+#	var v2 = Vector3(extents.x, -extents.y, -extents.z) + position
+#	var v3 = Vector3(-extents.x, -extents.y, -extents.z) + position 
+#	var v4 = Vector3(-extents.x, extents.y, extents.z) + position
+#	var v5 = Vector3(extents.x, extents.y, extents.z) + position
+#	var v6 = Vector3(extents.x, extents.y, -extents.z) + position
+#	var v7 = Vector3(-extents.x, extents.y, -extents.z) + position
+#
+#	var vertices = [
+#		v0, v1, v2, v0, 
+#		v7, v4, v0, v3,
+#		v4, v5, v1, v0, 
+#		v6, v7, v3, v2,
+#		v5, v6, v2, v1,
+#		v7, v6, v5, v4,
+#	]
+#	var up = Vector3.UP
+#	var down = Vector3.DOWN
+#	var front = Vector3.FORWARD
+#	var back = Vector3.BACK
+#	var left = Vector3.LEFT
+#	var right = Vector3.RIGHT
+#
+#	var normals = [
+#		down, down, down, down,
+#		left, left, left, left,
+#		front, front, front, front,
+#		back, back, back, back,
+#		right, right, right, right,
+#		up, up, up, up
+#	]
+#	for i in range(24):
+#		immediate_geo.set_color(color)
+#		immediate_geo.set_normal(normals[i])
+#		immediate_geo.add_vertex(vertices[i])
+#
+#	for i in range(6):
+#		immediate_geo
+	immediate_geo.end()
+
+func draw_box_with_aabb(immediate_geo: ImmediateGeometry, aabb: AABB, color: Color = Color.skyblue):
+	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
+	for i in range(12):
+		for point in AABBUtils.get_edge(aabb, i):
+			immediate_geo.set_color(color)
+			immediate_geo.add_vertex(point)
 	immediate_geo.end()
