@@ -757,7 +757,7 @@ func get_connection_with_bezier(start_intersection: RoadIntersection, middle_int
 		return network[[start_intersection, middle_intersection, end_intersection]]
 	return null
 
-func _set_connection_with_bezier(start_intersection: RoadIntersection, middle_intersection: RoadIntersection, end_intersection: RoadIntersection, connection: RoadSegment):
+func _set_connection_with_bezier(start_intersection: RoadIntersection, middle_intersection: RoadIntersection, end_intersection: RoadIntersection, connection: RoadBezier):
 	network[[start_intersection, middle_intersection, end_intersection]] = connection
 
 func clear(do_update: bool = true):
