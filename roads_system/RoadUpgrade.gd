@@ -6,6 +6,7 @@ onready var world_road_network: RoadNetwork = get_node(world_road_network_node) 
 const RoadIntersection = RoadNetwork.RoadIntersection
 const RoadSegment = RoadNetwork.RoadSegment
 const RoadNetworkInfo = RoadNetwork.RoadNetworkInfo
+const RoadLaneInfo = RoadNetwork.RoadLaneInfo
 
 var _snapped_segment
 
@@ -34,7 +35,9 @@ func _input(event):
 			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 2, 1, 1)
 		if event.scancode == KEY_5:
 			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 1, 1, 1.5)
-		
+		if event.scancode == KEY_6:
+			current_info = RoadNetworkInfo.new("test_id_5", "Test Road 5", 0.25, 0.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
+			
 		
 	if !enabled:
 		return

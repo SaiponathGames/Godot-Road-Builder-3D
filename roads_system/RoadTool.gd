@@ -50,7 +50,7 @@ func _input(event):
 			is_curve_tool_on = false
 		
 		if event.scancode == KEY_1:
-			current_info = RoadNetworkInfo.new("test_id", "Test Road", 1, 0.5, 1, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
+			current_info = RoadNetworkInfo.new("test_id", "Test Road", 1, 0.5, 1, 0.2, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
 		if event.scancode == KEY_2:
 			current_info = RoadNetworkInfo.new("test_id_2", "Test Road 2", 1, 1, 1)
 		if event.scancode == KEY_3:
@@ -59,6 +59,9 @@ func _input(event):
 			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 2, 1, 1)
 		if event.scancode == KEY_5:
 			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 1, 1, 1.5)
+		if event.scancode == KEY_6:
+			current_info = RoadNetworkInfo.new("test_id_5", "Test Road 5", 0.25, 0.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
+			
 		
 	if !enabled:
 		return

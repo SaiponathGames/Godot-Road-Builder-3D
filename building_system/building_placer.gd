@@ -97,11 +97,11 @@ func _input(event):
 				var expanded_aabb = new_building.get_aabb()
 				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb)
 
-func _process(delta):
-	print("------------------------------------------")
-	print_stray_nodes()
-	print("-------------------------------------------")
-	
+#func _process(delta):
+#	print("------------------------------------------")
+#	print_stray_nodes()
+#	print("-------------------------------------------")
+#
 # attempt - 1: failed
 #var building_transform = Transform.IDENTITY
 #building_transform.origin = point
