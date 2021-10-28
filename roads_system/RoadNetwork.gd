@@ -665,7 +665,7 @@ func upgrade_connection(start_intersection: RoadIntersection, end_intersection: 
 func _generate_id(road_intersection: Vector3):
 	var _position: Vector3 = road_intersection
 #	_position -= Vector3(-4096, -4096, -4096)
-	return int((_position.x + _position.y + _position.z))
+	return int((_position.x + _position.y + _position.z)+4098)
 
 func subdivide_intersections(start_intersection: RoadIntersection, end_intersection: RoadIntersection, road_net_info: RoadNetworkInfo):
 	var segment = get_connection(start_intersection, end_intersection)
@@ -806,6 +806,7 @@ func _get_aabb_for_query(position: Vector3, radius: int = 10, height: int = 20) 
 	aabb.position.x += position.x
 	aabb.position.y += position.y
 	aabb.position.z += position.z
+	mesh_inst.free()
 	return aabb
 
 #func _ready():

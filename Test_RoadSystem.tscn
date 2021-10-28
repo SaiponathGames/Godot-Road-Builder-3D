@@ -1,7 +1,8 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
+[ext_resource path="res://Debug.gd" type="Script" id=3]
 [ext_resource path="res://addons/sairam.quadtree/QuadTreeNode.gd" type="Script" id=4]
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=5]
 [ext_resource path="res://Road.tres" type="Material" id=6]
@@ -14,6 +15,7 @@
 [ext_resource path="res://roads_system/RoadUpgrade.gd" type="Script" id=13]
 [ext_resource path="res://building_system/building_placer.gd" type="Script" id=14]
 [ext_resource path="res://FullScreen.gd" type="Script" id=15]
+[ext_resource path="res://building_system/building_remover.gd" type="Script" id=16]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -29,6 +31,10 @@ params_line_width = 46.5
 flags_unshaded = true
 vertex_color_use_as_albedo = true
 albedo_color = Color( 1, 0, 0, 1 )
+
+[sub_resource type="SpatialMaterial" id=6]
+flags_unshaded = true
+vertex_color_use_as_albedo = true
 
 [sub_resource type="SpatialMaterial" id=4]
 flags_transparent = true
@@ -58,6 +64,7 @@ shader_params/u_triplanar = false
 shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 
 [node name="RoadNetwork" type="Spatial" parent="HTerrain"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 128 )
 script = ExtResource( 7 )
 use_astar = true
 immediate_geo_node = NodePath("ImmediateGeometry")
@@ -67,21 +74,21 @@ quad_tree_edge_bezier_node_path = NodePath("QuadTreeNodeEdgeBezier")
 auto_clear_when_draw = false
 
 [node name="GlobalRoadSystemDrawer" type="MeshInstance" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.01, -128 )
 material_override = ExtResource( 6 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../RoadSystemGeometry")
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.01, -128 )
 material_override = SubResource( 2 )
 
 [node name="RoadSystemGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.3, -128 )
 material_override = SubResource( 2 )
 
 [node name="QuadTreeNode" type="Spatial" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 128 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0, -128 )
 script = ExtResource( 4 )
 extents = Vector3( 256, 5.464, 256 )
 capacity = 6
@@ -92,7 +99,7 @@ immediate_geo_node_path = NodePath("QuadTreeGeometry")
 material_override = SubResource( 3 )
 
 [node name="QuadTreeNodeEdges" type="Spatial" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 128 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0, -128 )
 script = ExtResource( 4 )
 extents = Vector3( 256, 5.464, 256 )
 capacity = 6
@@ -103,7 +110,7 @@ immediate_geo_node_path = NodePath("QuadTreeGeometry")
 material_override = SubResource( 3 )
 
 [node name="QuadTreeNodeEdgeBezier" type="Spatial" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 128 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0, -128 )
 script = ExtResource( 4 )
 extents = Vector3( 256, 5.464, 256 )
 capacity = 6
@@ -113,19 +120,20 @@ immediate_geo_node_path = NodePath("QuadTreeGeometry")
 [node name="QuadTreeGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork/QuadTreeNodeEdgeBezier"]
 
 [node name="BuildingNetwork" type="Spatial" parent="HTerrain"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0.02, 128 )
 
 [node name="Buildings" type="Spatial" parent="HTerrain/BuildingNetwork"]
 
-[node name="QuadTreeBuilding" type="Spatial" parent="HTerrain/BuildingNetwork/Buildings"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 128 )
+[node name="QuadTreeBuilding" type="Spatial" parent="HTerrain/BuildingNetwork"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0, -128 )
 script = ExtResource( 4 )
 extents = Vector3( 256, 5.464, 256 )
 capacity = 6
 max_levels = 12
 immediate_geo_node_path = NodePath("QuadTreeGeometry")
 
-[node name="QuadTreeGeometry" type="ImmediateGeometry" parent="HTerrain/BuildingNetwork/Buildings/QuadTreeBuilding"]
+[node name="QuadTreeGeometry" type="ImmediateGeometry" parent="HTerrain/BuildingNetwork/QuadTreeBuilding"]
+material_override = SubResource( 6 )
 
 [node name="Camera" parent="." instance=ExtResource( 8 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3, 20 )
@@ -210,13 +218,29 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
 script = ExtResource( 14 )
 road_network_path = NodePath("../../HTerrain/RoadNetwork")
 buildings_path = NodePath("../../HTerrain/BuildingNetwork/Buildings")
-quad_tree_path = NodePath("../../HTerrain/BuildingNetwork/Buildings/QuadTreeBuilding")
+quad_tree_path = NodePath("../../HTerrain/BuildingNetwork/QuadTreeBuilding")
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="Tools/BuildingTool"]
+
+[node name="BuildingRemover" type="Spatial" parent="Tools"]
+script = ExtResource( 16 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0 )
 shadow_enabled = true
+
+[node name="Control" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 1
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="Control"]
+margin_right = 40.0
+margin_bottom = 14.0
 
 [connection signal="graph_changed" from="HTerrain/RoadNetwork" to="HTerrain/RoadNetwork/GlobalRoadSystemDrawer" method="_on_RoadNetwork_graph_changed"]
 [connection signal="graph_changed" from="Tools/RoadTool/RoadNetwork" to="Tools/RoadTool/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
