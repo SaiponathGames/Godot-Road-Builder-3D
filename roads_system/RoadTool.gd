@@ -62,9 +62,9 @@ func _input(event):
 		if event.scancode == KEY_4:
 			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 2, 1, 1)
 		if event.scancode == KEY_5:
-			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 1, 1, 1.5)
+			current_info = RoadNetworkInfo.new("test_id_5", "Test Road 5", 1, 1, 1.5)
 		if event.scancode == KEY_6:
-			current_info = RoadNetworkInfo.new("test_id_5", "Test Road 5", 0.25, 0.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
+			current_info = RoadNetworkInfo.new("test_id_6", "Test Road 6", 0.25, 0.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
 			
 		
 	if !enabled:
@@ -136,6 +136,7 @@ func _input(event):
 						elif _end_segment is RoadBezier:
 							world_road_network.split_at_position_with_bezier(_end_segment, end_intersection, _end_segment.road_network_info)
 					if start_intersection.position != end_intersection.position and !is_curve_tool_on:
+# warning-ignore:return_value_discarded
 						world_road_network.connect_intersections(start_intersection, end_intersection, current_info)
 #						print(connection.get_bounds())
 					if middle_intersection and is_curve_tool_on:
@@ -223,7 +224,7 @@ func _input(event):
 			_drag_current.position = _snapped.position
 		
 		$RoadNetwork.draw()
-#		$RoadNetwork/RoadRenderer.update()
+		$RoadNetwork/RoadRenderer.update()
 
 # if !_is_dragging:
 ##					prints(_drag_current.position == closest_point, dist < 1)

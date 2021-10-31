@@ -64,7 +64,7 @@ class RoadNetworkInfo extends Resource:
 	export var curvature: float = 0.3
 	export var subdivide_length = 5.0
 	
-	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _curvature: float = 0.3, _subdivide_length = 5, lanes = []):
+	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _curvature: float = 0.3, _subdivide_length = 5, _lanes = []):
 		self.id = _id
 		self.name = _name
 		self.length = _length
@@ -72,6 +72,7 @@ class RoadNetworkInfo extends Resource:
 		self.end_radius = _end_radius
 		self.curvature = _curvature
 		self.subdivide_length = _subdivide_length
+		self.lanes = _lanes
 	
 	func create_intersection(position: Vector3) -> RoadIntersection:
 		return RoadIntersection.new(position, self)
@@ -369,6 +370,7 @@ func add_intersection(intersection: RoadIntersection, do_update: bool = true):
 		intersection.set_meta("_qt_node", qt_node)
 	intersections.append(intersection)
 	intersection.road_network = self
+# warning-ignore:return_value_discarded
 	intersection.connect("position_changed", self, "move_intersection", [intersection])
 	if use_astar:
 		var _intersection_id = _generate_id(intersection.position)
@@ -400,13 +402,18 @@ func remove_intersection(intersection: RoadIntersection, check_when_remove = fal
 	if use_quad_tree:
 		if intersection.has_meta("_qt_node"):
 			quad_tree.remove_body(intersection.get_meta("_qt_node"))
+			intersection.get_meta("_qt_node").queue_free()
 	if use_astar:
 		var _intersection_id = _generate_id(intersection.position)
 		if astar.has_point(_intersection_id):
+# warning-ignore:return_value_discarded
 			astar_intersection_map.erase(_intersection_id)
 			astar.remove_point(_intersection_id)
 	if do_update:
 		emit_signal("graph_changed")
+	
+	if OS.is_stdout_verbose():
+		prints("Intersection", intersection)
 
 func move_intersection(before_position: Vector3, current_position: Vector3, intersection: RoadIntersection):
 	if use_astar:
@@ -418,6 +425,7 @@ func move_intersection(before_position: Vector3, current_position: Vector3, inte
 			astar.disconnect_points(old_id, point)
 			astar.connect_points(new_id, point)
 		astar.remove_point(old_id)
+# warning-ignore:return_value_discarded
 		astar_intersection_map.erase(old_id)
 		astar_intersection_map[new_id] = intersection
 	
@@ -435,6 +443,8 @@ func disconnect_intersections(start_intersection: RoadIntersection, end_intersec
 			astar.disconnect_points(_generate_id(start_intersection.position), _generate_id(end_intersection.position))
 	if use_quad_tree:
 		quad_tree_edge.remove_body(segment.get_meta("_qt_edge"))
+		segment.get_meta("_qt_edge").queue_free()
+# warning-ignore:return_value_discarded
 	network.erase([start_intersection, end_intersection])
 	if do_update:
 		emit_signal("graph_changed")
@@ -445,13 +455,13 @@ func split_at_postion(segment: RoadSegment, _position: RoadIntersection, road_ne
 	var second_segment = connect_intersections(_position, segment.end_position, road_net_info, false)
 	return [first_segment, second_segment]
 
-func _rec_split_at_position(segment: RoadSegment, _position: RoadIntersection, road_net_info: RoadNetworkInfo):
+func _rec_split_at_position(_segment: RoadSegment, _position: RoadIntersection, _road_net_info: RoadNetworkInfo):
 	pass
 
 func hull(segment: RoadBezier, t):
 	var list = []
 	var positions = [segment.start_position.position, segment.middle_position.position, segment.end_position.position]
-	var test_p = []
+#	var test_p = []
 	list.append_array(positions)
 	while positions.size() > 1:
 		var _p = []
@@ -636,9 +646,11 @@ func disconnect_intersections_with_bezier(start_intersection: RoadIntersection, 
 	start_intersection.connections.erase(segment)
 	middle_intersection.connections.erase(segment)
 	end_intersection.connections.erase(segment)
+# warning-ignore:return_value_discarded
 	network.erase([start_intersection, middle_intersection, end_intersection])
 	if use_quad_tree:
 		quad_tree_edge_bezier.remove_body(segment.get_meta("_qt_bedge"))
+		segment.get_meta("_qt_bedge").queue_free()
 	if do_update:
 		emit_signal("graph_changed")
 
@@ -656,6 +668,7 @@ func upgrade_connection(start_intersection: RoadIntersection, end_intersection: 
 	if !are_intersections_connected(start_intersection, end_intersection):
 		push_error("Intersections not connected, please try after connecting intersection.")
 	disconnect_intersections(start_intersection, end_intersection, false)
+# warning-ignore:return_value_discarded
 	connect_intersections(start_intersection, end_intersection, new_road_net_info, false)
 	
 	if do_update:
@@ -764,8 +777,6 @@ func _set_connection_with_bezier(start_intersection: RoadIntersection, middle_in
 
 func clear(do_update: bool = true):
 	if use_astar:
-		quad_tree.clear()
-	if use_astar:
 		astar.clear()
 	network.clear()
 	intersections.clear()
@@ -848,6 +859,7 @@ func _get_aabb_for_query(position: Vector3, radius: int = 10, height: int = 20) 
 
 func _create_quad_tree_node(intersection):
 	var spatial = Spatial.new()
+	spatial.name = 'Intersection'
 	spatial.translation = intersection.position
 	spatial.set_meta("_intersection", intersection)
 	spatial.set_meta("_aabb", _get_spatial_aabb(intersection.position))
@@ -855,6 +867,7 @@ func _create_quad_tree_node(intersection):
 
 func _create_quad_tree_edge(connection):
 	var spatial = Spatial.new()
+	spatial.name = "Edge"
 	spatial.set_meta("_connection", connection)
 	spatial.set_meta("_aabb", connection.get_bounds())
 	return spatial
@@ -865,3 +878,9 @@ func _get_spatial_aabb(intersection: Vector3):
 		Vector3.ONE * 0.5
 	)
 
+func _exit_tree():
+	
+	intersections.clear()
+	network.clear()
+	astar_intersection_map.clear()
+	

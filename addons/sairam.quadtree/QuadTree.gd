@@ -230,7 +230,6 @@ func _get_child(body_bounds: AABB):
 			return _children[2]  # bottom left
 		else:
 			return _children[3]  # bottom right
-	
 
 func _create_rect_lines(drawer, height) -> void:
 	"""
