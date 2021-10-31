@@ -86,7 +86,11 @@ var surface_tool = SurfaceTool.new()
 
 var rendering_mode = Mesh.PRIMITIVE_TRIANGLES
 
+var count = 0
+
 func _render_road(road_network):
+	count+=1
+#	prints(name, count)
 	immediate_geometry_node.clear()
 	surface_tool.clear()
 #	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)

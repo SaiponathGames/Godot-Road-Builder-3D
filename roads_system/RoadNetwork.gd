@@ -806,7 +806,7 @@ func _get_aabb_for_query(position: Vector3, radius: int = 10, height: int = 20) 
 	aabb.position.x += position.x
 	aabb.position.y += position.y
 	aabb.position.z += position.z
-	mesh_inst.free()
+	mesh_inst.queue_free()
 	return aabb
 
 #func _ready():

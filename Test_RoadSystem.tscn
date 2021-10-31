@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=2]
+[gd_scene load_steps=29 format=2]
 
 [ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
@@ -16,6 +16,11 @@
 [ext_resource path="res://building_system/building_placer.gd" type="Script" id=14]
 [ext_resource path="res://FullScreen.gd" type="Script" id=15]
 [ext_resource path="res://building_system/building_remover.gd" type="Script" id=16]
+[ext_resource path="res://building_system/building_network.gd" type="Script" id=17]
+[ext_resource path="res://ground_asphalt_new_02.png" type="Texture" id=18]
+[ext_resource path="res://building_system/buildable.tres" type="Material" id=19]
+[ext_resource path="res://building_system/non_buildable.tres" type="Material" id=20]
+[ext_resource path="res://building_system/selected.tres" type="Material" id=21]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -36,13 +41,19 @@ albedo_color = Color( 1, 0, 0, 1 )
 flags_unshaded = true
 vertex_color_use_as_albedo = true
 
-[sub_resource type="SpatialMaterial" id=4]
+[sub_resource type="SpatialMaterial" id=7]
+albedo_texture = ExtResource( 18 )
+metallic = 0.22
+metallic_specular = 0.76
+uv1_scale = Vector3( 2, 2, 2 )
+
+[sub_resource type="SpatialMaterial" id=8]
 flags_transparent = true
-albedo_color = Color( 0, 1, 1, 0.501961 )
+albedo_color = Color( 0, 1, 1, 0.25098 )
 
 [sub_resource type="SpatialMaterial" id=5]
 flags_transparent = true
-albedo_color = Color( 1, 1, 0, 0.501961 )
+albedo_color = Color( 1, 1, 0, 0.25098 )
 
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 15 )
@@ -96,6 +107,7 @@ max_levels = 12
 immediate_geo_node_path = NodePath("QuadTreeGeometry")
 
 [node name="QuadTreeGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork/QuadTreeNode"]
+visible = false
 material_override = SubResource( 3 )
 
 [node name="QuadTreeNodeEdges" type="Spatial" parent="HTerrain/RoadNetwork"]
@@ -107,6 +119,7 @@ max_levels = 12
 immediate_geo_node_path = NodePath("QuadTreeGeometry")
 
 [node name="QuadTreeGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork/QuadTreeNodeEdges"]
+visible = false
 material_override = SubResource( 3 )
 
 [node name="QuadTreeNodeEdgeBezier" type="Spatial" parent="HTerrain/RoadNetwork"]
@@ -118,9 +131,13 @@ max_levels = 12
 immediate_geo_node_path = NodePath("QuadTreeGeometry")
 
 [node name="QuadTreeGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork/QuadTreeNodeEdgeBezier"]
+visible = false
 
 [node name="BuildingNetwork" type="Spatial" parent="HTerrain"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0.02, 128 )
+script = ExtResource( 17 )
+quadtree_pth = NodePath("QuadTreeBuilding")
+buildings_pth = NodePath("Buildings")
 
 [node name="Buildings" type="Spatial" parent="HTerrain/BuildingNetwork"]
 
@@ -133,6 +150,7 @@ max_levels = 12
 immediate_geo_node_path = NodePath("QuadTreeGeometry")
 
 [node name="QuadTreeGeometry" type="ImmediateGeometry" parent="HTerrain/BuildingNetwork/QuadTreeBuilding"]
+visible = false
 material_override = SubResource( 6 )
 
 [node name="Camera" parent="." instance=ExtResource( 8 )]
@@ -153,6 +171,8 @@ limits/enabled = false
 [node name="RoadTool" type="Spatial" parent="Tools"]
 script = ExtResource( 9 )
 world_road_network_node = NodePath("../../HTerrain/RoadNetwork")
+buildable_mat = ExtResource( 19 )
+non_buildable_mat = ExtResource( 20 )
 
 [node name="RoadNetwork" type="Spatial" parent="Tools/RoadTool"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, 0 )
@@ -161,7 +181,8 @@ immediate_geo_node = NodePath("ImmediateGeometry")
 use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadTool/RoadNetwork"]
-material_override = SubResource( 4 )
+material_override = SubResource( 7 )
+material_overlay = SubResource( 8 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -186,6 +207,7 @@ material_override = SubResource( 2 )
 [node name="RoadRemover" type="Spatial" parent="Tools"]
 script = ExtResource( 12 )
 world_road_network_node = NodePath("../../HTerrain/RoadNetwork")
+selected_mat = ExtResource( 21 )
 
 [node name="RoadNetwork" type="Spatial" parent="Tools/RoadRemover"]
 script = ExtResource( 7 )
@@ -194,7 +216,8 @@ use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadRemover/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0 )
-material_override = SubResource( 5 )
+material_override = ExtResource( 6 )
+material_overlay = SubResource( 5 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -209,7 +232,8 @@ use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadUpgrade/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0 )
-material_override = SubResource( 4 )
+material_override = ExtResource( 6 )
+material_overlay = ExtResource( 19 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -217,13 +241,16 @@ immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSy
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
 script = ExtResource( 14 )
 road_network_path = NodePath("../../HTerrain/RoadNetwork")
-buildings_path = NodePath("../../HTerrain/BuildingNetwork/Buildings")
-quad_tree_path = NodePath("../../HTerrain/BuildingNetwork/QuadTreeBuilding")
+building_network_path = NodePath("../../HTerrain/BuildingNetwork")
+buildable_mat = ExtResource( 19 )
+non_buildable_mat = ExtResource( 20 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="Tools/BuildingTool"]
 
 [node name="BuildingRemover" type="Spatial" parent="Tools"]
 script = ExtResource( 16 )
+building_network_path = NodePath("../../HTerrain/BuildingNetwork")
+selected_mat = ExtResource( 21 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0 )

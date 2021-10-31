@@ -3,6 +3,10 @@ extends Spatial
 export(NodePath) var world_road_network_node
 onready var world_road_network: RoadNetwork = get_node(world_road_network_node) as RoadNetwork
 
+
+export(SpatialMaterial) var buildable_mat
+export(SpatialMaterial) var non_buildable_mat
+
 const RoadIntersection = RoadNetwork.RoadIntersection
 const RoadSegment = RoadNetwork.RoadSegment
 const RoadBezier = RoadNetwork.RoadBezier
@@ -36,7 +40,7 @@ func _input(event):
 		if event.scancode == KEY_P and event.pressed and !enabled:
 			enabled = true
 			show()
-			print(enabled)
+#			print(enabled)
 		elif event.scancode == KEY_P and event.pressed and enabled:
 			enabled = false
 			hide()
@@ -101,7 +105,7 @@ func _input(event):
 						var new_intersection = create_new_intersection(_cast_ray_to(event.position))
 						new_intersection = snap_to_length_and_angle(_drag_start, new_intersection)
 						_drag_end = new_intersection
-						$RoadNetwork.add_intersection(_drag_end)
+						$RoadNetwork.add_intersection(_drag_end, false)
 						$RoadNetwork.connect_intersections(_drag_start, _drag_end, current_info)
 						
 					var start_intersection = world_road_network.get_closest_node(_drag_start.position)
@@ -116,12 +120,12 @@ func _input(event):
 					
 					# add to world
 					if !world_road_network.has_intersection(start_intersection):
-						world_road_network.add_intersection(start_intersection)
+						world_road_network.add_intersection(start_intersection, false)
 					if !world_road_network.has_intersection(end_intersection):
-						world_road_network.add_intersection(end_intersection)
+						world_road_network.add_intersection(end_intersection, false)
 					if _drag_middle and is_curve_tool_on:
 						if !world_road_network.has_intersection(middle_intersection):
-							world_road_network.add_intersection(middle_intersection)
+							world_road_network.add_intersection(middle_intersection, false)
 						
 					if _start_segment:
 						if _start_segment is RoadSegment:
@@ -163,7 +167,7 @@ func _input(event):
 	if event is InputEventMouseMotion:
 		_snapped = null
 		if _drag_current:
-			$RoadNetwork.remove_intersection(_drag_current)
+			$RoadNetwork.remove_intersection(_drag_current, false)
 			_drag_current = null
 		
 		var new_intersection = create_new_intersection(_cast_ray_to(event.position))
@@ -195,13 +199,16 @@ func _input(event):
 		
 		if _is_dragging:
 			if _drag_start.distance_to(_drag_current) < 1:
-				$RoadNetwork/RoadRenderer.material_override.albedo_color = Color(1, 0, 0, 0.5)
+				if $RoadNetwork/RoadRenderer.material_overlay != non_buildable_mat:
+					$RoadNetwork/RoadRenderer.material_overlay = non_buildable_mat
 				buildable = false
-			else:
-				$RoadNetwork/RoadRenderer.material_override.albedo_color = Color(0, 1, 1, 0.5)
+			elif _drag_start.distance_to(_drag_current) > 1:
+				if $RoadNetwork/RoadRenderer.material_overlay != buildable_mat:
+					$RoadNetwork/RoadRenderer.material_overlay = buildable_mat
 				buildable = true
-		else:
-			$RoadNetwork/RoadRenderer.material_override.albedo_color = Color(0, 1, 1, 0.5)
+
+		elif !_is_dragging and $RoadNetwork/RoadRenderer.material_overlay != buildable_mat:
+			$RoadNetwork/RoadRenderer.material_overlay = buildable_mat
 		
 		# snap the length and angle
 		if _is_dragging:
@@ -216,7 +223,7 @@ func _input(event):
 			_drag_current.position = _snapped.position
 		
 		$RoadNetwork.draw()
-		$RoadNetwork/RoadRenderer.update()
+#		$RoadNetwork/RoadRenderer.update()
 
 # if !_is_dragging:
 ##					prints(_drag_current.position == closest_point, dist < 1)
