@@ -37,6 +37,13 @@ func _input(event):
 		if current_building:
 			var building_point = _cast_ray_to(event.position)
 			building_point = building_point.snapped(Vector3(0.25, 0, 0.25))
+			var buildings = quad_tree.query(get_aabb())
+			if !buildings:
+				# material overlay
+				test_and_set_material(preload("res://building_system/buildable.tres"))
+			else:
+				test_and_set_material_overlay(preload("res://building_system/non_buildable.tres"))
+				
 			if is_vec_nan(building_point):
 				return
 #			print(building_point)
@@ -47,8 +54,10 @@ func _input(event):
 
 				
 				var point: Vector3 = closest_point + direction * (-segment.road_network_info.width/2 + -1)
+				
 				var building_transform = Transform.IDENTITY
 				point.y = 0.02
+				var b_scale = ghost_instance.global_transform.basis.get_scale()
 				building_transform.origin = point
 
 				var a = closest_point - point
@@ -58,7 +67,7 @@ func _input(event):
 				var angle = angle_b - angle_a
 				
 				building_transform.basis = building_transform.basis.rotated(Vector3.UP, angle)
-
+				building_transform.basis = building_transform.basis.scaled(b_scale)
 				ghost_instance.global_transform = building_transform
 
 			else:
@@ -80,9 +89,10 @@ func _input(event):
 				var direction = (closest_point - building_point).normalized()
 				var point = closest_point + direction * (-segment.road_network_info.width/2 + -1)
 				var building_transform = Transform.IDENTITY
+				var b_scale = ghost_instance.global_transform.basis.get_scale()
 				point.y = 0.02
 				building_transform.origin = point
-
+				
 				var a = closest_point - point
 				var b = current_building.door_face_direction
 				var angle_a = atan2(a.z, a.x)
@@ -90,12 +100,38 @@ func _input(event):
 				var angle = angle_b - angle_a
 				
 				building_transform.basis = building_transform.basis.rotated(Vector3.UP, angle)
+				building_transform.basis = building_transform.basis.scaled(b_scale)
 				var new_building = current_building.instance()
 				buildings.add_child(new_building)
 				new_building.global_transform = building_transform
 				quad_tree.add_body(new_building, new_building.get_aabb())
 				var expanded_aabb = new_building.get_aabb()
 				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb)
+
+func get_aabb():
+	return ghost_instance.get_aabb()
+
+func test_and_set_material(p_material):
+	var test_mesh = ghost_instance.get_child(0).get_child(ghost_instance._mesh_child_index_array[randi() % ghost_instance._mesh_child_index_array.size()]).mesh as Mesh
+	var test_material = test_mesh.surface_get_material(randi() % test_mesh.get_surface_count())
+	if test_material == p_material:
+		for index in current_building._mesh_child_index_array:
+			var child = ghost_instance.get_child(0).get_child(index) as MeshInstance
+			for material_index in range(child.get_surface_material_count()):
+				var material = child.mesh.surface_get_material(material_index)
+				material = p_material
+				child.mesh.surface_set_material(material_index, material)
+
+func test_and_set_material_overlay(p_material):
+	var test_mesh = ghost_instance.get_child(0).get_child(ghost_instance._mesh_child_index_array[randi() % ghost_instance._mesh_child_index_array.size()]).mesh as Mesh
+	var test_material = test_mesh.surface_get_material(randi() % test_mesh.get_surface_count())
+	if test_material == p_material:
+		for index in current_building._mesh_child_index_array:
+			var child = ghost_instance.get_child(0).get_child(index) as MeshInstance
+			for material_index in range(child.get_surface_material_count()):
+				var material = child.mesh.surface_get_material(material_index)
+				material.next_pass = p_material
+				child.mesh.surface_set_material(material_index, material)
 
 #func _process(delta):
 #	print("------------------------------------------")
