@@ -9,5 +9,4 @@ export_presets.cfg
 data_*/
 
 # Local files
-models/
 test/

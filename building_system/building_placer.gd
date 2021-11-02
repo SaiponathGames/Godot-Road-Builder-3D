@@ -58,6 +58,8 @@ func _input(event):
 				return
 #			print(building_point)
 			var segment = road_network.get_closest_segment(building_point, 1)
+			if !segment:
+				segment = road_network.get_closest_bezier_segment(building_point, 1)
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
@@ -94,6 +96,8 @@ func _input(event):
 			building_point.y = 0.02
 			building_point = building_point.snapped(Vector3(0.25, 0, 0.25))
 			var segment = road_network.get_closest_segment(building_point)
+			if !segment:
+				segment = road_network.get_closest_bezier_segment(building_point, 1)
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
@@ -106,8 +110,8 @@ func _input(event):
 				new_building.global_transform = building_transform
 				building_network.add_building(building_transform, new_building)
 				
-#				var expanded_aabb = new_building.get_aabb()
-#				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb)
+				var expanded_aabb = new_building.get_aabb()
+				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb)
 
 func get_aabb():
 	
