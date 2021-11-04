@@ -235,6 +235,26 @@ func _input(event):
 #				_drag_current.position = closest_point
 #				_snapped_segment = segment
 
+func _process(delta):
+	if _is_dragging and is_instance_valid(_drag_current):
+		var camera = get_viewport().get_camera()
+		var position = camera.unproject_position(_drag_current.position)
+		$"Control/PanelContainer".rect_position = position-$"Control/PanelContainer".rect_size/2
+		var length = _drag_start.distance_to(_drag_current)
+		if !is_equal_approx(length, 0.01):
+			$Control/PanelContainer/Label.text = "Length: %.2fu" % length
+			$Control/PanelContainer.show()
+		var angle_pos = camera.unproject_position(_drag_start.position)
+		$"Control/PanelContainer2".rect_position = angle_pos-$Control/PanelContainer2.rect_size/2
+		var direction = _drag_start.direction_to(_drag_current)
+		var angle = rad2deg(atan2(direction.z, direction.x))
+		$Control/PanelContainer2/Label.text = "Angle: %.2fdeg" % angle
+		$Control/PanelContainer2.show()
+	if !_is_dragging:
+		$Control/PanelContainer.hide()
+		$Control/PanelContainer2.hide()
+		
+
 func _set_snapped(new_intersection: RoadIntersection):
 	_snapped = world_road_network.get_closest_node(new_intersection.position)
 	if _drag_start and _snapped and _snapped.position == _drag_start.position:

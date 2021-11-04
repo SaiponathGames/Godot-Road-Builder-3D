@@ -806,20 +806,31 @@ func delete_connection_with_bezier(connection: RoadBezier, clear_orphans: bool =
 		emit_signal("graph_changed")
 	
 
+# ref https://gdalgorithms-list.narkive.com/s2wbl3Cd/axis-aligned-bounding-box-of-cylinder
 func _get_aabb_for_query(position: Vector3, radius: int = 10, height: int = 20) -> AABB:
-	var mesh_inst = MeshInstance.new()
-	var cylinder = CylinderMesh.new()
-	cylinder.top_radius = radius
-	cylinder.bottom_radius = radius
-	cylinder.height = height
-	mesh_inst.mesh = cylinder
-	var aabb = mesh_inst.get_aabb()
-	aabb.position.x += position.x
-	aabb.position.y += position.y
-	aabb.position.z += position.z
-	mesh_inst.queue_free()
+#	var mesh_inst = MeshInstance.new()
+#	var cylinder = CylinderMesh.new()
+#	cylinder.top_radius = radius
+#	cylinder.bottom_radius = radius
+#	cylinder.height = height
+#	mesh_inst.mesh = cylinder
+#	var aabb = mesh_inst.get_aabb()
+#	aabb.position.x += position.x
+#	aabb.position.y += position.y
+#	aabb.position.z += position.z
+#	mesh_inst.queue_free()
+	var a = position
+	var b = a + Vector3.UP * height
+	var tmp = Vector3.ONE * radius # Vector3(radius, radius, radius)
+	var aabb = AABB(min_vec(a, b) - tmp, max_vec(a, b) + tmp)
 	return aabb
 
+
+func min_vec(a, b):
+	return Vector3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
+
+func max_vec(a, b):
+	return Vector3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))
 #func _ready():
 #	var intersect_1 = RoadIntersection.new(Vector3(2, 0, 3), [])
 #	var intersect_2 = RoadIntersection.new(Vector3(6, 0, 5.3), [])
