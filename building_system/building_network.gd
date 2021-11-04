@@ -22,13 +22,18 @@ func is_buildable(aabb: AABB):
 	return !quad_tree.query(aabb)
 	
 
-func add_building(transform: Transform, building: BuildingInstance):
+func add_building(transform: Transform, building: BuildingInstance, aabb: AABB = AABB(), transform_aabb = false):
 	if buildings.has(building):
 		push_error("Building is already present.")
 		return
 	buildings_node.add_child(building)
 	building.global_transform = transform
-	quad_tree.add_body(building, building.get_aabb())
+	if !aabb:
+		if transform_aabb:
+			aabb = transform.xform(building.get_aabb())
+		else:
+			aabb = building.get_aabb()
+	quad_tree.add_body(building, aabb)
 	buildings.append(building)
 	
 
@@ -40,15 +45,14 @@ func remove_building(building: BuildingInstance):
 	
 
 func _get_aabb_for_query(position: Vector3, radius: int = 0.5, height: int = 20) -> AABB:
-	var mesh_inst = MeshInstance.new()
-	var cylinder = CylinderMesh.new()
-	cylinder.top_radius = radius
-	cylinder.bottom_radius = radius
-	cylinder.height = height
-	mesh_inst.mesh = cylinder
-	var aabb = mesh_inst.get_aabb()
-	aabb.position.x += position.x
-	aabb.position.y += position.y
-	aabb.position.z += position.z
-	mesh_inst.free()
+	var a = position
+	var b = a + Vector3.UP * height
+	var tmp = Vector3.ONE * radius # Vector3(radius, radius, radius)
+	var aabb = AABB(min_vec(a, b) - tmp, max_vec(a, b) + tmp)
 	return aabb
+
+func min_vec(a, b):
+	return Vector3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
+
+func max_vec(a, b):
+	return Vector3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))

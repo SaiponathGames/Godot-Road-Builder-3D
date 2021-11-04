@@ -16,6 +16,8 @@ func _input(event):
 		return
 	
 	if event is InputEventMouseMotion:
+		if previous_closest_building and is_instance_valid(previous_closest_building):
+			previous_closest_building.get_child(0).get_child(0).material_overlay = null
 		var position = _cast_ray_to(event.position)
 		if !is_vec_nan(position):
 			var building = get_collider(event.position)
@@ -24,9 +26,7 @@ func _input(event):
 				
 				building.get_child(0).get_child(0).material_overlay = selected_mat
 				previous_closest_building = building
-			
-			if previous_closest_building != building and is_instance_valid(previous_closest_building):
-				previous_closest_building.get_child(0).get_child(0).material_overlay = null
+	
 	if event is InputEventMouseButton:
 		if event.button_index == BUTTON_LEFT and event.pressed:
 			var position = _cast_ray_to(event.position)

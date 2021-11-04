@@ -121,10 +121,50 @@ func draw_box(immediate_geo: ImmediateGeometry, position: Vector3, extents: Vect
 #		immediate_geo
 	immediate_geo.end()
 
-func draw_box_with_aabb(immediate_geo: ImmediateGeometry, aabb: AABB, color: Color = Color.skyblue):
+func draw_box_with_aabb(immediate_geo: ImmediateGeometry, aabb: AABB, offset: Vector3, color: Color = Color.skyblue):
+#	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
+#	for i in range(12):
+#		for point in AABBUtils.get_edge(aabb, i):
+#			immediate_geo.set_color(color)
+#			immediate_geo.add_vertex(point)
+#	immediate_geo.end()
+	var path = []
+
+	#bottom
+	path.append(aabb.get_endpoint(0))
+	path.append(aabb.get_endpoint(1))
+	path.append(aabb.get_endpoint(1))
+	path.append(aabb.get_endpoint(5))
+	path.append(aabb.get_endpoint(5))
+	path.append(aabb.get_endpoint(4))
+	path.append(aabb.get_endpoint(4))
+	path.append(aabb.get_endpoint(0))
+	#top
+	path.append(aabb.get_endpoint(7))
+	path.append(aabb.get_endpoint(6))
+	path.append(aabb.get_endpoint(7))
+	path.append(aabb.get_endpoint(3))
+	path.append(aabb.get_endpoint(2))
+	path.append(aabb.get_endpoint(3))
+	path.append(aabb.get_endpoint(2))
+	path.append(aabb.get_endpoint(6))
+	#sides
+	path.append(aabb.get_endpoint(0))
+	path.append(aabb.get_endpoint(2))
+	path.append(aabb.get_endpoint(1))
+	path.append(aabb.get_endpoint(3))
+	path.append(aabb.get_endpoint(4))
+	path.append(aabb.get_endpoint(6))
+	path.append(aabb.get_endpoint(5))
+	path.append(aabb.get_endpoint(7))
+
+
+	var temp_path = []
+	for item in path:
+		temp_path.append(item - offset)
+	path = temp_path
 	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
-	for i in range(12):
-		for point in AABBUtils.get_edge(aabb, i):
-			immediate_geo.set_color(color)
-			immediate_geo.add_vertex(point)
+	for i in range(0, path.size()-1,2):
+		immediate_geo.add_vertex(path[i])
+		immediate_geo.add_vertex(path[i+1])
 	immediate_geo.end()

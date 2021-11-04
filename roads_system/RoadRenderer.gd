@@ -384,7 +384,7 @@ func draw_filled_arc(_surface_tool: SurfaceTool, radius: float, center: Vector3,
 	_surface_tool.add_vertex(center)
 	
 	for i in range(angular_segment+1):
-		var t = i / float(angular_segment)
+#		var t = i / float(angular_segment)
 		var angle = deg2rad(start_angle + i * (end_angle-start_angle) / float(angular_segment) - 90)
 		var position_outer = Vector3(0, 0, radius)
 		_surface_tool.add_normal(Vector3.UP)

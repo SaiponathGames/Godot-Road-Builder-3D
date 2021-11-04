@@ -1,9 +1,24 @@
-[gd_resource type="SpatialMaterial" load_steps=2 format=2]
+[gd_resource type="SpatialMaterial" load_steps=6 format=2]
 
-[ext_resource path="res://ground_asphalt_new_02.png" type="Texture" id=1]
+[ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_Metallic.png" type="Texture" id=1]
+[ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_BaseColor.png" type="Texture" id=2]
+[ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_Height.png" type="Texture" id=3]
+[ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_Normal.png" type="Texture" id=4]
+[ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_Roughness.png" type="Texture" id=5]
 
 [resource]
-albedo_texture = ExtResource( 1 )
+albedo_texture = ExtResource( 2 )
 metallic = 0.22
 metallic_specular = 0.76
+metallic_texture = ExtResource( 1 )
+roughness_texture = ExtResource( 5 )
+normal_enabled = true
+normal_scale = 1.0
+normal_texture = ExtResource( 4 )
+depth_enabled = true
+depth_scale = 0.05
+depth_deep_parallax = false
+depth_flip_tangent = false
+depth_flip_binormal = false
+depth_texture = ExtResource( 3 )
 uv1_scale = Vector3( 2, 2, 2 )

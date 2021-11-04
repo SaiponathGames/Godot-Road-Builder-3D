@@ -40,9 +40,12 @@ func _input(event):
 		if current_building:
 			var building_point = _cast_ray_to(event.position)
 			building_point = building_point.snapped(Vector3(0.25, 0, 0.25))
+#			var aabb = ghost_instance.global_transform.xform(get_aabb())
 			var aabb = get_aabb()
 			aabb.position.y += -99
 			aabb.size.y += 99
+			$ImmediateGeometry2.clear()
+			DrawingUtils.draw_box_with_aabb($"ImmediateGeometry2", aabb, Vector3.ZERO)
 			is_buildable = building_network.is_buildable(aabb)
 #			$ImmediateGeometry.clear()
 #			DrawingUtils.draw_box_with_aabb($ImmediateGeometry, get_aabb())
@@ -58,6 +61,8 @@ func _input(event):
 				return
 #			print(building_point)
 			var segment = road_network.get_closest_segment(building_point, 1)
+			if !segment:
+				segment = road_network.get_closest_bezier_segment(building_point, 1)
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
@@ -94,6 +99,8 @@ func _input(event):
 			building_point.y = 0.02
 			building_point = building_point.snapped(Vector3(0.25, 0, 0.25))
 			var segment = road_network.get_closest_segment(building_point)
+			if !segment:
+				segment = road_network.get_closest_bezier_segment(building_point, 1)
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
@@ -103,11 +110,12 @@ func _input(event):
 				var new_building = current_building.instance()
 				var building_transform = calculate_transform(point, closest_point, new_building)
 				
-				new_building.global_transform = building_transform
 				building_network.add_building(building_transform, new_building)
 				
+				var expanded_aabb = new_building.get_aabb()
 #				var expanded_aabb = new_building.get_aabb()
-#				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb)
+				
+				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb, new_building.global_transform.origin)
 
 func get_aabb():
 	

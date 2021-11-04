@@ -56,15 +56,15 @@ func _input(event):
 		if event.scancode == KEY_1:
 			current_info = RoadNetworkInfo.new("test_id", "Test Road", 1, 0.5, 1, 0.2, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
 		if event.scancode == KEY_2:
-			current_info = RoadNetworkInfo.new("test_id_2", "Test Road 2", 1, 1, 1)
+			current_info = RoadNetworkInfo.new("test_id_2", "Test Road 2", 1, 1, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0.25), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.5, -0.25)])
 		if event.scancode == KEY_3:
 			current_info = RoadNetworkInfo.new("test_id_3", "Test Road 3", 1, 1.5, 1)
 		if event.scancode == KEY_4:
 			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 2, 1, 1)
 		if event.scancode == KEY_5:
-			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 1, 1, 1.5)
+			current_info = RoadNetworkInfo.new("test_id_5", "Test Road 5", 1, 1, 1.5)
 		if event.scancode == KEY_6:
-			current_info = RoadNetworkInfo.new("test_id_5", "Test Road 5", 0.25, 0.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
+			current_info = RoadNetworkInfo.new("test_id_6", "Test Road 6", 0.25, 0.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
 			
 		
 	if !enabled:
@@ -136,6 +136,7 @@ func _input(event):
 						elif _end_segment is RoadBezier:
 							world_road_network.split_at_position_with_bezier(_end_segment, end_intersection, _end_segment.road_network_info)
 					if start_intersection.position != end_intersection.position and !is_curve_tool_on:
+# warning-ignore:return_value_discarded
 						world_road_network.connect_intersections(start_intersection, end_intersection, current_info)
 #						print(connection.get_bounds())
 					if middle_intersection and is_curve_tool_on:
@@ -223,7 +224,7 @@ func _input(event):
 			_drag_current.position = _snapped.position
 		
 		$RoadNetwork.draw()
-#		$RoadNetwork/RoadRenderer.update()
+		$RoadNetwork/RoadRenderer.update()
 
 # if !_is_dragging:
 ##					prints(_drag_current.position == closest_point, dist < 1)
@@ -233,6 +234,26 @@ func _input(event):
 #			elif _is_dragging and is_instance_valid(_drag_start) and is_instance_valid(_drag_current) and _drag_start.position != closest_point:
 #				_drag_current.position = closest_point
 #				_snapped_segment = segment
+
+func _process(delta):
+	if _is_dragging and is_instance_valid(_drag_current):
+		var camera = get_viewport().get_camera()
+		var position = camera.unproject_position(_drag_current.position)
+		$"Control/PanelContainer".rect_position = position-$"Control/PanelContainer".rect_size/2
+		var length = _drag_start.distance_to(_drag_current)
+		if !is_equal_approx(length, 0.01):
+			$Control/PanelContainer/Label.text = "Length: %.2fu" % length
+			$Control/PanelContainer.show()
+		var angle_pos = camera.unproject_position(_drag_start.position)
+		$"Control/PanelContainer2".rect_position = angle_pos-$Control/PanelContainer2.rect_size/2
+		var direction = _drag_start.direction_to(_drag_current)
+		var angle = rad2deg(atan2(direction.z, direction.x))
+		$Control/PanelContainer2/Label.text = "Angle: %.2fdeg" % angle
+		$Control/PanelContainer2.show()
+	if !_is_dragging:
+		$Control/PanelContainer.hide()
+		$Control/PanelContainer2.hide()
+		
 
 func _set_snapped(new_intersection: RoadIntersection):
 	_snapped = world_road_network.get_closest_node(new_intersection.position)

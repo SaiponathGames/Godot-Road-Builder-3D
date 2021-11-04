@@ -67,6 +67,7 @@ func add_path_to_network(path, network: RoadNetwork):
 			continue
 		if !network.has_intersection(point):
 			network.add_intersection(point)
+# warning-ignore:return_value_discarded
 		network.connect_intersections(previous_point, point, previous_point.road_net_info)
 		previous_point = point
 
