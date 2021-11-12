@@ -4,7 +4,7 @@ class_name BuildingType
 var name: String
 var id: String
 var scene: PackedScene
-var door_face_direction = Vector3(1, 0, 0)
+var door_face_direction = Vector3.ZERO
 var width = 2
 
 func instance():

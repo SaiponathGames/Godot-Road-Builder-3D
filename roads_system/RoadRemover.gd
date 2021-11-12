@@ -31,7 +31,7 @@ func _input(event):
 		return
 		
 	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_LEFT:
+		if event.button_index == BUTTON_LEFT and event.pressed:
 			var position = _cast_ray_to(event.position)
 			var closest_segment = world_road_network.get_closest_segment(position, 0.5)
 			if closest_segment:

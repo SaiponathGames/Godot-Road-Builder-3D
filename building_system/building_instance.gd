@@ -11,9 +11,9 @@ var _collision_child_index_array = []
 func _get_aabb_tree(node: Node):
 	var final_aabb:AABB
 	if (node is VisualInstance) and !(node is ImmediateGeometry):
-		var local_aabb:AABB = node.get_transformed_aabb()
+		var local_aabb:AABB = node.get_aabb()
 		if !local_aabb.has_no_area():
-			final_aabb = node.get_transformed_aabb()
+			final_aabb = node.get_aabb()
 	if node.get_child_count() > 0:
 		var children = node.get_children()
 		for child in children:

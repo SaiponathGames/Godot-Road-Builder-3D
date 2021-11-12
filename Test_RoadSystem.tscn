@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=2]
+[gd_scene load_steps=35 format=2]
 
 [ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
@@ -25,6 +25,7 @@
 [ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_Height.png" type="Texture" id=23]
 [ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_Normal.png" type="Texture" id=24]
 [ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_Metallic.png" type="Texture" id=25]
+[ext_resource path="res://roads_system/RoadSaver.gd" type="Script" id=26]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -80,14 +81,6 @@ depth_flip_binormal = false
 depth_texture = ExtResource( 22 )
 uv1_scale = Vector3( 2, 2, 2 )
 
-[sub_resource type="SpatialMaterial" id=8]
-flags_transparent = true
-albedo_color = Color( 0, 1, 1, 0.25098 )
-
-[sub_resource type="SpatialMaterial" id=5]
-flags_transparent = true
-albedo_color = Color( 1, 1, 0, 0.25098 )
-
 [sub_resource type="SpatialMaterial" id=9]
 vertex_color_use_as_albedo = true
 
@@ -128,13 +121,20 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.01, -128 )
 material_override = SubResource( 11 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../RoadSystemGeometry")
+can_draw_lanes = true
+
+[node name="RoadSaver" type="Spatial" parent="HTerrain/RoadNetwork"]
+script = ExtResource( 26 )
+road_net_np = NodePath("..")
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.01, -128 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.02, -128 )
+visible = false
 material_override = SubResource( 2 )
 
 [node name="RoadSystemGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.3, -128 )
+visible = false
 material_override = SubResource( 2 )
 
 [node name="QuadTreeNode" type="Spatial" parent="HTerrain/RoadNetwork"]
@@ -199,7 +199,7 @@ panning/enabled = false
 edge_scroll/detection_area = 0.01
 edge_scroll/speed = 1.1
 movement/speed = 1.1
-tilting/max_angle = 90.0
+tilting/max_angle = 0.0
 zooming/min_distance = 2.0
 looking/speed = 9.2
 perspective_panning/enabled = true
@@ -221,7 +221,6 @@ use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadTool/RoadNetwork"]
 material_override = SubResource( 7 )
-material_overlay = SubResource( 8 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -279,12 +278,19 @@ script = ExtResource( 10 )
 world_road_network_node = NodePath("../../HTerrain/RoadNetwork")
 
 [node name="RoadNetwork" type="Spatial" parent="Tools/PathVisualizer"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0 )
 script = ExtResource( 7 )
 immediate_geo_node = NodePath("ImmediateGeometry")
 use_quad_tree = false
 
+[node name="RoadRenderer" type="MeshInstance" parent="Tools/PathVisualizer/RoadNetwork"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0 )
+material_override = ExtResource( 6 )
+skeleton = NodePath("../../../..")
+script = ExtResource( 11 )
+immediate_geometry_node_path = NodePath("../ImmediateGeometry")
+
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="Tools/PathVisualizer/RoadNetwork"]
+visible = false
 material_override = SubResource( 2 )
 
 [node name="RoadRemover" type="Spatial" parent="Tools"]
@@ -300,7 +306,6 @@ use_quad_tree = false
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadRemover/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0 )
 material_override = ExtResource( 6 )
-material_overlay = SubResource( 5 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -316,7 +321,6 @@ use_quad_tree = false
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadUpgrade/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0 )
 material_override = ExtResource( 6 )
-material_overlay = ExtResource( 19 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -358,5 +362,6 @@ margin_bottom = 14.0
 
 [connection signal="graph_changed" from="HTerrain/RoadNetwork" to="HTerrain/RoadNetwork/GlobalRoadSystemDrawer" method="_on_RoadNetwork_graph_changed"]
 [connection signal="graph_changed" from="Tools/RoadTool/RoadNetwork" to="Tools/RoadTool/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
+[connection signal="graph_changed" from="Tools/PathVisualizer/RoadNetwork" to="Tools/PathVisualizer/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
 [connection signal="graph_changed" from="Tools/RoadRemover/RoadNetwork" to="Tools/RoadRemover/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
 [connection signal="graph_changed" from="Tools/RoadUpgrade/RoadNetwork" to="Tools/RoadUpgrade/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]

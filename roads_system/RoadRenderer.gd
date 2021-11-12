@@ -82,6 +82,8 @@ const RoadBezier = RoadNetwork.RoadBezier
 
 export(NodePath) var immediate_geometry_node_path
 onready var immediate_geometry_node = get_node(immediate_geometry_node_path)
+
+export var can_draw_lanes = false
 var surface_tool = SurfaceTool.new()
 
 var rendering_mode = Mesh.PRIMITIVE_TRIANGLES
@@ -133,6 +135,8 @@ func _render_road(road_network):
 		var start_connection_intersection = start_dict[0][connection]
 		var end_connection_intersection = end_dict[0][connection]
 		draw_connection(surface_tool, start_connection_intersection, end_connection_intersection)
+		if can_draw_lanes:
+			draw_lanes(surface_tool, connection)
 
 	mesh = surface_tool.commit()
 
@@ -168,7 +172,7 @@ func draw_intersection(intersection: RoadIntersection):
 			if (connection is RoadBezier and intersection != connection.middle_position) or not connection is RoadBezier:
 				direction = intersection.direction_to(intersection_bound_for)
 			else:
-				direction = ((intersection.direction_to(connection.start_position) + connection.end_position.direction_to(intersection))).normalized()
+				direction = get_average_direction_to(intersection, intersection_bound_for, connection)
 			var start_point = intersection.position
 			if intersection.connections.size() > 1:
 				start_point += direction * (connection.road_network_info.length + ((connection.road_network_info.width)/2) + (pow(intersection.connections.size(), connection.road_network_info.curvature)/2.0))
@@ -201,6 +205,15 @@ func draw_intersection(intersection: RoadIntersection):
 		
 	return [intersection_verts, mid_points]
 
+func get_average_direction_to(intersection: RoadIntersection, position: RoadIntersection, connection: RoadBezier):
+	var projected_time = connection.project_point(position.position, true)[1]
+	var direction = Vector3.ZERO
+	for t in range(0, projected_time, 0.01):
+		direction += intersection.position.direction_to(connection.get_point(t))
+		direction = direction.normalized()
+	return direction
+	
+
 func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary, resolution: int = 20):
 	var last_v1 = i1.v1
 	var last_v2 = i1.v2
@@ -218,6 +231,16 @@ func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary,
 			last_v1)
 		last_v1 = v2
 		last_v2 = v1
+		
+
+func draw_lanes(_surface_tool: SurfaceTool, connection: RoadSegment):
+	$"../ImmediateGeometry".begin(Mesh.PRIMITIVE_LINES)
+	for lane in connection.lanes:
+		var direction = connection.start_position.direction_to(connection.end_position)
+		var left = Vector3(-direction.z, direction.y, direction.x)
+		DrawingUtils.draw_line($"../ImmediateGeometry", connection.start_position.position+left*(lane.lane_info.offset+lane.lane_info.width/2), connection.end_position.position+left*(lane.lane_info.offset+lane.lane_info.width/2))
+		DrawingUtils.draw_line($"../ImmediateGeometry", connection.start_position.position+left*(lane.lane_info.offset+-lane.lane_info.width/2), connection.end_position.position+left*(lane.lane_info.offset+-lane.lane_info.width/2))
+	$"../ImmediateGeometry".end()
 
 func draw_bezier_connection(_surface_tool, i1: Dictionary, m_i: Dictionary, i2: Dictionary, resolution: int = 20):
 #	print(m_i.v1, m_i.v2)

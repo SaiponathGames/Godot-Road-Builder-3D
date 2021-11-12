@@ -64,7 +64,7 @@ class RoadNetworkInfo extends Resource:
 	export var curvature: float = 0.3
 	export var subdivide_length = 5.0
 	
-	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _curvature: float = 0.3, _subdivide_length = 5, _lanes = []):
+	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _curvature: float = 0.3, _lanes = [], _subdivide_length = 5):
 		self.id = _id
 		self.name = _name
 		self.length = _length
@@ -301,6 +301,7 @@ class RoadLane:
 		self.start_point = _segment.start_position
 		self.end_point = _segment.end_position
 		self.road_network = _segment.road_network
+		self.lane_info = _lane_info
 	
 class RoadLaneInfo extends Resource:
 	export var direction: int = Direction.FORWARD
@@ -552,10 +553,10 @@ func join_segments(segment_1: RoadSegment, segment_2: RoadSegment, network_info:
 
 func are_intersections_connected(start_intersection, end_intersection):
 	if start_intersection.road_network != self:
-		push_error("Can't connect, please add start_intersection to this road network.")
+		push_error("Please add start_intersection to this road network.")
 		return
 	if end_intersection.road_network != self:
-		push_error("Can't connect, please add end_intersection to this road network.")
+		push_error("Please add end_intersection to this road network.")
 		return
 	return network.has([start_intersection, end_intersection])
 	
@@ -568,8 +569,10 @@ func connect_intersections(start_intersection: RoadIntersection, end_intersectio
 #	subdivide_intersections(start_intersection, end_intersection, road_net_info)
 	start_intersection.connections.append(segment)
 	end_intersection.connections.append(segment)
+#	prints(_generate_id(start_intersection.position) != _generate_id(end_intersection.position), _generate_id(start_intersection.position), _generate_id(end_intersection.position))
 	if use_astar and _generate_id(start_intersection.position) != _generate_id(end_intersection.position):
 		astar.connect_points(_generate_id(start_intersection.position), _generate_id(end_intersection.position))
+#		print(astar.are_points_connected(_generate_id(start_intersection.position), _generate_id(end_intersection.position)))
 	if use_quad_tree:
 		var qt_edge = _create_quad_tree_edge(segment)
 		quad_tree_edge.add_body(qt_edge, qt_edge.get_meta("_aabb"))
@@ -600,10 +603,12 @@ func _rec_connect_intersections(start_intersection: RoadIntersection, end_inters
 
 func find_path(start_intersection, end_intersection):
 	if use_astar:
-		var shortest_path = astar.get_id_path(_generate_id(start_intersection), _generate_id(end_intersection))
+		var shortest_path = astar.get_id_path(_generate_id(start_intersection.position), _generate_id(end_intersection.position))
+#		print(shortest_path)
 		var intersection_path = []
 		for point in shortest_path:
 			intersection_path.append(astar_intersection_map[point])
+#		print(intersection_path)
 		return intersection_path
 	else:
 		return []
@@ -678,7 +683,7 @@ func upgrade_connection(start_intersection: RoadIntersection, end_intersection: 
 func _generate_id(road_intersection: Vector3):
 	var _position: Vector3 = road_intersection
 #	_position -= Vector3(-4096, -4096, -4096)
-	return int((_position.x + _position.y + _position.z)+4098)
+	return int((_position.x * _position.x + _position.y * _position.y + _position.z * _position.z)+4098)
 
 func subdivide_intersections(start_intersection: RoadIntersection, end_intersection: RoadIntersection, road_net_info: RoadNetworkInfo):
 	var segment = get_connection(start_intersection, end_intersection)
@@ -729,7 +734,7 @@ func draw(line_color = Color.white, circle_color = Color.black):
 		DrawingUtils.draw_line(immediate_geo, connection.start_position.position, connection.end_position.position, line_color)
 	immediate_geo.end()
 
-func get_closest_node(to_position: Vector3, distance: float = 0.5):
+func get_closest_node(to_position: Vector3, distance: float = 0.5) -> RoadIntersection:
 	var snapped: RoadIntersection
 	var aabb = _get_aabb_for_query(to_position)
 	var query = quad_tree.query(aabb)
@@ -759,9 +764,15 @@ func get_closest_bezier_segment(to_position: Vector3, distance: float = 1.5) -> 
 				snapped_bezier = object.get_meta("_connection")
 	return snapped_bezier
 	
-func get_connection(start_intersection: RoadIntersection, end_intersection: RoadIntersection) -> RoadSegment:
-	if are_intersections_connected(start_intersection, end_intersection):
-		return network[[start_intersection, end_intersection]]
+func get_connection(start_intersection: RoadIntersection, end_intersection: RoadIntersection, bidirection: bool = false) -> RoadSegment:
+	if bidirection:
+		if are_intersections_connected(start_intersection, end_intersection):
+			return network.get([start_intersection, end_intersection], network.get([end_intersection, start_intersection]))
+		elif are_intersections_connected(end_intersection, start_intersection):
+			return network.get([start_intersection, end_intersection], network.get([end_intersection, start_intersection]))
+	else:
+		if are_intersections_connected(start_intersection, end_intersection):
+			return network[[start_intersection, end_intersection]]
 	return null
 
 func _set_connection(start_intersection: RoadIntersection, end_intersection: RoadIntersection, connection: RoadSegment):

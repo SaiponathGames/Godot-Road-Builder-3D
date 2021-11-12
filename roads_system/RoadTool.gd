@@ -29,9 +29,9 @@ var _is_dragging = false
 
 var continue_dragging = true
 
-var current_info: RoadNetworkInfo = RoadNetworkInfo.new("test_id", "Test Road", 1, 0.5, 1)
+var current_info: RoadNetworkInfo
 
-var enabled = true
+var enabled = false
 
 var buildable = false
 
@@ -47,30 +47,29 @@ func _input(event):
 			reset()
 			$RoadNetwork.clear()
 		
-		
+	if !enabled:
+		return
+	
+	if event is InputEventKey:
 		if event.scancode == KEY_V:
 			is_curve_tool_on = true
 		if event.scancode == KEY_B:
 			is_curve_tool_on = false
 		
 		if event.scancode == KEY_1:
-			current_info = RoadNetworkInfo.new("test_id", "Test Road", 1, 0.5, 1, 0.2, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
+			current_info = RoadNetworkInfo.new("test_id_1", "Test Road 1", 0.25, 1, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0.25), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.5, -0.25)])
 		if event.scancode == KEY_2:
-			current_info = RoadNetworkInfo.new("test_id_2", "Test Road 2", 1, 1, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0.25), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.5, -0.25)])
+			current_info = RoadNetworkInfo.new("test_id_2", "Test Road 2", 1, 0.5, 1, 0.2, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0)])
 		if event.scancode == KEY_3:
-			current_info = RoadNetworkInfo.new("test_id_3", "Test Road 3", 1, 1.5, 1)
+			current_info = RoadNetworkInfo.new("test_id_3", "Test Road 3", 1, 1.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0.5), RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0), RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, -0.5)])
 		if event.scancode == KEY_4:
 			current_info = RoadNetworkInfo.new("test_id_4", "Test Road 4", 2, 1, 1)
 		if event.scancode == KEY_5:
 			current_info = RoadNetworkInfo.new("test_id_5", "Test Road 5", 1, 1, 1.5)
 		if event.scancode == KEY_6:
-			current_info = RoadNetworkInfo.new("test_id_6", "Test Road 6", 0.25, 0.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.25, 0.125), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.25, -0.125)])
-			
-		
-	if !enabled:
-		return
+			current_info = RoadNetworkInfo.new("test_id_6", "Test Road 6", 0.25, 0.5, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0)])
 
-	if event is InputEventMouseButton:
+	if event is InputEventMouseButton  and current_info:
 		if event.button_index == BUTTON_LEFT and event.pressed:
 			if !_is_dragging: # start a new road
 				if _snapped:
@@ -165,7 +164,7 @@ func _input(event):
 				reset()
 				$RoadNetwork.clear()
 
-	if event is InputEventMouseMotion:
+	if event is InputEventMouseMotion and current_info:
 		_snapped = null
 		if _drag_current:
 			$RoadNetwork.remove_intersection(_drag_current, false)
@@ -197,13 +196,14 @@ func _input(event):
 		
 		# snap to edge
 
-		
 		if _is_dragging:
-			if _drag_start.distance_to(_drag_current) < 1:
+			var direction = _drag_start.direction_to(_drag_current)
+			var angle = abs(rad2deg(atan2(direction.z, direction.x)))
+			if _drag_start.distance_to(_drag_current) < 1 and angle < 15 and !is_equal_approx(angle, 0):
 				if $RoadNetwork/RoadRenderer.material_overlay != non_buildable_mat:
 					$RoadNetwork/RoadRenderer.material_overlay = non_buildable_mat
 				buildable = false
-			elif _drag_start.distance_to(_drag_current) > 1:
+			elif _drag_start.distance_to(_drag_current) > 1 and angle > 15 or is_equal_approx(angle, 0):
 				if $RoadNetwork/RoadRenderer.material_overlay != buildable_mat:
 					$RoadNetwork/RoadRenderer.material_overlay = buildable_mat
 				buildable = true

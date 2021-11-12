@@ -20,32 +20,49 @@ func _input(event):
 				if current_building:
 					ghost_instance = current_building.instance()
 					add_child(ghost_instance)
+					ghost_instance.hide()
 			elif !enabled:
 				if ghost_instance:
 					remove_child(ghost_instance)
 					ghost_instance.queue_free()
 	if !enabled:
 		return
+	
 	if event is InputEventKey:
-		if event.scancode == KEY_0:
-			current_building = BuildingType.new("test_id", "Test Name", load("res://models/building1.tscn"))
+		if event.scancode == KEY_1:
+			current_building = BuildingType.new("test_id", "Test Name", load("res://models/house1/building1.tscn"), 2)
+			current_building.door_face_direction = Vector3(1, 0, 0)
 			if ghost_instance:
 				remove_child(ghost_instance)
 				ghost_instance.queue_free()
 			ghost_instance = current_building.instance()
 			ghost_instance.scale += Vector3(0.01, 0.01, 0.01)
+			ghost_instance.hide()
+			add_child(ghost_instance)
+		if event.scancode == KEY_2:
+			current_building = BuildingType.new("test_id", "Test Name", load("res://models/house2/house2.tscn"), 2)
+			current_building.door_face_direction = Vector3.BACK
+			if ghost_instance:
+				remove_child(ghost_instance)
+				ghost_instance.queue_free()
+			ghost_instance = current_building.instance()
+			ghost_instance.scale += Vector3(0.01, 0.01, 0.01)
+			ghost_instance.hide()
 			add_child(ghost_instance)
 
 	if event is InputEventMouseMotion:
 		if current_building:
+			if !ghost_instance.visible:
+				ghost_instance.show()
 			var building_point = _cast_ray_to(event.position)
 			building_point = building_point.snapped(Vector3(0.25, 0, 0.25))
 #			var aabb = ghost_instance.global_transform.xform(get_aabb())
 			var aabb = get_aabb()
+			aabb = AABBUtils.transform_aabb(ghost_instance.global_transform, aabb)
 			aabb.position.y += -99
 			aabb.size.y += 99
 			$ImmediateGeometry2.clear()
-			DrawingUtils.draw_box_with_aabb($"ImmediateGeometry2", aabb, Vector3.ZERO)
+			DrawingUtils.draw_box_with_aabb($"ImmediateGeometry2", aabb)
 			is_buildable = building_network.is_buildable(aabb)
 #			$ImmediateGeometry.clear()
 #			DrawingUtils.draw_box_with_aabb($ImmediateGeometry, get_aabb())
@@ -60,15 +77,15 @@ func _input(event):
 			if is_vec_nan(building_point):
 				return
 #			print(building_point)
-			var segment = road_network.get_closest_segment(building_point, 1)
+			var segment = road_network.get_closest_segment(building_point, current_building.width/2)
 			if !segment:
-				segment = road_network.get_closest_bezier_segment(building_point, 1)
+				segment = road_network.get_closest_bezier_segment(building_point, current_building.width/2)
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
 
 				
-				var point: Vector3 = closest_point + direction * (-segment.road_network_info.width/2 + -1)
+				var point: Vector3 = closest_point + direction * -((segment.road_network_info.width + current_building.width)/2)
 				
 				var building_transform = Transform.IDENTITY
 				point.y = 0.02
@@ -98,9 +115,9 @@ func _input(event):
 				return
 			building_point.y = 0.02
 			building_point = building_point.snapped(Vector3(0.25, 0, 0.25))
-			var segment = road_network.get_closest_segment(building_point)
+			var segment = road_network.get_closest_segment(building_point, current_building.width/2)
 			if !segment:
-				segment = road_network.get_closest_bezier_segment(building_point, 1)
+				segment = road_network.get_closest_bezier_segment(building_point, current_building.width/2)
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
@@ -110,12 +127,14 @@ func _input(event):
 				var new_building = current_building.instance()
 				var building_transform = calculate_transform(point, closest_point, new_building)
 				
-				building_network.add_building(building_transform, new_building)
+				var aabb = new_building.get_aabb()
+				aabb = AABBUtils.transform_aabb(building_transform, aabb)
+				building_network.add_building(building_transform, new_building, aabb)
 				
 				var expanded_aabb = new_building.get_aabb()
 #				var expanded_aabb = new_building.get_aabb()
 				
-				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb, new_building.global_transform.origin)
+				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb)
 
 func get_aabb():
 	
