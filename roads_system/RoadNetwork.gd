@@ -464,35 +464,34 @@ func hull(segment: RoadBezier, t):
 	
 
 func split_at_position_with_bezier(segment: RoadBezier, _position: RoadIntersection, road_net_info: RoadNetworkInfo):
-	print("writing", immediate_geo)
 	var t = segment.project_point(_position.position, true)[1]
-	print(t, "failing..")
 	var points = hull(segment, t)
-	print(points)
 	
-	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
-	var colors = [Color.darkturquoise, Color.blue, Color.black, Color.darkred, Color.darkgoldenrod, Color.darkgreen]
-	var previous_point = points[0]
-	var i = 0
-	for point in points:
-		if previous_point != point:
-			print("drawing line", previous_point, point)
-			DrawingUtils.draw_line(immediate_geo, previous_point, point, colors[i])
-		previous_point = point
-		i+=1
-	i = 0
-	immediate_geo.end()
-	for point in points:
-		DrawingUtils.draw_empty_circle(immediate_geo, point, 0.125, colors[i])
-		i+=1
+	# immediate_geo.begin(Mesh.PRIMITIVE_LINES)
+	# var colors = [Color.white, Color.blue, Color.black, Color.red, Color.darkgoldenrod, Color.darkgreen]
+	# var previous_point = points[0]
+	# var i = 0
+	# for point in points:
+	# 	if previous_point != point:
+	# 		print("drawing line", previous_point, point)
+	# 		DrawingUtils.draw_line(immediate_geo, previous_point, point, colors[i])
+	# 	previous_point = point
+	# 	i+=1
+	# i = 0
+	# for point in points:
+	# 	DrawingUtils.draw_empty_circle(immediate_geo, point, 0.125, colors[i])
+	# 	i+=1
+	# immediate_geo.end()
 #	DrawingUtils.draw_empty_circle(immediate_geo, p1, 0.125, Color.black)
 #	DrawingUtils.draw_empty_circle(immediate_geo, p2, 0.125, Color.blue)
 #	DrawingUtils.draw_empty_circle(immediate_geo, p3, 0.125, Color.darkblue)
 #	DrawingUtils.draw_empty_circle(immediate_geo, p4, 0.125, Color.violet)
 #	DrawingUtils.draw_empty_circle(immediate_geo, p5, 0.125, Color.magenta)
 #
+
 	delete_connection_with_bezier(segment, true, false)
-#	var intersection_list = []
+
+	#	var intersection_list = []
 #	for point in points:
 #		var intersection = road_net_info.create_intersection(point)
 #		add_intersection(intersection)
@@ -512,25 +511,30 @@ func split_at_position_with_bezier(segment: RoadBezier, _position: RoadIntersect
 #	add_intersection(p3_int, false)
 #	add_intersection(p4_int, false)
 #	add_intersection(p5_int, false)
+
 	var left_intersection_list = []
 	for _i in [0, 3, 5]:
-		var intersection = road_net_info.create_intersection(points[_i])
-		if _i == 3:
-			intersection.visible = false
-		add_intersection(intersection, false)
+		var intersection = get_closest_node(points[_i])
+		if !intersection:
+			intersection = road_net_info.create_intersection(points[_i])
+			if _i == 3:
+				intersection.visible = false
+			add_intersection(intersection, false)
 		left_intersection_list.append(intersection)
-	print(left_intersection_list)
+
 	var right_intersection_list = []
 	for _i in [2, 4, 5]:
-		var intersection = road_net_info.create_intersection(points[_i])
-		if _i == 4:
-			intersection.visible = false
-		add_intersection(intersection, false)
+		var intersection = get_closest_node(points[_i])
+		if !intersection:
+			intersection = road_net_info.create_intersection(points[_i])
+			if _i == 4:
+				intersection.visible = false
+			add_intersection(intersection, false)
 		right_intersection_list.append(intersection)
 	
 	
 	connect_intersections_with_bezier(left_intersection_list[0], left_intersection_list[1], left_intersection_list[2], road_net_info, false)
-#	connect_intersections_with_bezier(p5_int, p4_int, p2_int, road_net_info)
+	connect_intersections_with_bezier(right_intersection_list[0], right_intersection_list[1], right_intersection_list[2], road_net_info, false)
 
 
 func join_segments(segment_1: RoadSegment, segment_2: RoadSegment, network_info: RoadNetworkInfo):
