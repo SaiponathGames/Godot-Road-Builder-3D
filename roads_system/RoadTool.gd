@@ -108,28 +108,42 @@ func _input(event):
 					var middle_intersection = null
 					var end_intersection = world_road_network.get_closest_node(_drag_end.position)
 					if !start_intersection:
+						# print("create start intersection")
 						start_intersection = create_new_intersection(_drag_start.position)
 					if !end_intersection:
+						# print("create end intersection")
 						end_intersection = create_new_intersection(_drag_end.position)
 					if _drag_middle:
+						# print("create middle intersection")
 						middle_intersection = create_new_intersection(_drag_middle.position)
 					
 					# add to world
 					if !world_road_network.has_intersection(start_intersection):
+						# print("add start intersection")
 						world_road_network.add_intersection(start_intersection)
 					if !world_road_network.has_intersection(end_intersection):
+						# print("add end intersection")
 						world_road_network.add_intersection(end_intersection)
 					if _drag_middle and is_curve_tool_on:
 						if !world_road_network.has_intersection(middle_intersection):
+							# print("add middle intersection")
 							world_road_network.add_intersection(middle_intersection)
 						
 					if _start_segment:
+						# print("has start segment")
 						if _start_segment is RoadSegment:
+							# print("split start segment")
 							world_road_network.split_at_postion(_start_segment, start_intersection, _start_segment.road_network_info)
+						elif _start_segment is RoadBezier:
+							# print("split start segment with bezier")
+							world_road_network.split_at_position_with_bezier(_start_segment, start_intersection, _start_segment.road_network_info)
 					if _end_segment:
+						# print("has end segment")
 						if _end_segment is RoadSegment:
+							# print("split end segment")
 							world_road_network.split_at_postion(_end_segment, end_intersection, _end_segment.road_network_info)
 						elif _end_segment is RoadBezier:
+							# print("split end segment with bezier")
 							world_road_network.split_at_position_with_bezier(_end_segment, end_intersection, _end_segment.road_network_info)
 					if start_intersection.position != end_intersection.position and !is_curve_tool_on:
 						world_road_network.connect_intersections(start_intersection, end_intersection, current_info)
