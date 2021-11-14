@@ -100,7 +100,7 @@ func _render_road(road_network):
 #	road_network.draw(Color.white, Color.aqua)
 	var vertex_array = {}
 	for intersection in road_network.intersections:
-		if !intersection.connections:
+		if !intersection.connections && intersection.visible:
 			draw_filled_circle(surface_tool, intersection.road_network_info.width/2, intersection.position)
 			continue
 #			draw_filled_circle(surface_tool, 1, intersection.position)
