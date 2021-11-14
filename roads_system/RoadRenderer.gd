@@ -90,8 +90,8 @@ func draw_intersection(intersection: RoadIntersection):
 			else:
 				direction = ((intersection.direction_to(connection.start_position) + connection.end_position.direction_to(intersection))).normalized()
 			var start_point = intersection.position
-			# if intersection.connections.size() > 2:				# <-- used to be 1
-			#     start_point += direction * (connection.road_network_info.length + ((connection.road_network_info.width)/2) + (pow(intersection.connections.size(), connection.road_network_info.curvature)/2.0))
+			if intersection.connections.size() > 2:				# <-- used to be 1
+				start_point += direction * (connection.road_network_info.length + ((connection.road_network_info.width)/2) + (pow(intersection.connections.size(), connection.road_network_info.curvature)/2.0))
 #				print(intersection.road_network_info.length + (connection.road_network_info.width-1) + (pow(intersection.connections.size(), 0.3)/3.0))
 			start_points.append(start_point)
 #			DrawingUtils.draw_empty_circle($ImmediateGeometry, start_point, 0.25, Color.yellow)
