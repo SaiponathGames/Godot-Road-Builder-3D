@@ -1,84 +1,8 @@
 extends MeshInstance
 
-#func _render_road(network: RoadNetwork):
-##	var arr = []
-##	arr.resize(ArrayMesh.ARRAY_MAX)
-##	arr[ArrayMesh.ARRAY_VERTEX] = PoolVector3Array()
-##	arr[ArrayMesh.ARRAY_INDEX] = PoolIntArray()
-##	arr[ArrayMesh.ARRAY_TEX_UV] = PoolVector2Array()
-##	arr[ArrayMesh.ARRAY_NORMAL] = PoolVector3Array()
-#
-#	var surface_tool = SurfaceTool.new()
-#	var vertex_index = 0
-#
-#	var changed = false
-#	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-#	var spacing = 0.1
-#	for connection in network.network.values():
-#		var points = connection.get_points(spacing, 1)
-##		arr[ArrayMesh.ARRAY_VERTEX].resize(vertex_index+(points.size() * 2))
-##		arr[ArrayMesh.ARRAY_INDEX].resize(triangle_index+(2 * (points.size() - 1) * 3))
-##		arr[ArrayMesh.ARRAY_TEX_UV].resize(vertex_index+(points.size() * 2))
-#		vertex_index = calculate_road_mesh_vertices(points, surface_tool, vertex_index, connection.width, spacing*10)[0]
-#		if connection.start_position.connections.size() > 0:
-#			pass
-#		changed = true
-#	if changed:
-#		mesh = ArrayMesh.new()
-#
-#		surface_tool.commit(mesh)
-#
-#
-#func calculate_road_mesh_vertices(points, surface_tool: SurfaceTool, vertex_index, road_width = 10, uv_scale = 10, use_ping_pong_v = true):
-#
-#	uv_scale = uv_scale * points.size() * 0.05
-#	var completion_percentage = 0
-#
-#	for i in points.size():
-#
-#		var forward = Vector3.ZERO
-#		if i < points.size() - 1:
-#			forward += points[i+1] - points[i]
-#		if i > 0:
-#			forward += points[i] - points[i-1]
-#		forward = forward.normalized()
-#
-#		completion_percentage = i / float(points.size() - 1)
-#		var v
-#		if use_ping_pong_v:
-#			v = 1 - abs(2 * completion_percentage - 1)
-#		else:
-#			v = completion_percentage
-#
-##		uvs[vertex_index] = Vector2(v * uv_scale, -0.1)
-##		uvs[vertex_index+1] = Vector2(v * uv_scale, 1.1)
-#
-#		var left = Vector3(-forward.z, forward.y, forward.x)
-#
-#		surface_tool.add_uv(Vector2(v * uv_scale, -0.1))
-#		surface_tool.add_normal(Vector3.UP)
-#		surface_tool.add_vertex(points[i] + left * road_width * 0.5)
-#		surface_tool.add_uv(Vector2(v * uv_scale, 1.1))
-#		surface_tool.add_normal(Vector3.UP)
-#		surface_tool.add_vertex(points[i] + -left * road_width * 0.5)
-#
-#
-#		if i < points.size() - 1:
-#			surface_tool.add_index(vertex_index + 0)
-#			surface_tool.add_index(vertex_index + 1)
-#			surface_tool.add_index(vertex_index + 2)
-#
-#			surface_tool.add_index(vertex_index + 1)
-#			surface_tool.add_index(vertex_index + 3)
-#			surface_tool.add_index(vertex_index + 2)
-#
-#		vertex_index += 2
-#	return [vertex_index]
-#
 const RoadIntersection = RoadNetwork.RoadIntersection
 const RoadSegment = RoadNetwork.RoadSegment
 const RoadBezier = RoadNetwork.RoadBezier
-
 
 export(NodePath) var immediate_geometry_node_path
 onready var immediate_geometry_node = get_node(immediate_geometry_node_path)
@@ -100,15 +24,15 @@ func _render_road(road_network):
 #	road_network.draw(Color.white, Color.aqua)
 	var vertex_array = {}
 	for intersection in road_network.intersections:
-		if !intersection.connections && intersection.visible:
-			draw_filled_circle(surface_tool, intersection.road_network_info.width/2, intersection.position)
-			continue
-#			draw_filled_circle(surface_tool, 1, intersection.position)
-		var v1dict = draw_intersection(intersection)
+		if !intersection.connections:
+			if intersection.visible:
+				draw_filled_circle(surface_tool, intersection.road_network_info.width/2, intersection.position)
+		else:
+			var v1dict = draw_intersection(intersection)
 		
-		if intersection.visible:
-			draw_complete_intersection(surface_tool, intersection, v1dict[0], v1dict[1])
-		vertex_array[intersection] = v1dict
+			if intersection.visible:
+				draw_complete_intersection(surface_tool, intersection, v1dict[0], v1dict[1])
+			vertex_array[intersection] = v1dict
 		
 	for connection in road_network.network.values():
 		if !(connection.start_position.visible or connection.end_position.visible) or !connection.visible:
