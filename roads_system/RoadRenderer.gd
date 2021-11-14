@@ -376,21 +376,19 @@ func quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 
 func draw_filled_arc(_surface_tool: SurfaceTool, radius: float, center: Vector3, resolution: int = 64, start_angle: float = 0, end_angle: float = 360):
 	var angular_segment = resolution
-	_surface_tool.add_normal(Vector3.UP)
-	_surface_tool.add_vertex(center)
-	
-	for i in range(angular_segment+1):
-		var t = i / float(angular_segment)
-		var angle = deg2rad(start_angle + i * (end_angle-start_angle) / float(angular_segment) - 90)
-		var position_outer = Vector3(0, 0, radius)
-		_surface_tool.add_normal(Vector3.UP)
-		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle)+center)
-	
+   
+	var position_outer = Vector3(0, 0, radius)
+	var arc_step = (end_angle-start_angle) / float(angular_segment)
+
 	for i in range(angular_segment):
-		
-		_surface_tool.add_index(0)
-		_surface_tool.add_index(i + 2)
-		_surface_tool.add_index(i + 1)
+		var angle1 = deg2rad(start_angle + i * arc_step - 90)
+		var angle2 = deg2rad(start_angle + ((i+1) % angular_segment) * arc_step - 90)
+		_surface_tool.add_normal(Vector3.UP)
+		_surface_tool.add_vertex(center)
+		_surface_tool.add_normal(Vector3.UP)
+		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle2)+center)
+		_surface_tool.add_normal(Vector3.UP)
+		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle1)+center)
 		
 
 func draw_filled_circle(_surface_tool: SurfaceTool, radius: float, center: Vector3, resolution: int = 64):
