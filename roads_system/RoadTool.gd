@@ -49,7 +49,7 @@ func _input(event):
 		
 	if !enabled:
 		return
-	
+
 	if event is InputEventKey:
 		if event.scancode == KEY_V:
 			is_curve_tool_on = true
@@ -129,6 +129,8 @@ func _input(event):
 					if _start_segment:
 						if _start_segment is RoadSegment:
 							world_road_network.split_at_postion(_start_segment, start_intersection, _start_segment.road_network_info)
+						elif _start_segment is RoadBezier:
+							world_road_network.split_at_position_with_bezier(_start_segment, start_intersection, _start_segment.road_network_info)
 					if _end_segment:
 						if _end_segment is RoadSegment:
 							world_road_network.split_at_postion(_end_segment, end_intersection, _end_segment.road_network_info)
@@ -253,7 +255,7 @@ func _process(delta):
 	if !_is_dragging:
 		$Control/PanelContainer.hide()
 		$Control/PanelContainer2.hide()
-		
+
 
 func _set_snapped(new_intersection: RoadIntersection):
 	_snapped = world_road_network.get_closest_node(new_intersection.position)
