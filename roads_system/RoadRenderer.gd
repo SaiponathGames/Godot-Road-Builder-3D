@@ -287,15 +287,15 @@ func sort_by_angle(a, b, origin):
 func draw_triangle_with_uv(_surface_tool: SurfaceTool, v0: Vector3, uv0: Vector2, v1: Vector3, uv1: Vector2, v2: Vector3, uv2: Vector2, color: Color = Color()):
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv0)
-	_surface_tool.add_normal(Vector3.UP)
+	_surface_tool.add_normal(Vector3.BACK)
 	_surface_tool.add_vertex(v0)
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv1)
-	_surface_tool.add_normal(Vector3.UP)
+	_surface_tool.add_normal(Vector3.BACK)
 	_surface_tool.add_vertex(v1)
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv2)
-	_surface_tool.add_normal(Vector3.UP)
+	_surface_tool.add_normal(Vector3.BACK)
 	_surface_tool.add_vertex(v2)
 
 func draw_triangle(_surface_tool: SurfaceTool, v0: Vector3, v1: Vector3, v2: Vector3, color: Color = Color()):

@@ -1,11 +1,10 @@
-[gd_scene load_steps=35 format=2]
+[gd_scene load_steps=33 format=2]
 
 [ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
 [ext_resource path="res://Debug.gd" type="Script" id=3]
 [ext_resource path="res://addons/sairam.quadtree/QuadTreeNode.gd" type="Script" id=4]
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=5]
-[ext_resource path="res://Road.tres" type="Material" id=6]
 [ext_resource path="res://roads_system/RoadNetwork.gd" type="Script" id=7]
 [ext_resource path="res://Camera.tscn" type="PackedScene" id=8]
 [ext_resource path="res://roads_system/RoadTool.gd" type="Script" id=9]
@@ -34,12 +33,11 @@ textures = [ [  ], [  ] ]
 
 [sub_resource type="SpatialMaterial" id=11]
 albedo_texture = ExtResource( 18 )
-metallic = 0.22
-metallic_specular = 0.76
+metallic_specular = 0.0
 metallic_texture = ExtResource( 25 )
 roughness_texture = ExtResource( 22 )
 normal_enabled = true
-normal_scale = 1.0
+normal_scale = 5.0
 normal_texture = ExtResource( 24 )
 depth_enabled = true
 depth_scale = 0.05
@@ -47,7 +45,7 @@ depth_deep_parallax = false
 depth_flip_tangent = false
 depth_flip_binormal = false
 depth_texture = ExtResource( 23 )
-uv1_scale = Vector3( 2, 2, 2 )
+uv1_scale = Vector3( 0.5, 0.5, 1 )
 
 [sub_resource type="SpatialMaterial" id=2]
 flags_unshaded = true
@@ -63,24 +61,6 @@ albedo_color = Color( 1, 0, 0, 1 )
 flags_unshaded = true
 vertex_color_use_as_albedo = true
 
-[sub_resource type="SpatialMaterial" id=7]
-flags_transparent = true
-albedo_color = Color( 1, 1, 1, 0.498039 )
-albedo_texture = ExtResource( 18 )
-metallic = 0.22
-metallic_specular = 0.76
-metallic_texture = ExtResource( 25 )
-normal_enabled = true
-normal_scale = 1.0
-normal_texture = ExtResource( 24 )
-depth_enabled = true
-depth_scale = 0.05
-depth_deep_parallax = false
-depth_flip_tangent = false
-depth_flip_binormal = false
-depth_texture = ExtResource( 22 )
-uv1_scale = Vector3( 2, 2, 2 )
-
 [sub_resource type="SpatialMaterial" id=9]
 vertex_color_use_as_albedo = true
 
@@ -92,14 +72,13 @@ script = ExtResource( 15 )
 
 [node name="HTerrain" type="Spatial" parent="."]
 script = ExtResource( 1 )
+lod_scale = 2.0
 _terrain_data = ExtResource( 5 )
 chunk_size = 32
 collision_enabled = true
 collision_layer = 1
 collision_mask = 1
 shader_type = "Classic4Lite"
-custom_shader = null
-custom_globalmap_shader = null
 texture_set = SubResource( 1 )
 shader_params/u_ground_uv_scale = 20
 shader_params/u_depth_blending = true
@@ -129,7 +108,6 @@ road_net_np = NodePath("..")
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.02, -128 )
-visible = false
 material_override = SubResource( 2 )
 
 [node name="RoadSystemGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
@@ -220,7 +198,7 @@ immediate_geo_node = NodePath("ImmediateGeometry")
 use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadTool/RoadNetwork"]
-material_override = SubResource( 7 )
+material_override = SubResource( 11 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -239,7 +217,7 @@ __meta__ = {
 
 [node name="PanelContainer" type="PanelContainer" parent="Tools/RoadTool/Control"]
 modulate = Color( 1, 1, 1, 0.501961 )
-margin_right = 112.0
+margin_right = 46.0
 margin_bottom = 28.0
 __meta__ = {
 "_edit_use_anchors_": false
@@ -248,19 +226,20 @@ __meta__ = {
 [node name="Label" type="Label" parent="Tools/RoadTool/Control/PanelContainer"]
 margin_left = 7.0
 margin_top = 7.0
-margin_right = 105.0
+margin_right = 39.0
 margin_bottom = 21.0
-text = "Length: 100m"
+text = "100u"
+align = 1
+valign = 1
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="PanelContainer2" type="PanelContainer" parent="Tools/RoadTool/Control"]
-visible = false
 modulate = Color( 1, 1, 1, 0.501961 )
 margin_left = 179.0
 margin_top = 130.0
-margin_right = 193.0
+margin_right = 244.0
 margin_bottom = 158.0
 __meta__ = {
 "_edit_use_anchors_": false
@@ -269,9 +248,11 @@ __meta__ = {
 [node name="Label" type="Label" parent="Tools/RoadTool/Control/PanelContainer2"]
 margin_left = 7.0
 margin_top = 7.0
-margin_right = 88.0
+margin_right = 58.0
 margin_bottom = 21.0
-text = "Angle: 100m"
+text = "100 deg"
+align = 1
+valign = 1
 
 [node name="PathVisualizer" type="Spatial" parent="Tools"]
 script = ExtResource( 10 )
@@ -284,7 +265,7 @@ use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/PathVisualizer/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0 )
-material_override = ExtResource( 6 )
+material_override = SubResource( 11 )
 skeleton = NodePath("../../../..")
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../ImmediateGeometry")
@@ -305,7 +286,7 @@ use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadRemover/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0 )
-material_override = ExtResource( 6 )
+material_override = SubResource( 11 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 
@@ -320,7 +301,7 @@ use_quad_tree = false
 
 [node name="RoadRenderer" type="MeshInstance" parent="Tools/RoadUpgrade/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0 )
-material_override = ExtResource( 6 )
+material_override = SubResource( 11 )
 script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../../../../HTerrain/RoadNetwork/RoadSystemGeometry")
 

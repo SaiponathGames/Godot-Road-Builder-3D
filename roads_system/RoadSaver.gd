@@ -27,9 +27,10 @@ func save(network: RoadNetwork):
 		image.unlock()
 	
 	image.save_png("user://test.png")
+# warning-ignore:return_value_discarded
 	OS.shell_open(ProjectSettings.globalize_path("user://"))
 	
-func load_road(image: Image, network: RoadNetwork):
+func load_road(image: Image, _network: RoadNetwork):
 	for x in image.get_width():
 		for y in image.get_height():
 			image.lock()

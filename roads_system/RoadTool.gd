@@ -138,11 +138,13 @@ func _input(event):
 							world_road_network.split_at_position_with_bezier(_end_segment, end_intersection, _end_segment.road_network_info)
 					if start_intersection.position != end_intersection.position and !is_curve_tool_on:
 # warning-ignore:return_value_discarded
-						world_road_network.connect_intersections(start_intersection, end_intersection, current_info)
+						world_road_network.connect_intersections(start_intersection, end_intersection, current_info, false)
+						world_road_network.subdivide_intersections(start_intersection, end_intersection, current_info, false)
 #						print(connection.get_bounds())
 					if middle_intersection and is_curve_tool_on:
-						world_road_network.connect_intersections_with_bezier(start_intersection, middle_intersection, end_intersection, current_info)
+						world_road_network.connect_intersections_with_bezier(start_intersection, middle_intersection, end_intersection, current_info, false)
 	#				world_road_network.draw()
+					world_road_network.update()
 					$RoadNetwork.clear()
 					_is_dragging = continue_dragging
 					if continue_dragging:
@@ -237,20 +239,24 @@ func _input(event):
 #				_drag_current.position = closest_point
 #				_snapped_segment = segment
 
-func _process(delta):
+func _process(_delta):
 	if _is_dragging and is_instance_valid(_drag_current):
 		var camera = get_viewport().get_camera()
 		var position = camera.unproject_position(_drag_current.position)
+		if is_vec_nan(position):
+			return
 		$"Control/PanelContainer".rect_position = position-$"Control/PanelContainer".rect_size/2
 		var length = _drag_start.distance_to(_drag_current)
 		if !is_equal_approx(length, 0.01):
-			$Control/PanelContainer/Label.text = "Length: %.2fu" % length
+			$Control/PanelContainer/Label.text = "%.2fu" % length
 			$Control/PanelContainer.show()
 		var angle_pos = camera.unproject_position(_drag_start.position)
+		if is_vec_nan(angle_pos):
+			return
 		$"Control/PanelContainer2".rect_position = angle_pos-$Control/PanelContainer2.rect_size/2
 		var direction = _drag_start.direction_to(_drag_current)
 		var angle = rad2deg(atan2(direction.z, direction.x))
-		$Control/PanelContainer2/Label.text = "Angle: %.2fdeg" % angle
+		$Control/PanelContainer2/Label.text = "%.2f deg" % angle
 		$Control/PanelContainer2.show()
 	if !_is_dragging:
 		$Control/PanelContainer.hide()
@@ -300,3 +306,12 @@ func snap_to_length_and_angle(from, to):
 		length = new_length
 		to.position = from.position + direction * length
 	return to
+
+func is_vec_nan(vec) -> bool:
+	if typeof(vec) == TYPE_VECTOR3:
+		return is_nan(vec.x) and is_nan(vec.y) and is_nan(vec.z)
+	if typeof(vec) == TYPE_VECTOR2:
+		return is_nan(vec.x) and is_nan(vec.y)
+	if typeof(vec) == TYPE_REAL:
+		return is_nan(vec)
+	return false
