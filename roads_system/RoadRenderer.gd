@@ -1,92 +1,22 @@
 extends MeshInstance
 
-#func _render_road(network: RoadNetwork):
-##	var arr = []
-##	arr.resize(ArrayMesh.ARRAY_MAX)
-##	arr[ArrayMesh.ARRAY_VERTEX] = PoolVector3Array()
-##	arr[ArrayMesh.ARRAY_INDEX] = PoolIntArray()
-##	arr[ArrayMesh.ARRAY_TEX_UV] = PoolVector2Array()
-##	arr[ArrayMesh.ARRAY_NORMAL] = PoolVector3Array()
-#
-#	var surface_tool = SurfaceTool.new()
-#	var vertex_index = 0
-#
-#	var changed = false
-#	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-#	var spacing = 0.1
-#	for connection in network.network.values():
-#		var points = connection.get_points(spacing, 1)
-##		arr[ArrayMesh.ARRAY_VERTEX].resize(vertex_index+(points.size() * 2))
-##		arr[ArrayMesh.ARRAY_INDEX].resize(triangle_index+(2 * (points.size() - 1) * 3))
-##		arr[ArrayMesh.ARRAY_TEX_UV].resize(vertex_index+(points.size() * 2))
-#		vertex_index = calculate_road_mesh_vertices(points, surface_tool, vertex_index, connection.width, spacing*10)[0]
-#		if connection.start_position.connections.size() > 0:
-#			pass
-#		changed = true
-#	if changed:
-#		mesh = ArrayMesh.new()
-#
-#		surface_tool.commit(mesh)
-#
-#
-#func calculate_road_mesh_vertices(points, surface_tool: SurfaceTool, vertex_index, road_width = 10, uv_scale = 10, use_ping_pong_v = true):
-#
-#	uv_scale = uv_scale * points.size() * 0.05
-#	var completion_percentage = 0
-#
-#	for i in points.size():
-#
-#		var forward = Vector3.ZERO
-#		if i < points.size() - 1:
-#			forward += points[i+1] - points[i]
-#		if i > 0:
-#			forward += points[i] - points[i-1]
-#		forward = forward.normalized()
-#
-#		completion_percentage = i / float(points.size() - 1)
-#		var v
-#		if use_ping_pong_v:
-#			v = 1 - abs(2 * completion_percentage - 1)
-#		else:
-#			v = completion_percentage
-#
-##		uvs[vertex_index] = Vector2(v * uv_scale, -0.1)
-##		uvs[vertex_index+1] = Vector2(v * uv_scale, 1.1)
-#
-#		var left = Vector3(-forward.z, forward.y, forward.x)
-#
-#		surface_tool.add_uv(Vector2(v * uv_scale, -0.1))
-#		surface_tool.add_normal(Vector3.UP)
-#		surface_tool.add_vertex(points[i] + left * road_width * 0.5)
-#		surface_tool.add_uv(Vector2(v * uv_scale, 1.1))
-#		surface_tool.add_normal(Vector3.UP)
-#		surface_tool.add_vertex(points[i] + -left * road_width * 0.5)
-#
-#
-#		if i < points.size() - 1:
-#			surface_tool.add_index(vertex_index + 0)
-#			surface_tool.add_index(vertex_index + 1)
-#			surface_tool.add_index(vertex_index + 2)
-#
-#			surface_tool.add_index(vertex_index + 1)
-#			surface_tool.add_index(vertex_index + 3)
-#			surface_tool.add_index(vertex_index + 2)
-#
-#		vertex_index += 2
-#	return [vertex_index]
-#
 const RoadIntersection = RoadNetwork.RoadIntersection
 const RoadSegment = RoadNetwork.RoadSegment
 const RoadBezier = RoadNetwork.RoadBezier
 
-
 export(NodePath) var immediate_geometry_node_path
 onready var immediate_geometry_node = get_node(immediate_geometry_node_path)
+
+export var can_draw_lanes = false
 var surface_tool = SurfaceTool.new()
 
 var rendering_mode = Mesh.PRIMITIVE_TRIANGLES
 
+var count = 0
+
 func _render_road(road_network):
+	count+=1
+#	prints(name, count)
 	immediate_geometry_node.clear()
 	surface_tool.clear()
 #	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -101,14 +31,14 @@ func _render_road(road_network):
 	var vertex_array = {}
 	for intersection in road_network.intersections:
 		if !intersection.connections:
-			draw_filled_circle(surface_tool, intersection.road_network_info.width/2, intersection.position)
-			continue
-#			draw_filled_circle(surface_tool, 1, intersection.position)
-		var v1dict = draw_intersection(intersection)
+			if intersection.visible:
+				draw_filled_circle(surface_tool, intersection.road_network_info.width/2, intersection.position)
+		else:
+			var v1dict = draw_intersection(intersection)
 		
-		if intersection.visible:
-			draw_complete_intersection(surface_tool, intersection, v1dict[0], v1dict[1])
-		vertex_array[intersection] = v1dict
+			if intersection.visible:
+				draw_complete_intersection(surface_tool, intersection, v1dict[0], v1dict[1])
+			vertex_array[intersection] = v1dict
 		
 	for connection in road_network.network.values():
 		if !(connection.start_position.visible or connection.end_position.visible) or !connection.visible:
@@ -129,6 +59,9 @@ func _render_road(road_network):
 		var start_connection_intersection = start_dict[0][connection]
 		var end_connection_intersection = end_dict[0][connection]
 		draw_connection(surface_tool, start_connection_intersection, end_connection_intersection)
+		if can_draw_lanes:
+			$ImmediateGeometry.clear()
+			draw_lanes(surface_tool, connection)
 
 	mesh = surface_tool.commit()
 
@@ -164,7 +97,7 @@ func draw_intersection(intersection: RoadIntersection):
 			if (connection is RoadBezier and intersection != connection.middle_position) or not connection is RoadBezier:
 				direction = intersection.direction_to(intersection_bound_for)
 			else:
-				direction = ((intersection.direction_to(connection.start_position) + connection.end_position.direction_to(intersection))).normalized()
+				direction = get_average_direction_to(intersection, intersection_bound_for, connection)
 			var start_point = intersection.position
 			if intersection.connections.size() > 1:
 				start_point += direction * (connection.road_network_info.length + ((connection.road_network_info.width)/2) + (pow(intersection.connections.size(), connection.road_network_info.curvature)/2.0))
@@ -197,6 +130,15 @@ func draw_intersection(intersection: RoadIntersection):
 		
 	return [intersection_verts, mid_points]
 
+func get_average_direction_to(intersection: RoadIntersection, position: RoadIntersection, connection: RoadBezier):
+	var projected_time = connection.project_point(position.position, true)[1]
+	var direction = Vector3.ZERO
+	for t in range(0, projected_time, 0.01):
+		direction += intersection.position.direction_to(connection.get_point(t))
+		direction = direction.normalized()
+	return direction
+
+
 func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary, resolution: int = 20):
 	var last_v1 = i1.v1
 	var last_v2 = i1.v2
@@ -214,6 +156,16 @@ func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary,
 			last_v1)
 		last_v1 = v2
 		last_v2 = v1
+
+
+func draw_lanes(_surface_tool: SurfaceTool, connection: RoadSegment):
+	$ImmediateGeometry.begin(Mesh.PRIMITIVE_LINES)
+	for lane in connection.lanes:
+		var direction = connection.start_position.direction_to(connection.end_position)
+		var left = Vector3(-direction.z, direction.y, direction.x)
+		DrawingUtils.draw_line($ImmediateGeometry, connection.start_position.position+left*(lane.lane_info.offset+lane.lane_info.width/2), connection.end_position.position+left*(lane.lane_info.offset+lane.lane_info.width/2))
+		DrawingUtils.draw_line($ImmediateGeometry, connection.start_position.position+left*(lane.lane_info.offset+-lane.lane_info.width/2), connection.end_position.position+left*(lane.lane_info.offset+-lane.lane_info.width/2))
+	$ImmediateGeometry.end()
 
 func draw_bezier_connection(_surface_tool, i1: Dictionary, m_i: Dictionary, i2: Dictionary, resolution: int = 20):
 #	print(m_i.v1, m_i.v2)
@@ -336,15 +288,15 @@ func sort_by_angle(a, b, origin):
 func draw_triangle_with_uv(_surface_tool: SurfaceTool, v0: Vector3, uv0: Vector2, v1: Vector3, uv1: Vector2, v2: Vector3, uv2: Vector2, color: Color = Color()):
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv0)
-	_surface_tool.add_normal(Vector3.UP)
+	_surface_tool.add_normal(Vector3.BACK)
 	_surface_tool.add_vertex(v0)
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv1)
-	_surface_tool.add_normal(Vector3.UP)
+	_surface_tool.add_normal(Vector3.BACK)
 	_surface_tool.add_vertex(v1)
 	_surface_tool.add_color(color)
 	_surface_tool.add_uv(uv2)
-	_surface_tool.add_normal(Vector3.UP)
+	_surface_tool.add_normal(Vector3.BACK)
 	_surface_tool.add_vertex(v2)
 
 func draw_triangle(_surface_tool: SurfaceTool, v0: Vector3, v1: Vector3, v2: Vector3, color: Color = Color()):
@@ -376,21 +328,19 @@ func quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 
 func draw_filled_arc(_surface_tool: SurfaceTool, radius: float, center: Vector3, resolution: int = 64, start_angle: float = 0, end_angle: float = 360):
 	var angular_segment = resolution
-	_surface_tool.add_normal(Vector3.UP)
-	_surface_tool.add_vertex(center)
-	
-	for i in range(angular_segment+1):
-		var t = i / float(angular_segment)
-		var angle = deg2rad(start_angle + i * (end_angle-start_angle) / float(angular_segment) - 90)
-		var position_outer = Vector3(0, 0, radius)
-		_surface_tool.add_normal(Vector3.UP)
-		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle)+center)
-	
+
+	var position_outer = Vector3(0, 0, radius)
+	var arc_step = (end_angle-start_angle) / float(angular_segment)
+
 	for i in range(angular_segment):
-		
-		_surface_tool.add_index(0)
-		_surface_tool.add_index(i + 2)
-		_surface_tool.add_index(i + 1)
+		var angle1 = deg2rad(start_angle + i * arc_step - 90)
+		var angle2 = deg2rad(start_angle + ((i+1) % angular_segment) * arc_step - 90)
+		_surface_tool.add_normal(Vector3.UP)
+		_surface_tool.add_vertex(center)
+		_surface_tool.add_normal(Vector3.UP)
+		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle2)+center)
+		_surface_tool.add_normal(Vector3.UP)
+		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle1)+center)
 		
 
 func draw_filled_circle(_surface_tool: SurfaceTool, radius: float, center: Vector3, resolution: int = 64):

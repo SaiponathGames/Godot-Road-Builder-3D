@@ -3,10 +3,12 @@ extends Spatial
 var current_building: BuildingType
 export(NodePath) var road_network_path
 onready var road_network = get_node(road_network_path) as RoadNetwork
-export(NodePath) var buildings_path
-onready var buildings = get_node(buildings_path)
-export(NodePath) var quad_tree_path
-onready var quad_tree = get_node(quad_tree_path)
+export(NodePath) var building_network_path
+onready var building_network = get_node(building_network_path) as BuildingNetwork
+
+export(SpatialMaterial) var buildable_mat
+export(SpatialMaterial) var non_buildable_mat
+var is_buildable = false
 
 var ghost_instance: Spatial
 var enabled
@@ -17,43 +19,73 @@ func _input(event):
 			if enabled:
 				if current_building:
 					ghost_instance = current_building.instance()
-					buildings.add_child(ghost_instance)
+					add_child(ghost_instance)
+					ghost_instance.hide()
 			elif !enabled:
 				if ghost_instance:
-					buildings.remove_child(ghost_instance)
+					remove_child(ghost_instance)
 					ghost_instance.queue_free()
 	if !enabled:
 		return
+	
 	if event is InputEventKey:
-		if event.scancode == KEY_0:
-			current_building = BuildingType.new("test_id", "Test Name", load("res://models/building1.tscn"))
+		if event.scancode == KEY_1:
+			current_building = BuildingType.new("test_id", "Test Name", load("res://models/house1/building1.tscn"), 2)
+			current_building.door_face_direction = Vector3(1, 0, 0)
 			if ghost_instance:
-				buildings.remove_child(ghost_instance)
+				remove_child(ghost_instance)
 				ghost_instance.queue_free()
 			ghost_instance = current_building.instance()
-			buildings.add_child(ghost_instance)
+			ghost_instance.scale += Vector3(0.01, 0.01, 0.01)
+			ghost_instance.hide()
+			add_child(ghost_instance)
+		if event.scancode == KEY_2:
+			current_building = BuildingType.new("test_id", "Test Name", load("res://models/house2/house2.tscn"), 2)
+			current_building.door_face_direction = Vector3.BACK
+			if ghost_instance:
+				remove_child(ghost_instance)
+				ghost_instance.queue_free()
+			ghost_instance = current_building.instance()
+			ghost_instance.scale += Vector3(0.01, 0.01, 0.01)
+			ghost_instance.hide()
+			add_child(ghost_instance)
 
 	if event is InputEventMouseMotion:
 		if current_building:
+			if !ghost_instance.visible:
+				ghost_instance.show()
 			var building_point = _cast_ray_to(event.position)
 			building_point = building_point.snapped(Vector3(0.25, 0, 0.25))
-			var buildings = quad_tree.query(get_aabb())
-			if !buildings:
+#			var aabb = ghost_instance.global_transform.xform(get_aabb())
+			var aabb = get_aabb()
+			aabb = AABBUtils.transform_aabb(ghost_instance.global_transform, aabb)
+			aabb.position.y += -99
+			aabb.size.y += 99
+			$ImmediateGeometry2.clear()
+			DrawingUtils.draw_box_with_aabb($"ImmediateGeometry2", aabb)
+			is_buildable = building_network.is_buildable(aabb)
+#			$ImmediateGeometry.clear()
+#			DrawingUtils.draw_box_with_aabb($ImmediateGeometry, get_aabb())
+			if is_buildable and ghost_instance.get_child(0).get_child(0).material_overlay != buildable_mat:
 				# material overlay
-				test_and_set_material(preload("res://building_system/buildable.tres"))
-			else:
-				test_and_set_material_overlay(preload("res://building_system/non_buildable.tres"))
+				ghost_instance.get_child(0).get_child(0).material_overlay = buildable_mat
+			elif !is_buildable and ghost_instance.get_child(0).get_child(0).material_overlay != non_buildable_mat:
+				ghost_instance.get_child(0).get_child(0).material_overlay = non_buildable_mat
+#				test_and_set_material_overlay(preload("res://building_system/non_buildable.tres"))
 				
+#			quad_tree.draw()
 			if is_vec_nan(building_point):
 				return
 #			print(building_point)
-			var segment = road_network.get_closest_segment(building_point)
+			var segment = road_network.get_closest_segment(building_point, current_building.width/2)
+			if !segment:
+				segment = road_network.get_closest_bezier_segment(building_point, current_building.width/2)
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
 
 				
-				var point: Vector3 = closest_point + direction * (-segment.road_network_info.width/2 + -1)
+				var point: Vector3 = closest_point + direction * -((segment.road_network_info.width + current_building.width)/2)
 				
 				var building_transform = Transform.IDENTITY
 				point.y = 0.02
@@ -83,32 +115,29 @@ func _input(event):
 				return
 			building_point.y = 0.02
 			building_point = building_point.snapped(Vector3(0.25, 0, 0.25))
-			var segment = road_network.get_closest_segment(building_point)
+			var segment = road_network.get_closest_segment(building_point, current_building.width/2)
+			if !segment:
+				segment = road_network.get_closest_bezier_segment(building_point, current_building.width/2)
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
-				var point = closest_point + direction * (-segment.road_network_info.width/2 + -1)
-				var building_transform = Transform.IDENTITY
-				var b_scale = ghost_instance.global_transform.basis.get_scale()
+				var point = closest_point + direction * -((segment.road_network_info.width + current_building.width)/2)
 				point.y = 0.02
-				building_transform.origin = point
 				
-				var a = closest_point - point
-				var b = current_building.door_face_direction
-				var angle_a = atan2(a.z, a.x)
-				var angle_b = atan2(b.z, b.x)
-				var angle = angle_b - angle_a
-				
-				building_transform.basis = building_transform.basis.rotated(Vector3.UP, angle)
-				building_transform.basis = building_transform.basis.scaled(b_scale)
 				var new_building = current_building.instance()
-				buildings.add_child(new_building)
-				new_building.global_transform = building_transform
-				quad_tree.add_body(new_building, new_building.get_aabb())
+				var building_transform = calculate_transform(point, closest_point, new_building)
+				
+				var aabb = new_building.get_aabb()
+				aabb = AABBUtils.transform_aabb(building_transform, aabb)
+				building_network.add_building(building_transform, new_building, aabb)
+				
 				var expanded_aabb = new_building.get_aabb()
+#				var expanded_aabb = new_building.get_aabb()
+				
 				DrawingUtils.draw_box_with_aabb($"ImmediateGeometry", expanded_aabb)
 
 func get_aabb():
+	
 	return ghost_instance.get_aabb()
 
 func test_and_set_material(p_material):
@@ -132,6 +161,22 @@ func test_and_set_material_overlay(p_material):
 				var material = child.mesh.surface_get_material(material_index)
 				material.next_pass = p_material
 				child.mesh.surface_set_material(material_index, material)
+
+func calculate_transform(point, closest_point, building):
+	var building_transform = Transform.IDENTITY
+	building_transform.origin = point
+	
+	var a = closest_point - point
+	var b = current_building.door_face_direction
+	var angle_a = atan2(a.z, a.x)
+	var angle_b = atan2(b.z, b.x)
+	var angle = angle_b - angle_a
+	
+	building_transform.basis = building_transform.basis.rotated(Vector3.UP, angle)
+	
+	var b_scale = building.transform.basis.get_scale()
+	building_transform.basis = building_transform.basis.scaled(b_scale)
+	return building_transform
 
 #func _process(delta):
 #	print("------------------------------------------")
@@ -169,7 +214,7 @@ func _cast_ray_to(postion: Vector2):
 	var camera = get_viewport().get_camera()
 	var from = camera.project_ray_origin(postion)
 	var to = from + camera.project_ray_normal(postion) * camera.far
-	return get_world().direct_space_state.intersect_ray(from, to).get("position", Vector3(NAN, NAN, NAN))
+	return get_world().direct_space_state.intersect_ray(from, to, [], 1).get("position", Vector3(NAN, NAN, NAN))
 
 func is_vec_nan(vec) -> bool:
 	if typeof(vec) == TYPE_VECTOR3:

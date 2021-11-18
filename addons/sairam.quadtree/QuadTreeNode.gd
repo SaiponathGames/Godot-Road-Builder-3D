@@ -6,6 +6,7 @@ const QuadTree = preload("res://addons/sairam.quadtree/QuadTree.gd")
 export var extents: Vector3 setget set_bounds
 export var capacity: int
 export var max_levels: int
+export var draw_quadtree: bool
 
 var bounds: AABB
 
@@ -43,3 +44,10 @@ func set_bounds(value):
 
 func set_extents(value):
 	set_bounds(value)
+
+func _process(delta):
+	if draw_quadtree:
+		draw()
+
+func _exit_tree():
+	_quad_tree.clear()

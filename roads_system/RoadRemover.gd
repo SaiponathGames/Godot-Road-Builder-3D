@@ -3,6 +3,8 @@ extends Spatial
 export(NodePath) var world_road_network_node
 onready var world_road_network: RoadNetwork = get_node(world_road_network_node) as RoadNetwork
 
+export(SpatialMaterial) var selected_mat
+
 const RoadIntersection = RoadNetwork.RoadIntersection
 const RoadSegment = RoadNetwork.RoadSegment
 const RoadNetworkInfo = RoadNetwork.RoadNetworkInfo
@@ -10,6 +12,9 @@ const RoadNetworkInfo = RoadNetwork.RoadNetworkInfo
 var _snapped_segment
 
 var enabled = false
+
+func _ready():
+	$RoadNetwork/RoadRenderer.material_overlay = selected_mat
 
 func _input(event):
 	if event is InputEventKey:
@@ -26,7 +31,7 @@ func _input(event):
 		return
 		
 	if event is InputEventMouseButton:
-		if event.button_index == BUTTON_RIGHT:
+		if event.button_index == BUTTON_LEFT and event.pressed:
 			var position = _cast_ray_to(event.position)
 			var closest_segment = world_road_network.get_closest_segment(position, 0.5)
 			if closest_segment:
@@ -64,8 +69,7 @@ func _input(event):
 			$RoadNetwork.add_intersection(mid_position)
 			$RoadNetwork.add_intersection(end_position)
 			$RoadNetwork.connect_intersections_with_bezier(start_position, mid_position, end_position, closest_bezier_seg.road_network_info)
-			
-			
+	
 
 func reset():
 	_snapped_segment = null

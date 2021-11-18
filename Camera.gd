@@ -117,9 +117,9 @@ func _input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseButton and option_disable_edge_scrolling_when_using_mouse:
-		if event.button_index in [BUTTON_LEFT, BUTTON_RIGHT] and event.pressed:
+		if event.button_index in [BUTTON_MIDDLE, BUTTON_RIGHT] and event.pressed:
 			edge_scroll_enabled = false
-		if event.button_index in [BUTTON_LEFT, BUTTON_RIGHT] and !event.pressed:
+		if event.button_index in [BUTTON_MIDDLE, BUTTON_RIGHT] and !event.pressed:
 			edge_scroll_enabled = true
 
 	if event is InputEventMouseButton:
@@ -134,7 +134,7 @@ func _input(event: InputEvent) -> void:
 					_new_tilt_rotation += Vector3.RIGHT * deg2rad(tilting_speed) * scrolling_speed/2 * mouse_sensitivity * (2 * int(!option_invert_zooming) - 1)
 
 	if event is InputEventMouseMotion:
-		if event.button_mask == BUTTON_LEFT and looking_enabled:
+		if event.button_mask == BUTTON_MASK_MIDDLE and looking_enabled:
 			_new_rotation += Vector3.UP * -event.relative.x * deg2rad(looking_speed) * mouse_sensitivity * (2 * int(!option_invert_rotation) - 1)
 			_new_tilt_rotation += Vector3.RIGHT * -event.relative.y * deg2rad(looking_speed) * mouse_sensitivity * (2 * int(!option_invert_tilting) - 1)
 			_tilt += -event.relative.y * deg2rad(looking_speed) * mouse_sensitivity * (2 * int(!option_invert_tilting) - 1)
