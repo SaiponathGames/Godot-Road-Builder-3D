@@ -666,10 +666,10 @@ func _generate_id(road_intersection: Vector3):
 	return int((_position.x * _position.x + _position.y * _position.y + _position.z * _position.z)+4098)
 
 func subdivide_intersections(start_intersection: RoadIntersection, end_intersection: RoadIntersection, road_net_info: RoadNetworkInfo, do_update: bool = true):
+	immediate_geo.clear()
 	var segment = get_connection(start_intersection, end_intersection)
 	var num_of_divs = int(segment.distance/road_net_info.subdivide_length)
 	var mat_segment = start_intersection.position.direction_to(end_intersection.position)*segment.distance # mathematical representation of segment
-#	print(mat_segment)
 	disconnect_intersections(start_intersection, end_intersection, false)
 	var road_points = [start_intersection]
 	for i in range(1, num_of_divs):

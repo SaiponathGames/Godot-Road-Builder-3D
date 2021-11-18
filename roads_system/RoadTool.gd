@@ -57,7 +57,7 @@ func _input(event):
 			is_curve_tool_on = false
 		
 		if event.scancode == KEY_1:
-			current_info = RoadNetworkInfo.new("test_id_1", "Test Road 1", 0.25, 1, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0.25), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.5, -0.25)])
+			current_info = RoadNetworkInfo.new("test_id_1", "Test Road 1", 0.5, 1, 1, 0.01, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0.25), RoadLaneInfo.new(RoadNetwork.Direction.BACKWARD, 0.5, -0.25)])
 		if event.scancode == KEY_2:
 			current_info = RoadNetworkInfo.new("test_id_2", "Test Road 2", 1, 0.5, 1, 0.2, [RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0)])
 		if event.scancode == KEY_3:
@@ -128,12 +128,16 @@ func _input(event):
 						
 					if _start_segment:
 						if _start_segment is RoadSegment:
-							world_road_network.split_at_postion(_start_segment, start_intersection, _start_segment.road_network_info)
+							var segments = world_road_network.split_at_postion(_start_segment, start_intersection, _start_segment.road_network_info)
+							for segment in segments:
+								world_road_network.subdivide_intersections(segment.start_position, segment.end_position, _start_segment.road_network_info)
 						elif _start_segment is RoadBezier:
 							world_road_network.split_at_position_with_bezier(_start_segment, start_intersection, _start_segment.road_network_info)
 					if _end_segment:
 						if _end_segment is RoadSegment:
-							world_road_network.split_at_postion(_end_segment, end_intersection, _end_segment.road_network_info)
+							var segments = world_road_network.split_at_postion(_end_segment, end_intersection, _end_segment.road_network_info)
+							for segment in segments:
+								world_road_network.subdivide_intersections(segment.start_position, segment.end_position, _end_segment.road_network_info)
 						elif _end_segment is RoadBezier:
 							world_road_network.split_at_position_with_bezier(_end_segment, end_intersection, _end_segment.road_network_info)
 					if start_intersection.position != end_intersection.position and !is_curve_tool_on:

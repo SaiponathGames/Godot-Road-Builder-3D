@@ -72,13 +72,14 @@ script = ExtResource( 15 )
 
 [node name="HTerrain" type="Spatial" parent="."]
 script = ExtResource( 1 )
-lod_scale = 2.0
 _terrain_data = ExtResource( 5 )
 chunk_size = 32
 collision_enabled = true
 collision_layer = 1
 collision_mask = 1
 shader_type = "Classic4Lite"
+custom_shader = null
+custom_globalmap_shader = null
 texture_set = SubResource( 1 )
 shader_params/u_ground_uv_scale = 20
 shader_params/u_depth_blending = true
@@ -89,7 +90,7 @@ shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 128, 0, 128 )
 script = ExtResource( 7 )
 use_astar = true
-immediate_geo_node = NodePath("ImmediateGeometry")
+immediate_geo_node = NodePath("RoadSystemGeometry")
 quad_tree_node_path = NodePath("QuadTreeNode")
 quad_tree_edge_node_path = NodePath("QuadTreeNodeEdges")
 quad_tree_edge_bezier_node_path = NodePath("QuadTreeNodeEdgeBezier")
@@ -102,17 +103,16 @@ script = ExtResource( 11 )
 immediate_geometry_node_path = NodePath("../RoadSystemGeometry")
 can_draw_lanes = true
 
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork/GlobalRoadSystemDrawer"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
+material_override = SubResource( 2 )
+
 [node name="RoadSaver" type="Spatial" parent="HTerrain/RoadNetwork"]
 script = ExtResource( 26 )
 road_net_np = NodePath("..")
 
-[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.02, -128 )
-material_override = SubResource( 2 )
-
 [node name="RoadSystemGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -128, 0.3, -128 )
-visible = false
 material_override = SubResource( 2 )
 
 [node name="QuadTreeNode" type="Spatial" parent="HTerrain/RoadNetwork"]
@@ -171,13 +171,12 @@ visible = false
 material_override = SubResource( 6 )
 
 [node name="Camera" parent="." instance=ExtResource( 8 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 3, 20 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 18, 20 )
 far = 8192.0
 panning/enabled = false
 edge_scroll/detection_area = 0.01
 edge_scroll/speed = 1.1
 movement/speed = 1.1
-tilting/max_angle = 0.0
 zooming/min_distance = 2.0
 looking/speed = 9.2
 perspective_panning/enabled = true

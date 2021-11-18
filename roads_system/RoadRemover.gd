@@ -69,8 +69,7 @@ func _input(event):
 			$RoadNetwork.add_intersection(mid_position)
 			$RoadNetwork.add_intersection(end_position)
 			$RoadNetwork.connect_intersections_with_bezier(start_position, mid_position, end_position, closest_bezier_seg.road_network_info)
-			
-			
+	
 
 func reset():
 	_snapped_segment = null
