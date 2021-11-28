@@ -25,11 +25,11 @@ _global_script_classes=[ {
 "path": "res://building_system/building.gd"
 }, {
 "base": "Node",
-"class": "GraphResource",
+"class": "CustomSorter",
 "language": "GDScript",
-"path": "res://roads_system/Graph.gd"
+"path": "res://roads_system/CustomSorter.gd"
 }, {
-"base": "Node",
+"base": "Spatial",
 "class": "GraphResourceNode",
 "language": "GDScript",
 "path": "res://roads_system/GraphNode.gd"
@@ -44,32 +44,68 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/zylann.hterrain/hterrain_resource_saver.gd"
 }, {
+"base": "SurfaceTool",
+"class": "MeshDrawer",
+"language": "GDScript",
+"path": "res://roads_system/MeshDrawer.gd"
+}, {
 "base": "Spatial",
 "class": "QuadTreeNode",
 "language": "GDScript",
 "path": "res://addons/sairam.quadtree/QuadTreeNode.gd"
 }, {
-"base": "Spatial",
+"base": "Reference",
+"class": "RoadIntersection",
+"language": "GDScript",
+"path": "res://roads_system/RoadIntersection.gd"
+}, {
+"base": "Node",
 "class": "RoadNetwork",
 "language": "GDScript",
 "path": "res://roads_system/RoadNetwork.gd"
+}, {
+"base": "Resource",
+"class": "RoadNetworkInfo",
+"language": "GDScript",
+"path": "res://roads_system/RoadNetworkInfo.gd"
+}, {
+"base": "Reference",
+"class": "RoadSegmentBase",
+"language": "GDScript",
+"path": "res://roads_system/RoadSegmentBase.gd"
+}, {
+"base": "RoadSegmentBase",
+"class": "RoadSegmentBezier",
+"language": "GDScript",
+"path": "res://roads_system/RoadSegmentBezier.gd"
+}, {
+"base": "RoadSegmentBase",
+"class": "RoadSegmentLinear",
+"language": "GDScript",
+"path": "res://roads_system/RoadSegmentLinear.gd"
 } ]
 _global_script_class_icons={
 "BuildingInstance": "",
 "BuildingNetwork": "",
 "BuildingType": "",
-"GraphResource": "",
+"CustomSorter": "",
 "GraphResourceNode": "",
 "HTerrainDataLoader": "",
 "HTerrainDataSaver": "",
+"MeshDrawer": "",
 "QuadTreeNode": "",
-"RoadNetwork": ""
+"RoadIntersection": "",
+"RoadNetwork": "",
+"RoadNetworkInfo": "",
+"RoadSegmentBase": "",
+"RoadSegmentBezier": "",
+"RoadSegmentLinear": ""
 }
 
 [application]
 
 config/name="OpenSkyCity-Road-System"
-run/main_scene="res://Test_RoadSystem.tscn"
+run/main_scene="res://NewRoadNetTest.tscn"
 config/icon="res://icon.png"
 
 [autoload]

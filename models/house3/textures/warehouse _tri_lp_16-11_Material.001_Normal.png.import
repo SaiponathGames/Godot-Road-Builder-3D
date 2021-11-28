@@ -1,0 +1,37 @@
+[remap]
+
+importer="texture"
+type="StreamTexture"
+path.s3tc="res://.import/warehouse _tri_lp_16-11_Material.001_Normal.png-479ed33481296143d84c58cd01bf7c36.s3tc.stex"
+path.etc2="res://.import/warehouse _tri_lp_16-11_Material.001_Normal.png-479ed33481296143d84c58cd01bf7c36.etc2.stex"
+metadata={
+"imported_formats": [ "s3tc", "etc2" ],
+"vram_texture": true
+}
+
+[deps]
+
+source_file="res://models/house3/textures/warehouse _tri_lp_16-11_Material.001_Normal.png"
+dest_files=[ "res://.import/warehouse _tri_lp_16-11_Material.001_Normal.png-479ed33481296143d84c58cd01bf7c36.s3tc.stex", "res://.import/warehouse _tri_lp_16-11_Material.001_Normal.png-479ed33481296143d84c58cd01bf7c36.etc2.stex" ]
+
+[params]
+
+compress/mode=2
+compress/lossy_quality=0.7
+compress/hdr_mode=0
+compress/bptc_ldr=0
+compress/normal_map=1
+flags/repeat=true
+flags/filter=true
+flags/mipmaps=true
+flags/anisotropic=false
+flags/srgb=2
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/HDR_as_SRGB=false
+process/invert_color=false
+process/normal_map_invert_y=false
+stream=false
+size_limit=0
+detect_3d=false
+svg/scale=1.0

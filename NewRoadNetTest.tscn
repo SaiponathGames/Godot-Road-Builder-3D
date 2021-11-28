@@ -1,0 +1,68 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=1]
+[ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
+[ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=3]
+[ext_resource path="res://roads_system/RoadNetwork.gd" type="Script" id=4]
+[ext_resource path="res://roads_system/GraphNode.gd" type="Script" id=5]
+[ext_resource path="res://addons/sairam.quadtree/QuadTreeNode.gd" type="Script" id=6]
+[ext_resource path="res://NewRoadNetTest.gd" type="Script" id=7]
+[ext_resource path="res://Camera.tscn" type="PackedScene" id=8]
+
+[sub_resource type="Resource" id=1]
+script = ExtResource( 2 )
+mode = 0
+textures = [ [  ], [  ] ]
+
+[sub_resource type="ProceduralSky" id=2]
+
+[sub_resource type="Environment" id=3]
+background_mode = 2
+background_sky = SubResource( 2 )
+ambient_light_color = Color( 1, 1, 1, 1 )
+ambient_light_energy = 0.9
+fog_color = Color( 0.32549, 0, 0, 0.568627 )
+fog_depth_enabled = false
+fog_transmit_enabled = true
+tonemap_mode = 4
+
+[node name="Spatial" type="Spatial"]
+script = ExtResource( 7 )
+
+[node name="HTerrain" type="Spatial" parent="."]
+script = ExtResource( 3 )
+_terrain_data = ExtResource( 1 )
+chunk_size = 32
+collision_enabled = true
+collision_layer = 1
+collision_mask = 1
+shader_type = "Classic4Lite"
+custom_shader = null
+custom_globalmap_shader = null
+texture_set = SubResource( 1 )
+shader_params/u_ground_uv_scale = 20
+shader_params/u_depth_blending = true
+shader_params/u_triplanar = false
+shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
+
+[node name="RoadNetwork" type="Node" parent="HTerrain"]
+script = ExtResource( 4 )
+graph_node = NodePath("Graph")
+quad_tree_node = NodePath("QuadTree")
+use_astar = true
+
+[node name="Graph" type="Spatial" parent="HTerrain/RoadNetwork"]
+script = ExtResource( 5 )
+
+[node name="QuadTree" type="Spatial" parent="HTerrain/RoadNetwork"]
+script = ExtResource( 6 )
+extents = Vector3( 256, 1.5, 256 )
+capacity = 6
+max_levels = 12
+
+[node name="Camera" parent="." instance=ExtResource( 8 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 50 )
+far = 500.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 3 )

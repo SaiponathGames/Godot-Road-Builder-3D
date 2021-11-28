@@ -8,7 +8,7 @@ export(NodePath) var immediate_geometry_node_path
 onready var immediate_geometry_node = get_node(immediate_geometry_node_path)
 
 export var can_draw_lanes = false
-var surface_tool = SurfaceTool.new()
+var surface_tool = MeshDrawer.new()
 
 var rendering_mode = Mesh.PRIMITIVE_TRIANGLES
 
@@ -32,7 +32,7 @@ func _render_road(road_network):
 	for intersection in road_network.intersections:
 		if !intersection.connections:
 			if intersection.visible:
-				draw_filled_circle(surface_tool, intersection.road_network_info.width/2, intersection.position)
+				_surface_tool.draw_filled_circle(intersection.road_network_info.width/2, intersection.position)
 		else:
 			var v1dict = draw_intersection(intersection)
 		
@@ -65,7 +65,7 @@ func _render_road(road_network):
 
 	mesh = surface_tool.commit()
 
-func compute_intersection(p0, angle0, p1, angle1, end_radius) -> Vector3:
+func compute_intersection_values(p0, angle0, p1, angle1, end_radius) -> Vector3:
 	var midpoint = (p0+p1)/2.0
 	var arc = abs(angle0 - angle1)
 	var midangle = (angle0 + angle1)/2.0
@@ -78,9 +78,9 @@ func compute_intersection(p0, angle0, p1, angle1, end_radius) -> Vector3:
 
 
 func compute_edge_intersection(vert0, vert1, end_radius) -> Vector3:
-	return compute_intersection(vert0.v1, vert0.angle, vert1.v2, vert1.angle, end_radius)
+	return compute_intersection_values(vert0.v1, vert0.angle, vert1.v2, vert1.angle, end_radius)
 
-func draw_intersection(intersection: RoadIntersection):
+func compute_intersection(intersection: RoadIntersection):
 	# DrawingUtils.draw_empty_circle($ImmediateGeometry, intersection.position, 0.5, Color.lightcyan)
 
 	var intersection_verts = {}
@@ -146,11 +146,11 @@ func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary,
 		var t = i/float(resolution)
 		var v1 = lerp(i1.v2, i2.v1, t)
 		var v2 = lerp(i1.v1, i2.v2, t)
-		draw_triangle(_surface_tool,
+		_surface_tool.draw_triangle(
 			last_v1,
 			v1,
 			v2)
-		draw_triangle(_surface_tool, 
+		_surface_tool.draw_triangle( 
 			last_v2,
 			v1,
 			last_v1)
@@ -188,22 +188,22 @@ func draw_bezier_connection(_surface_tool, i1: Dictionary, m_i: Dictionary, i2: 
 		dir = Vector3(dir.z, dir.y, -dir.x)		# orthogonal direction
 		var v2 = current_point - dir * half_width
 		var v1 = current_point + dir * half_width
-		draw_triangle(_surface_tool,
+		_surface_tool.draw_triangle(
 			last_v1,
 			v1,
 			v2)
-		draw_triangle(_surface_tool, 
+		_surface_tool.draw_triangle( 
 			last_v2,
 			v1,
 			last_v1)
 		last_v1 = v2
 		last_v2 = v1
 
-	draw_triangle(_surface_tool,
+	_surface_tool.draw_triangle(
 		last_v1,
 		i2.v1,
 		i2.v2)
-	draw_triangle(_surface_tool, 
+	_surface_tool.draw_triangle( 
 		last_v2,
 		i2.v1,
 		last_v1)
@@ -217,36 +217,33 @@ func draw_complete_intersection(_surface_tool, intersection: RoadIntersection, v
 		var offset_midpoint = mid_point_data[0]
 		var real_midpoint = (v1 + v2) / 2.0
 		var offset = offset_midpoint - real_midpoint
-		draw_curve_triangles(_surface_tool, v1, v1 + offset, offset_midpoint, real_midpoint)
-		draw_curve_triangles(_surface_tool, offset_midpoint, v2 + offset, v2, real_midpoint)
+		_surface_tool.draw_curve_triangles(v1, v1 + offset, offset_midpoint, real_midpoint)
+		_surface_tool.draw_curve_triangles(offset_midpoint, v2 + offset, v2, real_midpoint)
 	elif intersection.connections.size() > 1:
 		var vertex0 = vertex_data[vertex_data.keys()[0]]
 		var midpoint0 = (vertex0.v1 + vertex0.v2) / 2.0
 		var vertex1 = vertex_data[vertex_data.keys()[1]]
 		var midpoint1 = (vertex1.v1 + vertex1.v2) / 2.0
 		
-		var road_center_intersection = compute_intersection(midpoint0, vertex0.angle, midpoint1, vertex1.angle, intersection.road_network_info.end_radius)
+		var road_center_intersection = compute_intersection_values(midpoint0, vertex0.angle, midpoint1, vertex1.angle, intersection.road_network_info.end_radius)
 		var intersection_center = quadratic_bezier(midpoint0, road_center_intersection, midpoint1, 0.5)
 
 		var number_of_connections = intersection.connections.size()
 		for connection_idx in number_of_connections:
 			if intersection.connections[connection_idx].road_network_info.width != 0 and intersection.connections[connection_idx].visible and intersection.connections[(connection_idx+1) % number_of_connections].visible:
-				draw_curve_triangles(_surface_tool,
-					vertex_data[vertex_data.keys()[connection_idx]].v1,
+				_surface_tool.draw_curve_triangles(vertex_data[vertex_data.keys()[connection_idx]].v1,
 					mid_point_data[connection_idx],
 					vertex_data[vertex_data.keys()[(connection_idx+1) % number_of_connections]].v2,
 					intersection_center)
 				var p0 = vertex_data[vertex_data.keys()[connection_idx]].v2
 				var p1 = vertex_data[vertex_data.keys()[connection_idx]].v1
-				draw_triangle(
-					_surface_tool,
-					p0,
+				_surface_tool.draw_triangle(p0,
 					p1,
 					intersection_center
 				)
 
 	# DrawingUtils.draw_line($ImmediateGeometry, vertex_data[-1].v1, mid_point_data[-1], Color.red)
-	# DrawingUtils.draw_line($ImmediateGeometry, vertex_data[0].v2, mid_point_data[-1], Color.red)
+	# DrawingUtils.draw_line($ImmediateGeometry, vertex_data[0].v2, mid_oint_data[-1], Color.red)
 
 class Sorter:
 	var extra_params = []
@@ -283,68 +280,7 @@ func sort_by_angle(a, b, origin):
 		return false
 
 	return a_offset.length_squared() > b_offset.length_squared()
-			
-
-func draw_triangle_with_uv(_surface_tool: SurfaceTool, v0: Vector3, uv0: Vector2, v1: Vector3, uv1: Vector2, v2: Vector3, uv2: Vector2, color: Color = Color()):
-	_surface_tool.add_color(color)
-	_surface_tool.add_uv(uv0)
-	_surface_tool.add_normal(Vector3.BACK)
-	_surface_tool.add_vertex(v0)
-	_surface_tool.add_color(color)
-	_surface_tool.add_uv(uv1)
-	_surface_tool.add_normal(Vector3.BACK)
-	_surface_tool.add_vertex(v1)
-	_surface_tool.add_color(color)
-	_surface_tool.add_uv(uv2)
-	_surface_tool.add_normal(Vector3.BACK)
-	_surface_tool.add_vertex(v2)
-
-func draw_triangle(_surface_tool: SurfaceTool, v0: Vector3, v1: Vector3, v2: Vector3, color: Color = Color()):
-		draw_triangle_with_uv(_surface_tool,
-		v0,
-		Vector2(v0.x, v0.z),
-		v1,
-		Vector2(v1.x, v1.z),
-		v2,
-		Vector2(v2.x, v2.z),
-		color
-	)
-
-func draw_curve_triangles(_surface_tool: SurfaceTool, p0: Vector3, mp: Vector3, p1: Vector3, center: Vector3, color: Color = Color(), resolution: int = 20):
-	var last_point = p0
-	for t in range(resolution+1):
-		var new_point = quadratic_bezier(p0, mp, p1, t/float(resolution))
-		draw_triangle(_surface_tool,
-			last_point,
-			new_point,
-			center,
-			color)
-		last_point = new_point
-
-func quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
-	var q0 = p0.linear_interpolate(p1, t)
-	var q1 = p1.linear_interpolate(p2, t)
-	return q0.linear_interpolate(q1, t)
-
-func draw_filled_arc(_surface_tool: SurfaceTool, radius: float, center: Vector3, resolution: int = 64, start_angle: float = 0, end_angle: float = 360):
-	var angular_segment = resolution
-
-	var position_outer = Vector3(0, 0, radius)
-	var arc_step = (end_angle-start_angle) / float(angular_segment)
-
-	for i in range(angular_segment):
-		var angle1 = deg2rad(start_angle + i * arc_step - 90)
-		var angle2 = deg2rad(start_angle + ((i+1) % angular_segment) * arc_step - 90)
-		_surface_tool.add_normal(Vector3.UP)
-		_surface_tool.add_vertex(center)
-		_surface_tool.add_normal(Vector3.UP)
-		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle2)+center)
-		_surface_tool.add_normal(Vector3.UP)
-		_surface_tool.add_vertex(position_outer.rotated(Vector3.UP, angle1)+center)
-		
-
-func draw_filled_circle(_surface_tool: SurfaceTool, radius: float, center: Vector3, resolution: int = 64):
-	draw_filled_arc(_surface_tool, radius, center, resolution)
+	
 
 func _on_RoadNetwork_graph_changed():
 	_render_road(get_parent())

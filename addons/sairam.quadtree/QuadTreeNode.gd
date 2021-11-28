@@ -11,13 +11,15 @@ export var draw_quadtree: bool
 var bounds: AABB
 
 export(NodePath) var immediate_geo_node_path
-onready var immediate_geo_node = get_node(immediate_geo_node_path)
+var immediate_geo_node: ImmediateGeometry
 
 var _quad_tree: QuadTree
 
 func _ready():
 	_quad_tree = QuadTree.new(bounds, capacity, max_levels)
-	_quad_tree.set_drawing_node(immediate_geo_node)
+	if immediate_geo_node_path:
+		immediate_geo_node = get_node(immediate_geo_node_path)
+		_quad_tree.set_drawing_node(immediate_geo_node)
 
 func add_body(body: Spatial, bounds: AABB = AABB()):
 	return _quad_tree.add_body(body, bounds)

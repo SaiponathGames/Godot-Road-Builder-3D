@@ -5,13 +5,13 @@
 [ext_resource path="res://Debug.gd" type="Script" id=3]
 [ext_resource path="res://addons/sairam.quadtree/QuadTreeNode.gd" type="Script" id=4]
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=5]
-[ext_resource path="res://roads_system/RoadNetwork.gd" type="Script" id=7]
+[ext_resource path="res://roads_system/old/RoadNetwork.gd" type="Script" id=7]
 [ext_resource path="res://Camera.tscn" type="PackedScene" id=8]
-[ext_resource path="res://roads_system/RoadTool.gd" type="Script" id=9]
-[ext_resource path="res://roads_system/PathVisualizer.gd" type="Script" id=10]
+[ext_resource path="res://roads_system/tools/RoadTool.gd" type="Script" id=9]
+[ext_resource path="res://roads_system/tools/PathVisualizer.gd" type="Script" id=10]
 [ext_resource path="res://roads_system/RoadRenderer.gd" type="Script" id=11]
-[ext_resource path="res://roads_system/RoadRemover.gd" type="Script" id=12]
-[ext_resource path="res://roads_system/RoadUpgrade.gd" type="Script" id=13]
+[ext_resource path="res://roads_system/tools/RoadRemover.gd" type="Script" id=12]
+[ext_resource path="res://roads_system/tools/RoadUpgrade.gd" type="Script" id=13]
 [ext_resource path="res://building_system/building_placer.gd" type="Script" id=14]
 [ext_resource path="res://FullScreen.gd" type="Script" id=15]
 [ext_resource path="res://building_system/building_remover.gd" type="Script" id=16]
@@ -339,9 +339,3 @@ __meta__ = {
 [node name="Label" type="Label" parent="Control"]
 margin_right = 40.0
 margin_bottom = 14.0
-
-[connection signal="graph_changed" from="HTerrain/RoadNetwork" to="HTerrain/RoadNetwork/GlobalRoadSystemDrawer" method="_on_RoadNetwork_graph_changed"]
-[connection signal="graph_changed" from="Tools/RoadTool/RoadNetwork" to="Tools/RoadTool/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
-[connection signal="graph_changed" from="Tools/PathVisualizer/RoadNetwork" to="Tools/PathVisualizer/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
-[connection signal="graph_changed" from="Tools/RoadRemover/RoadNetwork" to="Tools/RoadRemover/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]
-[connection signal="graph_changed" from="Tools/RoadUpgrade/RoadNetwork" to="Tools/RoadUpgrade/RoadNetwork/RoadRenderer" method="_on_RoadNetwork_graph_changed"]

@@ -1,0 +1,18 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=2]
+
+[ext_resource path="res://RoadDecal.gdshader" type="Shader" id=1]
+
+[resource]
+shader = ExtResource( 1 )
+shader_param/asphalt_color = Color( 0.5, 0.5, 0.5, 1 )
+shader_param/line_width = 0.03
+shader_param/center_line_distance = 0.1
+shader_param/center_line_color = Color( 1, 1, 1, 1 )
+shader_param/edge_line_distance = 0.9
+shader_param/edge_line_color = Color( 1, 1, 0, 1 )
+shader_param/lane_line_amount = 1
+shader_param/lane_line_distance = 0.45
+shader_param/lane_line_spread = -0.1
+shader_param/lane_line_color = Color( 1, 1, 1, 1 )
+shader_param/lane_line_steeple = 10
+shader_param/offset = Vector2( 0, 0 )
