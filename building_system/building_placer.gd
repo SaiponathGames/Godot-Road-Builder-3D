@@ -20,6 +20,7 @@ func _input(event):
 				if current_building:
 					ghost_instance = current_building.instance()
 					add_child(ghost_instance)
+					ghost_instance.name = "GhostInstance"
 					ghost_instance.hide()
 			elif !enabled:
 				if ghost_instance:
@@ -37,6 +38,7 @@ func _input(event):
 				ghost_instance.queue_free()
 			ghost_instance = current_building.instance()
 			ghost_instance.scale += Vector3(0.01, 0.01, 0.01)
+			ghost_instance.name = "GhostInstance"
 			ghost_instance.hide()
 			add_child(ghost_instance)
 		if event.scancode == KEY_2:
@@ -47,6 +49,7 @@ func _input(event):
 				ghost_instance.queue_free()
 			ghost_instance = current_building.instance()
 			ghost_instance.scale += Vector3(0.01, 0.01, 0.01)
+			ghost_instance.name = "GhostInstance"
 			ghost_instance.hide()
 			add_child(ghost_instance)
 
@@ -129,6 +132,8 @@ func _input(event):
 				
 				var aabb = new_building.get_aabb()
 				aabb = AABBUtils.transform_aabb(building_transform, aabb)
+				(new_building as BuildingInstance).connected_road_position = point
+				(new_building as BuildingInstance).connected_road = segment
 				building_network.add_building(building_transform, new_building, aabb)
 				
 				var expanded_aabb = new_building.get_aabb()

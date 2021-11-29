@@ -1,0 +1,20 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=2]
+
+[ext_resource path="res://roads_system/road_marker.tres" type="Shader" id=1]
+[ext_resource path="res://roads_system/uv_shader_mat.tres" type="Material" id=2]
+
+[resource]
+next_pass = ExtResource( 2 )
+shader = ExtResource( 1 )
+shader_param/asphalt_color = Color( 0.501961, 0.501961, 0.501961, 0 )
+shader_param/line_width = 0.072
+shader_param/center_line_distance = 0.175
+shader_param/center_line_color = Color( 1, 1, 1, 1 )
+shader_param/edge_line_distance = 0.807
+shader_param/edge_line_color = Color( 1, 1, 0, 1 )
+shader_param/lane_line_amount = 1
+shader_param/lane_line_distance = 0.583
+shader_param/lane_line_spread = 0.2
+shader_param/lane_line_color = Color( 1, 1, 1, 1 )
+shader_param/lane_line_steeple = 1
+shader_param/offset = Vector2( -0.023, 0 )

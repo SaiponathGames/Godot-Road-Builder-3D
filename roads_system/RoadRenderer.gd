@@ -146,17 +146,30 @@ func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary,
 		var t = i/float(resolution)
 		var v1 = lerp(i1.v2, i2.v1, t)
 		var v2 = lerp(i1.v1, i2.v2, t)
-		draw_triangle(_surface_tool,
+		draw_triangle_with_uv(_surface_tool,
 			last_v1,
+			Vector2(1, 0),
 			v1,
-			v2)
-		draw_triangle(_surface_tool, 
+			Vector2(0, 1),
+			v2,
+			Vector2(1, 1))
+		draw_triangle_with_uv(_surface_tool, 
 			last_v2,
+			Vector2(0, 0),
 			v1,
-			last_v1)
+			Vector2(0, 1),
+			last_v1,
+			Vector2(1, 0))
 		last_v1 = v2
 		last_v2 = v1
 
+# 		draw_triangle_with_uv(_surface_tool,
+#			last_v1,
+#			Vector2(0, 1),
+#			v1,
+#			Vector2(1, 1),
+#			v2,
+#			Vector2(1, 0))
 
 func draw_lanes(_surface_tool: SurfaceTool, connection: RoadSegment):
 	$ImmediateGeometry.begin(Mesh.PRIMITIVE_LINES)
@@ -188,25 +201,37 @@ func draw_bezier_connection(_surface_tool, i1: Dictionary, m_i: Dictionary, i2: 
 		dir = Vector3(dir.z, dir.y, -dir.x)		# orthogonal direction
 		var v2 = current_point - dir * half_width
 		var v1 = current_point + dir * half_width
-		draw_triangle(_surface_tool,
+		draw_triangle_with_uv(_surface_tool,
 			last_v1,
+			Vector2(1, 0),
 			v1,
-			v2)
-		draw_triangle(_surface_tool, 
+			Vector2(0, 1),
+			v2,
+			Vector2(1, 1))
+		draw_triangle_with_uv(_surface_tool, 
 			last_v2,
+			Vector2(0, 0),
 			v1,
-			last_v1)
+			Vector2(0, 1),
+			last_v1,
+			Vector2(1, 0))
 		last_v1 = v2
 		last_v2 = v1
 
-	draw_triangle(_surface_tool,
+	draw_triangle_with_uv(_surface_tool,
 		last_v1,
+		Vector2(1, 0),
 		i2.v1,
-		i2.v2)
-	draw_triangle(_surface_tool, 
+		Vector2(0, 1),
+		i2.v2,
+		Vector2(1, 1))
+	draw_triangle_with_uv(_surface_tool, 
 		last_v2,
+		Vector2(0, 0),
 		i2.v1,
-		last_v1)
+		Vector2(0, 1),
+		last_v1,
+		Vector2(1, 0))
 
 func draw_complete_intersection(_surface_tool, intersection: RoadIntersection, vertex_data, mid_point_data):
 #	if self.name == "GlobalRoadSystemDrawer":
@@ -302,11 +327,11 @@ func draw_triangle_with_uv(_surface_tool: SurfaceTool, v0: Vector3, uv0: Vector2
 func draw_triangle(_surface_tool: SurfaceTool, v0: Vector3, v1: Vector3, v2: Vector3, color: Color = Color()):
 		draw_triangle_with_uv(_surface_tool,
 		v0,
-		Vector2(v0.x, v0.z),
+		Vector2(0, 0),
 		v1,
-		Vector2(v1.x, v1.z),
+		Vector2(0, 1),
 		v2,
-		Vector2(v2.x, v2.z),
+		Vector2(1, 1),
 		color
 	)
 
@@ -314,10 +339,18 @@ func draw_curve_triangles(_surface_tool: SurfaceTool, p0: Vector3, mp: Vector3, 
 	var last_point = p0
 	for t in range(resolution+1):
 		var new_point = quadratic_bezier(p0, mp, p1, t/float(resolution))
-		draw_triangle(_surface_tool,
+		if name == "GlobalRoadSystemDrawer":
+			$ImmediateGeometry.clear()
+			DrawingUtils.draw_empty_circle($ImmediateGeometry, last_point, 0.125, Color.black)
+			DrawingUtils.draw_empty_circle($ImmediateGeometry, new_point, 0.125, Color.white)
+			DrawingUtils.draw_empty_circle($ImmediateGeometry, center, 0.25, Color.magenta)
+		draw_triangle_with_uv(_surface_tool,
 			last_point,
+			Vector2(1, 1),
 			new_point,
+			Vector2(0, 1),
 			center,
+			Vector2(0, 0),
 			color)
 		last_point = new_point
 

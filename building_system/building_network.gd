@@ -34,12 +34,14 @@ func add_building(transform: Transform, building: BuildingInstance, aabb: AABB =
 		else:
 			aabb = building.get_aabb()
 	quad_tree.add_body(building, aabb)
+	building.building_network = self
 	buildings.append(building)
 	
 
 func remove_building(building: BuildingInstance):
 	quad_tree.remove_body(building)
 	buildings.erase(building)
+	building.building_network = null
 	buildings_node.remove_child(building)
 	building.queue_free()
 	

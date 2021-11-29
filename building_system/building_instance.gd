@@ -3,6 +3,9 @@ class_name BuildingInstance
 
 var building
 var id
+var connected_road
+var connected_road_position: Vector3
+var building_network
 
 var _mesh_child_index_array = []
 var _collision_child_index_array = []
@@ -34,3 +37,10 @@ func _ready():
 			_mesh_child_index_array.append(child.get_index())
 		elif child is CollisionShape:
 			_collision_child_index_array.append(child.get_index())
+
+func _process(delta):
+#	print(connected_road)
+	if not is_instance_valid(connected_road) and name != "GhostInstance":
+		print("working..")
+		building_network.remove_building(self)
+		queue_free()

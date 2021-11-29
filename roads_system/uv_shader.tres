@@ -1,0 +1,8 @@
+[gd_resource type="Shader" format=2]
+
+[resource]
+code = "shader_type spatial;
+
+void fragment() {
+	ALBEDO = vec3(UV, 0);
+}"

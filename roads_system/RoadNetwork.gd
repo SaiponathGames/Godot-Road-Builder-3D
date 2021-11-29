@@ -64,7 +64,7 @@ class RoadNetworkInfo extends Resource:
 	export var curvature: float = 0.3
 	export var subdivide_length = 5.0
 	
-	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _curvature: float = 0.3, _lanes = [], _subdivide_length = 5):
+	func _init(_id: String, _name: String, _length: float, _width: float, _end_radius: float, _curvature: float = 0.3, _lanes = [], _subdivide_length = 10):
 		self.id = _id
 		self.name = _name
 		self.length = _length
