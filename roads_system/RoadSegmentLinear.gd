@@ -29,3 +29,14 @@ func get_point(t):
 
 func get_length():
 	return start_position.distance_to(end_position)
+
+func split_at_position(position) -> Array:
+	self.road_network.delete_segment(self)
+	var seg_1 = get_script().new(self.start_position, position, road_network_info, direction)
+	var seg_2 = get_script().new(position, self.end_position, road_network_info, direction)
+	
+	seg_1 = self.road_network.create_segment(seg_1)
+	seg_2 = self.road_network.create_segment(seg_2)
+	
+	return [seg_1, seg_2]
+	

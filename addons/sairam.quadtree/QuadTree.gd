@@ -40,7 +40,10 @@ func add_body(body: Spatial, bounds: AABB = AABB()) -> Spatial:
 	"""
 	if body.has_meta("_qt"):
 		 push_error("body already in tree") # object already in tree. Invariant satisfied.
-	
+	if body.has_meta("_aabb"):
+		bounds = body.get_meta("_aabb")
+	if body.has_meta("_bounds"):
+		bounds = body.get_meta("_bounds")
 	if !_is_leaf:
 		# add to child if not current obj is leaf.
 		var child = _get_child(body.get_transformed_aabb() if body.has_method("get_transformed_aabb") else bounds)

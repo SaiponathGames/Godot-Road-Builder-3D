@@ -551,6 +551,7 @@ func min_vec(a, b):
 
 func max_vec(a, b):
 	return Vector3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))
+
 #func _ready():
 #	var intersect_1 = RoadIntersection.new(Vector3(2, 0, 3), [])
 #	var intersect_2 = RoadIntersection.new(Vector3(6, 0, 5.3), [])

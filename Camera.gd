@@ -111,6 +111,7 @@ func _ready() -> void:
 	_new_rotation = rotation
 	_new_tilt_rotation = $CameraTilt.rotation
 	_new_zoom = $CameraTilt/CameraZoom.translation
+	$CameraTilt/CameraZoom.projection = projection
 
 func _input(event: InputEvent) -> void:
 	if Engine.editor_hint or !camera_enabled:

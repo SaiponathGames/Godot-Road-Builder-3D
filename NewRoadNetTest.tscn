@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
@@ -13,6 +13,10 @@
 script = ExtResource( 2 )
 mode = 0
 textures = [ [  ], [  ] ]
+
+[sub_resource type="SpatialMaterial" id=4]
+flags_unshaded = true
+vertex_color_use_as_albedo = true
 
 [sub_resource type="ProceduralSky" id=2]
 
@@ -45,24 +49,32 @@ shader_params/u_depth_blending = true
 shader_params/u_triplanar = false
 shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 
-[node name="RoadNetwork" type="Node" parent="HTerrain"]
+[node name="RoadNetwork" type="Spatial" parent="HTerrain"]
 script = ExtResource( 4 )
 graph_node = NodePath("Graph")
 quad_tree_node = NodePath("QuadTree")
 use_astar = true
+min_vector = Vector3( -128, -64, -128 )
 
 [node name="Graph" type="Spatial" parent="HTerrain/RoadNetwork"]
 script = ExtResource( 5 )
 
 [node name="QuadTree" type="Spatial" parent="HTerrain/RoadNetwork"]
 script = ExtResource( 6 )
-extents = Vector3( 256, 1.5, 256 )
+extents = Vector3( 256, 64, 256 )
 capacity = 6
 max_levels = 12
 
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
+material_override = SubResource( 4 )
+
 [node name="Camera" parent="." instance=ExtResource( 8 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 50, 0, 50 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1 )
 far = 500.0
+movement/speed = 0.5
+zooming/min_distance = 3.0
+limits/rect = Rect2( 1, 1, 255, 255 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 3 )

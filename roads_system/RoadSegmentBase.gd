@@ -80,3 +80,12 @@ func direction_to(position: Vector3):
 	var closest_point = project_point(position)
 	return closest_point.direction_to(position)
 
+func split_at_position(position: RoadIntersection): # Array[RoadSegmentBase]
+	pass
+
+func subdivide(): # Array[RoadSegmentBase]
+	pass
+
+func join_segments(segments: Array): # segments: Array[RoadSegmentBase] -> RoadSegmentBase
+	pass
+	
