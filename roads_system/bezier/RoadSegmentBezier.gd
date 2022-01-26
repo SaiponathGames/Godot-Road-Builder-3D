@@ -2,15 +2,19 @@ extends RoadSegmentBase
 class_name RoadSegmentBezier
 
 
-var middle_position: RoadIntersection
+var middle_position: RoadIntersectionNode
 
 var lut = []
 
 var current_resolution setget set_current_resolution
 
 func _init(_start_position, _middle_position, _end_position, _road_net_info, _direction).(_start_position, _end_position, _road_net_info, _direction):
-	self.middle_position = _middle_position
+	self.middle_position = _middle_position.create_node(self)
 	calculate_lut()
+	modder_id = 0
+	seg_type = 2
+	custom_id = (5.625)*rad2deg(middle_position.intersection.angle_to(start_position.intersection))+rad2deg(middle_position.intersection.angle_to(end_position.intersection))
+	positions.append(_middle_position)
 	
 func set_current_resolution(value):
 	current_resolution = value
@@ -44,6 +48,14 @@ func get_aabb():
 		maxima = Vector3(max(maxima.x, point.x), max(maxima.y, point.y), max(maxima.z, point.z))
 	var aabb = AABB((minima + maxima)/2, maxima - minima)
 	return aabb
+
+func _average_direction(road_intersection: RoadIntersection, position: RoadIntersection):
+	var projected_time = project_point(position.position, true)[1]
+	var direction = Vector3.ZERO
+	for t in range(0, projected_time, 0.01):
+		direction += road_intersection.position.direction_to(get_point(t))
+	direction = direction.normalized()
+	return direction
 
 func project_point(position: Vector3, send_time = false):
 	var i = 0
@@ -109,8 +121,6 @@ func calculate_lut(resolution = 20, change_resolution = true) -> void:
 
 func hull(t):
 	var list = []
-	var positions = [start_position.position, middle_position.position, end_position.position]
-#	var test_p = []
 	list.append_array(positions)
 	while positions.size() > 1:
 		var _p = []
@@ -121,3 +131,11 @@ func hull(t):
 		positions = _p.duplicate()
 	return list
 	
+func direction_from_intersection(intersection: RoadIntersectionNode):
+	match intersection:
+		start_position:
+			return _average_direction(start_position.intersection, middle_position.intersection)
+		end_position:
+			return _average_direction(end_position.intersection, middle_position.intersection)
+		_:
+			return direction_from_intersection(intersection)

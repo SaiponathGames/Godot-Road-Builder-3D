@@ -2,10 +2,12 @@ extends Node
 
 
 func draw_line(immediate_geo: ImmediateGeometry, start_position, end_position, color = Color.white):
+	immediate_geo.begin(Mesh.PRIMITIVE_LINES)
 	immediate_geo.set_color(color)
 	immediate_geo.add_vertex(start_position)
 	immediate_geo.set_color(color)
 	immediate_geo.add_vertex(end_position)
+	immediate_geo.end()
 
 func draw_triangle_with_uv(immediate_geo: ImmediateGeometry, v0: Vector3, uv0: Vector2, v1: Vector3, uv1: Vector2, v2: Vector3, uv2: Vector2, color: Color):
 	immediate_geo.set_color(color)

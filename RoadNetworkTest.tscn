@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=2]
 
-[ext_resource path="res://roads_system/RoadRenderer.gd" type="Script" id=1]
+[ext_resource path="res://roads_system/old/RoadRenderer.gd" type="Script" id=1]
 [ext_resource path="res://CameraTest.gd" type="Script" id=2]
 [ext_resource path="res://roads_system/old/RoadNetwork.gd" type="Script" id=3]
 [ext_resource path="res://Boulevard.png" type="Texture" id=4]

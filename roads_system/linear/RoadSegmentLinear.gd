@@ -3,7 +3,10 @@ class_name RoadSegmentLinear
 
 
 func _init(_start_position, _end_position, _road_net_info, _direction).(_start_position, _end_position, _road_net_info, _direction):
-	pass
+	seg_type = 1
+	modder_id = 0
+	custom_id = 0
+	
 
 func project_point(to_position: Vector3):
 	return Geometry.get_closest_point_to_segment(to_position, start_position.position, end_position.position)
@@ -24,11 +27,20 @@ func get_aabb() -> AABB:
 		aabb.end = end_position.position
 	return aabb
 
+func get_lerp_func():
+	return funcref(self, 'interpolate')
+
+func interpolate(_start_position, _end_position, t):
+	return lerp(_start_position, _end_position, t)
+
 func get_point(t):
-	return start_position.linear_interpolate(end_position, t)
+	return interpolate(start_position.position, end_position.position, t)
 
 func get_length():
 	return start_position.distance_to(end_position)
+
+func _average_direction(road_intersection: RoadIntersection, position: RoadIntersection):
+	return road_intersection.direction_to(position)
 
 func split_at_position(position) -> Array:
 	self.road_network.delete_segment(self)

@@ -51,5 +51,5 @@ func _process(delta):
 	if draw_quadtree:
 		draw()
 
-func _exit_tree():
-	_quad_tree.clear()
+#func _exit_tree():
+#	_quad_tree.clear()

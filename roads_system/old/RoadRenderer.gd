@@ -1,9 +1,5 @@
 extends MeshInstance
 
-const RoadIntersection = RoadNetwork.RoadIntersection
-const RoadSegment = RoadNetwork.RoadSegment
-const RoadBezier = RoadNetwork.RoadBezier
-
 export(NodePath) var immediate_geometry_node_path
 onready var immediate_geometry_node = get_node(immediate_geometry_node_path)
 
@@ -25,14 +21,15 @@ func _render_road(road_network):
 	# sort the angles
 	for intersection in road_network.intersections:
 		if intersection.connections.size() > 1:
-			var _sorter = Sorter.new(self, "sort_by_angle", intersection.connections, [intersection])
+			var _sorter = CustomSorter.new(self, "sort_by_angle", [intersection])
+			_sorter.sort(intersection.connections)
 			intersection.update_visiblity_connections()
 #	road_network.draw(Color.white, Color.aqua)
 	var vertex_array = {}
 	for intersection in road_network.intersections:
 		if !intersection.connections:
 			if intersection.visible:
-				_surface_tool.draw_filled_circle(intersection.road_network_info.width/2, intersection.position)
+				surface_tool.draw_filled_circle(intersection.road_network_info.width/2, intersection.position)
 		else:
 			var v1dict = draw_intersection(intersection)
 		
@@ -43,7 +40,7 @@ func _render_road(road_network):
 	for connection in road_network.network.values():
 		if !(connection.start_position.visible or connection.end_position.visible) or !connection.visible:
 			continue
-		if connection is RoadBezier:
+		if connection is RoadSegmentBezier:
 			var start_dict = vertex_array[connection.start_position]
 			var middle_dict = vertex_array[connection.middle_position]
 			var end_dict = vertex_array[connection.end_position]
@@ -89,12 +86,12 @@ func compute_intersection(intersection: RoadIntersection):
 		if connection.road_network_info.width != 0:
 			var vert = {}
 			var intersection_bound_for
-			if connection is RoadBezier:
+			if connection is RoadSegmentBezier:
 				intersection_bound_for = connection.middle_position if intersection == connection.start_position else connection.end_position if intersection == connection.middle_position else connection.middle_position if intersection == connection.end_position else connection.start_position
 			else:
 				intersection_bound_for = connection.start_position if intersection == connection.end_position else connection.end_position
 			var direction
-			if (connection is RoadBezier and intersection != connection.middle_position) or not connection is RoadBezier:
+			if (connection is RoadSegmentBezier and intersection != connection.middle_position) or not connection is RoadSegmentBezier:
 				direction = intersection.direction_to(intersection_bound_for)
 			else:
 				direction = get_average_direction_to(intersection, intersection_bound_for, connection)
@@ -130,7 +127,7 @@ func compute_intersection(intersection: RoadIntersection):
 		
 	return [intersection_verts, mid_points]
 
-func get_average_direction_to(intersection: RoadIntersection, position: RoadIntersection, connection: RoadBezier):
+func get_average_direction_to(intersection: RoadIntersection, position: RoadIntersection, connection: RoadSegmentBezier):
 	var projected_time = connection.project_point(position.position, true)[1]
 	var direction = Vector3.ZERO
 	for t in range(0, projected_time, 0.01):
@@ -158,7 +155,7 @@ func draw_connection(_surface_tool: SurfaceTool, i1: Dictionary, i2: Dictionary,
 		last_v2 = v1
 
 
-func draw_lanes(_surface_tool: SurfaceTool, connection: RoadSegment):
+func draw_lanes(_surface_tool: SurfaceTool, connection: RoadSegmentLinear):
 	$ImmediateGeometry.begin(Mesh.PRIMITIVE_LINES)
 	for lane in connection.lanes:
 		var direction = connection.start_position.direction_to(connection.end_position)
@@ -244,25 +241,6 @@ func draw_complete_intersection(_surface_tool, intersection: RoadIntersection, v
 
 	# DrawingUtils.draw_line($ImmediateGeometry, vertex_data[-1].v1, mid_point_data[-1], Color.red)
 	# DrawingUtils.draw_line($ImmediateGeometry, vertex_data[0].v2, mid_oint_data[-1], Color.red)
-
-class Sorter:
-	var extra_params = []
-	var array
-	var object: Object
-	var function: String
-	
-	func _init(_object, _function, _array, _extra_params):
-		self.object = _object
-		self.function = _function
-		self.extra_params = _extra_params
-		self.array = _array
-		self.array.sort_custom(self, "sort")
-	
-	func get_array():
-		return array
-	
-	func sort(a, b):
-		return object.callv(function, [a, b] + extra_params)
 		
 func sort_by_angle(a, b, origin):
 	var a_position = a.start_position.position if a.end_position == origin else a.end_position.position

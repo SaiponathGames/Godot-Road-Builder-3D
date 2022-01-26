@@ -108,8 +108,8 @@ func _ready() -> void:
 #		add_child(_scrolling_timer)
 
 	_new_translation = global_transform.origin
-	_new_rotation = rotation
-	_new_tilt_rotation = $CameraTilt.rotation
+	_new_rotation = Vector3(0, rotation.y, 0)
+	_new_tilt_rotation = Vector3($CameraTilt.rotation.x, 0, 0)
 	_new_zoom = $CameraTilt/CameraZoom.translation
 	$CameraTilt/CameraZoom.projection = projection
 
@@ -205,10 +205,16 @@ func _process(delta: float) -> void:
 #				_translation_timer.stop()
 #				movement_speed /= movement_speed_multiplier
 #				movement_time /= movement_speed_multiplier
-
-			global_transform.origin = global_transform.origin.linear_interpolate(_new_translation*movement_speed, delta*movement_time)
+			if limits_enabled:
+				_new_translation = clamp_camera(limits_rect, _new_translation)
+			var _motion_translation = _new_translation*movement_speed
+			if limits_enabled:
+				_motion_translation = clamp_camera(limits_rect, _motion_translation)
+			global_transform.origin = global_transform.origin.linear_interpolate(_motion_translation, delta*movement_time)
+#			print(limits_rect.end)
 			if limits_enabled:
 				global_transform.origin = clamp_camera(limits_rect, global_transform.origin)
+#				print(_new_translation)
 
 	if rotation_enabled:
 		if Input.is_action_pressed("camera_rotate_x"):

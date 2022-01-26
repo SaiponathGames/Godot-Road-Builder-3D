@@ -59,6 +59,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://roads_system/RoadIntersection.gd"
 }, {
+"base": "Reference",
+"class": "RoadIntersectionNode",
+"language": "GDScript",
+"path": "res://roads_system/RoadIntersectionNode.gd"
+}, {
 "base": "Spatial",
 "class": "RoadNetwork",
 "language": "GDScript",
@@ -69,20 +74,35 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://roads_system/RoadNetworkInfo.gd"
 }, {
+"base": "Spatial",
+"class": "RoadNetworkOneLine",
+"language": "GDScript",
+"path": "res://roads_system/one_file_lines/road_system.gd"
+}, {
 "base": "Reference",
 "class": "RoadSegmentBase",
 "language": "GDScript",
-"path": "res://roads_system/RoadSegmentBase.gd"
+"path": "res://roads_system/base/RoadSegmentBase.gd"
+}, {
+"base": "Node",
+"class": "RoadSegmentBaseRenderer",
+"language": "GDScript",
+"path": "res://roads_system/base/RoadSegmentBaseRenderer.gd"
 }, {
 "base": "RoadSegmentBase",
 "class": "RoadSegmentBezier",
 "language": "GDScript",
-"path": "res://roads_system/RoadSegmentBezier.gd"
+"path": "res://roads_system/bezier/RoadSegmentBezier.gd"
 }, {
 "base": "RoadSegmentBase",
 "class": "RoadSegmentLinear",
 "language": "GDScript",
-"path": "res://roads_system/RoadSegmentLinear.gd"
+"path": "res://roads_system/linear/RoadSegmentLinear.gd"
+}, {
+"base": "MeshInstance",
+"class": "SegmentRenderer",
+"language": "GDScript",
+"path": "res://roads_system/SegmentRenderer.gd"
 } ]
 _global_script_class_icons={
 "BuildingInstance": "",
@@ -95,11 +115,15 @@ _global_script_class_icons={
 "MeshDrawer": "",
 "QuadTreeNode": "",
 "RoadIntersection": "",
+"RoadIntersectionNode": "",
 "RoadNetwork": "",
 "RoadNetworkInfo": "",
+"RoadNetworkOneLine": "",
 "RoadSegmentBase": "",
+"RoadSegmentBaseRenderer": "",
 "RoadSegmentBezier": "",
-"RoadSegmentLinear": ""
+"RoadSegmentLinear": "",
+"SegmentRenderer": ""
 }
 
 [application]

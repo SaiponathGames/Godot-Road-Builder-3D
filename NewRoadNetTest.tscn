@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
@@ -8,6 +8,7 @@
 [ext_resource path="res://addons/sairam.quadtree/QuadTreeNode.gd" type="Script" id=6]
 [ext_resource path="res://NewRoadNetTest.gd" type="Script" id=7]
 [ext_resource path="res://Camera.tscn" type="PackedScene" id=8]
+[ext_resource path="res://roads_system/SegmentRenderer.gd" type="Script" id=9]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -17,6 +18,18 @@ textures = [ [  ], [  ] ]
 [sub_resource type="SpatialMaterial" id=4]
 flags_unshaded = true
 vertex_color_use_as_albedo = true
+
+[sub_resource type="Shader" id=5]
+code = "shader_type spatial;
+
+uniform float test;"
+
+[sub_resource type="ShaderMaterial" id=6]
+shader = SubResource( 5 )
+shader_param/test = 8.59003e+09
+
+[sub_resource type="CubeMesh" id=7]
+material = SubResource( 6 )
 
 [sub_resource type="ProceduralSky" id=2]
 
@@ -35,6 +48,7 @@ script = ExtResource( 7 )
 
 [node name="HTerrain" type="Spatial" parent="."]
 script = ExtResource( 3 )
+lod_scale = 2.0
 _terrain_data = ExtResource( 1 )
 chunk_size = 32
 collision_enabled = true
@@ -49,12 +63,21 @@ shader_params/u_depth_blending = true
 shader_params/u_triplanar = false
 shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 
+[node name="Camera" parent="HTerrain" instance=ExtResource( 8 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1 )
+far = 500.0
+edge_scroll/enabled = false
+movement/speed = 0.5
+tilting/max_angle = 50.0
+zooming/min_distance = 3.0
+limits/enabled = false
+limits/rect = Rect2( 1, 1, 255, 255 )
+
 [node name="RoadNetwork" type="Spatial" parent="HTerrain"]
 script = ExtResource( 4 )
 graph_node = NodePath("Graph")
 quad_tree_node = NodePath("QuadTree")
 use_astar = true
-min_vector = Vector3( -128, -64, -128 )
 
 [node name="Graph" type="Spatial" parent="HTerrain/RoadNetwork"]
 script = ExtResource( 5 )
@@ -69,12 +92,19 @@ max_levels = 12
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
 material_override = SubResource( 4 )
 
-[node name="Camera" parent="." instance=ExtResource( 8 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1 )
-far = 500.0
-movement/speed = 0.5
-zooming/min_distance = 3.0
-limits/rect = Rect2( 1, 1, 255, 255 )
+[node name="Renderer" type="Spatial" parent="HTerrain/RoadNetwork"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
+
+[node name="IntersectionRenderer" type="MeshInstance" parent="HTerrain/RoadNetwork/Renderer"]
+
+[node name="SegmentRenderer" type="MeshInstance" parent="HTerrain/RoadNetwork/Renderer"]
+script = ExtResource( 9 )
+
+[node name="MeshInstance" type="MeshInstance" parent="HTerrain/RoadNetwork"]
+visible = false
+mesh = SubResource( 7 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 3 )
+
+[connection signal="graph_changed" from="HTerrain/RoadNetwork/Graph" to="HTerrain/RoadNetwork" method="_on_Graph_graph_changed"]

@@ -69,12 +69,14 @@ func remove_body(body: Spatial) -> void:
 
 	# get the QuadTreeNode
 	var qt_node = MetaStaticFuncs.get_meta_or_null(body, "_qt")
+	prints(qt_node, "test")
 	if qt_node == null: 
 		print("no meta")
 		push_error("Body not in tree")  # body not in tree
+		return
 	
 	if qt_node != self: # check if is different from the current level
-		# print("remove body from child")
+		print("remove body from child")
 		qt_node.remove_body(body)  # call the qt_node's remove method
 		return
 	
@@ -165,9 +167,10 @@ func _query(bound: AABB) -> Array:
 	for object in _objects:
 		var transformed_aabb
 		if object is Spatial and object.has_meta("_bounds"):
-			transformed_aabb = object.get_meta("_bounds")
+			transformed_aabb = object.get_meta("_bounds").abs()
 		else:
-			transformed_aabb = object.get_transformed_aabb()
+			transformed_aabb = object.get_transformed_aabb().abs()
+#		prints(transformed_aabb, '|', bound)
 		if bound.intersects(transformed_aabb):  # check if the object in the bounds and it's not bound
 			# add the object into found_objects
 			found_objects.push_back(object)
