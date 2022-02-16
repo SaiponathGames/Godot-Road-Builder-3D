@@ -1,16 +1,11 @@
 extends Node
 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
-
-
-# Called when the node enters the scene tree for the first time.
 func _ready():
-	pass # Replace with function body.
+	var files = PathServer.get_dir_contents("res://roads_system/road_net_infos/")[0]
+	for file in files:
+		file = file as String
+		file = file.trim_suffix(".remap")
+		if file.ends_with("network_info.gd"):
+			var script = load(file).new()
+			RoadNetworkInfoRegister.register(script.get_road_network_info())
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass

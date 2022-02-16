@@ -25,6 +25,7 @@ var graph_inter_map = {}
 ## For graph segments
 var graph_seg_map = {}
 
+
 func create_segment(segment: RoadSegmentBase) -> RoadSegmentBase: 
 	var from = segment.start_position.intersection
 	var to = segment.end_position.intersection
@@ -52,6 +53,7 @@ func create_segment(segment: RoadSegmentBase) -> RoadSegmentBase:
 	
 		return segment
 	return null
+
 
 func delete_segment(segment: RoadSegmentBase): 
 	var from = segment.start_position.intersection
@@ -82,8 +84,8 @@ func delete_segment(segment: RoadSegmentBase):
 		
 		if to.connections.empty() and graph.has_point(to_id):
 			_remove_road_intersection(to_id)
-			
-		
+
+
 func get_all_segments_from_to(from: RoadIntersection, to: RoadIntersection) -> Array:
 	var from_id = from.get_id(min_vector)
 	var to_id = to.get_id(min_vector)
@@ -96,6 +98,16 @@ func get_all_segments_from_to(from: RoadIntersection, to: RoadIntersection) -> A
 			segments.append(graph_seg_map[seg_id])
 	return segments
 
+
+func get_all_segmentas_from_to_of_net_info(from: RoadIntersection, to: RoadIntersection, net_info: RoadNetworkInfo):
+	var segments_got = get_all_segments_from_to(from, to)
+	var segments = []
+	for segment in segments_got:
+		if segment.road_network_info == net_info:
+			segments.append(segment)
+	return segments
+
+
 func get_all_segments_from_to_of_type(from: RoadIntersection, to: RoadIntersection, type = RoadSegmentBase):
 	var segments_got = get_all_segments_from_to(from, to)
 	var segments = []
@@ -103,6 +115,7 @@ func get_all_segments_from_to_of_type(from: RoadIntersection, to: RoadIntersecti
 		if segment is type:
 			segments.append(segment)
 	return segments
+
 
 func get_all_segments() -> Array:
 	var segment_dicts = graph.get_all_segments()
@@ -113,6 +126,7 @@ func get_all_segments() -> Array:
 			segments.append(graph_seg_map[seg_id])
 	return segments
 
+
 func get_all_segments_of_type(type = RoadSegmentBase) -> Array:
 	var segments_got = get_all_segments()
 	var segments = []
@@ -120,9 +134,19 @@ func get_all_segments_of_type(type = RoadSegmentBase) -> Array:
 		if segment is type:
 			segments.append(segment)
 	return segments
-	
+
+
+func get_all_segment_of_net_info(net_info: RoadNetworkInfo):
+	var segments_got = get_all_segments()
+	var segments = []
+	for segment in segments_got:
+		if segment.road_network_info == net_info:
+			segments.append(segment)
+	return segments
+
 func upgrade_segment(segment: RoadSegmentBase, road_net_info: RoadNetworkInfo): 
 	segment.road_network_info = road_net_info
+
 
 func get_closest_segment_to(position: Vector3, distance: float = 0.5) -> RoadSegmentBase:
 	var closest_intersection: RoadSegmentBase
@@ -137,6 +161,7 @@ func get_closest_segment_to(position: Vector3, distance: float = 0.5) -> RoadSeg
 					closest_intersection = object.get_meta("_segment") as RoadSegmentBase
 					closest_dist = dist
 	return closest_intersection
+
 
 func get_closest_point_to(position: Vector3, distance: float = 0.5) -> RoadIntersection:
 	var closest_intersection: RoadIntersection
@@ -153,11 +178,14 @@ func get_closest_point_to(position: Vector3, distance: float = 0.5) -> RoadInter
 					closest_dist = dist
 	return closest_intersection
 
+
 func subdivide_segment(segment: RoadSegmentBase):
 	return segment.subdivide()
 
+
 func split_segment_at(position: RoadIntersection, segment: RoadSegmentBase):
 	return segment.split_at_position(position)
+
 
 func join_segments(segment: RoadSegmentBase, segments: Array): # segments: Array[RoadSegmentBase] -> RoadSegmentBase
 	return segment.join_segments(segments)
@@ -188,6 +216,7 @@ func _make_quad_tree_object(road_object = null) -> Spatial:
 	spatial.set_meta("_aabb", road_object.get_aabb())
 	return spatial
 
+
 func _add_road_intersection(id: int, intersection: RoadIntersection) -> void:
 # warning-ignore:return_value_discarded
 	graph.add_point(id, intersection.position)
@@ -200,8 +229,8 @@ func _add_road_intersection(id: int, intersection: RoadIntersection) -> void:
 		qt_node = quad_tree.add_body(qt_node)
 		intersection.set_meta('_qt_node', qt_node)
 
+
 func _remove_road_intersection(id: int):
-	print(1)
 	var intersection: RoadIntersection = graph_inter_map[id]
 	graph.remove_point(id)
 	if use_astar:
@@ -213,6 +242,7 @@ func _remove_road_intersection(id: int):
 		quad_tree.remove_body(qt_node)
 		intersection.remove_meta("_qt_node")
 		qt_node.queue_free()
+
 
 func _on_Graph_graph_changed():
 	emit_signal("graph_changed", self)

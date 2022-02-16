@@ -72,10 +72,8 @@ var _new_zoom
 #var _scrolling_timer = Timer.new()
 
 var _mouse_in = true
-
 var _is_panning = false
-
-var mouse_sensitivity = 0.03
+var _mouse_pressed = false
 var _tilt = deg2rad(-45)
 
 var option_target_zoom = true
@@ -86,6 +84,8 @@ var option_invert_panning = false
 var option_invert_rotation_keys = false
 var option_invert_rotation = false
 var option_invert_tilting = false
+var mouse_sensitivity = 0.03
+
 
 func _ready() -> void:
 	if !Engine.editor_hint:
@@ -117,11 +117,11 @@ func _input(event: InputEvent) -> void:
 	if Engine.editor_hint or !camera_enabled:
 		return
 
-	if event is InputEventMouseButton and option_disable_edge_scrolling_when_using_mouse:
+	if event is InputEventMouseButton and option_disable_edge_scrolling_when_using_mouse and edge_scroll_enabled:
 		if event.button_index in [BUTTON_MIDDLE, BUTTON_RIGHT] and event.pressed:
-			edge_scroll_enabled = false
+			_mouse_pressed = false
 		if event.button_index in [BUTTON_MIDDLE, BUTTON_RIGHT] and !event.pressed:
-			edge_scroll_enabled = true
+			_mouse_pressed = true
 
 	if event is InputEventMouseButton:
 		if scrolling_enabled:
@@ -154,7 +154,7 @@ func _process(delta: float) -> void:
 	var _mouse_position = get_viewport().get_mouse_position()
 	var visible_rect = get_viewport().get_visible_rect()
 	if edge_scroll_enabled:
-		if _mouse_in and !_is_panning:
+		if _mouse_in and !_is_panning and !_mouse_pressed:
 			if _mouse_position.x < int(float(visible_rect.size.x)*edge_scroll_detection_area):
 				_new_translation -= global_transform.basis.x
 			if _mouse_position.x > visible_rect.size.x-(visible_rect.size.x*edge_scroll_detection_area):
@@ -260,7 +260,9 @@ func _process(delta: float) -> void:
 				_new_translation += (current_translation - new_translation)
 
 func clamp_camera(rect: Rect2, position: Vector3):
-	return Vector3(clamp(position.x, rect.position.x, rect.end.x), position.y, clamp(position.z, rect.position.y, rect.end.y))
+	# FIXME: rect.end.x gives the proper value but somehow the clamped vector is halved (255 -> 127)
+	# HACK: Currently multiplying the result into 2. 
+	return Vector3(clamp(position.x, rect.position.x, rect.end.x*2), position.y, clamp(position.z, rect.position.y, rect.end.y*2))
 
 func _cast_ray_to(postion: Vector2) -> Vector3:
 	var camera = get_viewport().get_camera()

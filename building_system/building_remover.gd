@@ -39,16 +39,16 @@ func _input(event):
 
 
 func _cast_ray_to(position: Vector2):
-	var camera = get_viewport().get_camera()
-	var from = camera.project_ray_origin(position)
-	var to = from + camera.project_ray_normal(position) * camera.far
-	return get_world().direct_space_state.intersect_ray(from, to).get("position", Vector3(NAN, NAN, NAN))
+	return get_ray(position).get("position", Vector3(NAN, NAN, NAN))
 
 func get_collider(position):
+	return get_ray(position).get("collider")
+
+func get_ray(position: Vector2):
 	var camera = get_viewport().get_camera()
 	var from = camera.project_ray_origin(position)
 	var to = from + camera.project_ray_normal(position) * camera.far
-	return get_world().direct_space_state.intersect_ray(from, to).get("collider")
+	return get_world().direct_space_state.intersect_ray(from, to)
 
 func is_vec_nan(vec) -> bool:
 	if typeof(vec) == TYPE_VECTOR3:

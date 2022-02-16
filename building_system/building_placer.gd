@@ -40,7 +40,7 @@ func _input(event):
 			ghost_instance.hide()
 			add_child(ghost_instance)
 		if event.scancode == KEY_2:
-			current_building = BuildingType.new("test_id", "Test Name", load("res://models/house2/house2.tscn"), 2)
+			current_building = BuildingType.new("test_id2", "Test Name 2", load("res://models/house2/house2.tscn"), 2)
 			current_building.door_face_direction = Vector3.BACK
 			if ghost_instance:
 				remove_child(ghost_instance)
@@ -85,21 +85,10 @@ func _input(event):
 				var direction = (closest_point - building_point).normalized()
 
 				
-				var point: Vector3 = closest_point + direction * -((segment.road_network_info.width + current_building.width)/2)
+				var point: Vector3 = closest_point + direction * -((segment.road_network_info.segment_width + current_building.width)/2)
 				
 				var building_transform = Transform.IDENTITY
-				point.y = 0.02
-				var b_scale = ghost_instance.global_transform.basis.get_scale()
-				building_transform.origin = point
-
-				var a = closest_point - point
-				var b = current_building.door_face_direction
-				var angle_a = atan2(a.z, a.x)
-				var angle_b = atan2(b.z, b.x)
-				var angle = angle_b - angle_a
-				
-				building_transform.basis = building_transform.basis.rotated(Vector3.UP, angle)
-				building_transform.basis = building_transform.basis.scaled(b_scale)
+				building_transform = calculate_transform(point, closest_point, building_transform)
 				ghost_instance.global_transform = building_transform
 
 			else:
@@ -121,7 +110,7 @@ func _input(event):
 			if segment:
 				var closest_point = segment.project_point(building_point)
 				var direction = (closest_point - building_point).normalized()
-				var point = closest_point + direction * -((segment.road_network_info.width + current_building.width)/2)
+				var point = closest_point + direction * -((segment.road_network_info.segment_width + current_building.width)/2)
 				point.y = 0.02
 				
 				var new_building = current_building.instance()
@@ -210,11 +199,14 @@ func calculate_transform(point, closest_point, building):
 #
 #				building_transform = building_transform.rotated(Vector3.UP, atan2(-building_face_dir.z, building_face_dir.x))
 
-func _cast_ray_to(postion: Vector2):
+func _cast_ray_to(position: Vector2):
+	return get_ray(position).get("position", Vector3(NAN, NAN, NAN))
+
+func get_ray(position: Vector2):
 	var camera = get_viewport().get_camera()
-	var from = camera.project_ray_origin(postion)
-	var to = from + camera.project_ray_normal(postion) * camera.far
-	return get_world().direct_space_state.intersect_ray(from, to, [], 1).get("position", Vector3(NAN, NAN, NAN))
+	var from = camera.project_ray_origin(position)
+	var to = from + camera.project_ray_normal(position) * camera.far
+	return get_world().direct_space_state.intersect_ray(from, to, [], 1)
 
 func is_vec_nan(vec) -> bool:
 	if typeof(vec) == TYPE_VECTOR3:

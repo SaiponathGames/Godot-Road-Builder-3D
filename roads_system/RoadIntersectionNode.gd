@@ -21,13 +21,13 @@ func direction_to(_intersection: RoadIntersectionNode):
 func get_left_vertex():
 	var direction = segment.direction_from_intersection(self)
 	var left = Vector3(-direction.z, direction.y, direction.x).normalized()
-	return position + left * segment.road_network_info.width/2
+	return position + left * segment.road_network_info.segment_width/2
 	
 
 func get_right_vertex():
 	var direction = segment.direction_from_intersection(self)
 	var left = Vector3(-direction.z, direction.y, direction.x).normalized()
-	return position + -left * segment.road_network_info.width/2
+	return position + -left * segment.road_network_info.segment_width/2
 
 func set_offset(value: Vector2):
 	offset = value

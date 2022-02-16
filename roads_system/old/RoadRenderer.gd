@@ -29,7 +29,7 @@ func _render_road(road_network):
 	for intersection in road_network.intersections:
 		if !intersection.connections:
 			if intersection.visible:
-				surface_tool.draw_filled_circle(intersection.road_network_info.width/2, intersection.position)
+				surface_tool.draw_filled_circle(intersection.road_network_info.segment_width/2, intersection.position)
 		else:
 			var v1dict = draw_intersection(intersection)
 		
@@ -83,7 +83,7 @@ func compute_intersection(intersection: RoadIntersection):
 	var intersection_verts = {}
 	var start_points = []
 	for connection in intersection.connections:
-		if connection.road_network_info.width != 0:
+		if connection.road_network_info.segment_width != 0:
 			var vert = {}
 			var intersection_bound_for
 			if connection is RoadSegmentBezier:
@@ -97,15 +97,15 @@ func compute_intersection(intersection: RoadIntersection):
 				direction = get_average_direction_to(intersection, intersection_bound_for, connection)
 			var start_point = intersection.position
 			if intersection.connections.size() > 1:
-				start_point += direction * (connection.road_network_info.length + ((connection.road_network_info.width)/2) + (pow(intersection.connections.size(), connection.road_network_info.curvature)/2.0))
-#				print(intersection.road_network_info.length + (connection.road_network_info.width-1) + (pow(intersection.connections.size(), 0.3)/3.0))
+				start_point += direction * (connection.road_network_info.length + ((connection.road_network_info.segment_width)/2) + (pow(intersection.connections.size(), connection.road_network_info.curvature)/2.0))
+#				print(intersection.road_network_info.length + (connection.road_network_info.segment_width-1) + (pow(intersection.connections.size(), 0.3)/3.0))
 			start_points.append(start_point)
 #			DrawingUtils.draw_empty_circle($ImmediateGeometry, start_point, 0.25, Color.yellow)
 			vert["start_position"] = start_point
 			var left = Vector3(-direction.z, direction.y, direction.x)
 			left = left.normalized()
-			var v1 = start_point + left * connection.road_network_info.width * 0.5
-			var v2 = start_point + -left * connection.road_network_info.width * 0.5
+			var v1 = start_point + left * connection.road_network_info.segment_width * 0.5
+			var v2 = start_point + -left * connection.road_network_info.segment_width * 0.5
 			vert["v1"] = v1
 			vert["v2"] = v2
 			vert["angle"] = atan2(direction.x, direction.z)
@@ -116,7 +116,7 @@ func compute_intersection(intersection: RoadIntersection):
 	var connections = intersection.connections
 	var mid_points = []
 	for connection_idx in connections.size()-1:
-		if connections[connection_idx].road_network_info.width != 0:
+		if connections[connection_idx].road_network_info.segment_width != 0:
 			var point = compute_edge_intersection(intersection_verts[connections[connection_idx]], intersection_verts[connections[connection_idx+1]], intersection.road_network_info.end_radius)
 #			DrawingUtils.draw_empty_circle($ImmediateGeometry, point, 0.125, Color.bisque)
 			mid_points.append(point)
@@ -227,7 +227,7 @@ func draw_complete_intersection(_surface_tool, intersection: RoadIntersection, v
 
 		var number_of_connections = intersection.connections.size()
 		for connection_idx in number_of_connections:
-			if intersection.connections[connection_idx].road_network_info.width != 0 and intersection.connections[connection_idx].visible and intersection.connections[(connection_idx+1) % number_of_connections].visible:
+			if intersection.connections[connection_idx].road_network_info.segment_width != 0 and intersection.connections[connection_idx].visible and intersection.connections[(connection_idx+1) % number_of_connections].visible:
 				_surface_tool.draw_curve_triangles(vertex_data[vertex_data.keys()[connection_idx]].v1,
 					mid_point_data[connection_idx],
 					vertex_data[vertex_data.keys()[(connection_idx+1) % number_of_connections]].v2,

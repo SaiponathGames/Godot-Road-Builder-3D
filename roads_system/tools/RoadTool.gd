@@ -68,7 +68,7 @@ func _input(event):
 		if event.scancode == KEY_6:
 			current_info = RoadNetworkInfo.new("test_id_6", "Test Road 6", 0.25, 0.5, 1, 0.01, [])
 			# RoadLaneInfo.new(RoadNetwork.Direction.FORWARD, 0.5, 0)
-		if event.scancode == KEY_M:
+#		if event.scancode == KEY_M:
 #			RoadIntersection.new()
 	
 

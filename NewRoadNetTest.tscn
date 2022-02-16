@@ -1,14 +1,15 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=18 format=2]
 
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
 [ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=3]
-[ext_resource path="res://roads_system/RoadNetwork.gd" type="Script" id=4]
-[ext_resource path="res://roads_system/GraphNode.gd" type="Script" id=5]
-[ext_resource path="res://addons/sairam.quadtree/QuadTreeNode.gd" type="Script" id=6]
+[ext_resource path="res://roads_system/RoadNetwork.tscn" type="PackedScene" id=4]
+[ext_resource path="res://roads_system/tools/road_tool/states/RoadToolStraight.gd" type="Script" id=5]
 [ext_resource path="res://NewRoadNetTest.gd" type="Script" id=7]
 [ext_resource path="res://Camera.tscn" type="PackedScene" id=8]
-[ext_resource path="res://roads_system/SegmentRenderer.gd" type="Script" id=9]
+[ext_resource path="res://roads_system/tools/road_tool/RoadTool.gd" type="Script" id=10]
+[ext_resource path="res://building_system/non_buildable.tres" type="Material" id=11]
+[ext_resource path="res://building_system/buildable.tres" type="Material" id=12]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -30,6 +31,7 @@ shader_param/test = 8.59003e+09
 
 [sub_resource type="CubeMesh" id=7]
 material = SubResource( 6 )
+size = Vector3( 10, 100, 10 )
 
 [sub_resource type="ProceduralSky" id=2]
 
@@ -67,44 +69,38 @@ shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1 )
 far = 500.0
 edge_scroll/enabled = false
+panning/enabled = false
 movement/speed = 0.5
 tilting/max_angle = 50.0
 zooming/min_distance = 3.0
-limits/enabled = false
+perspective_panning/enabled = true
 limits/rect = Rect2( 1, 1, 255, 255 )
 
-[node name="RoadNetwork" type="Spatial" parent="HTerrain"]
-script = ExtResource( 4 )
-graph_node = NodePath("Graph")
-quad_tree_node = NodePath("QuadTree")
-use_astar = true
-
-[node name="Graph" type="Spatial" parent="HTerrain/RoadNetwork"]
-script = ExtResource( 5 )
-
-[node name="QuadTree" type="Spatial" parent="HTerrain/RoadNetwork"]
-script = ExtResource( 6 )
-extents = Vector3( 256, 64, 256 )
-capacity = 6
-max_levels = 12
-
-[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/RoadNetwork"]
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
 material_override = SubResource( 4 )
 
-[node name="Renderer" type="Spatial" parent="HTerrain/RoadNetwork"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
-
-[node name="IntersectionRenderer" type="MeshInstance" parent="HTerrain/RoadNetwork/Renderer"]
-
-[node name="SegmentRenderer" type="MeshInstance" parent="HTerrain/RoadNetwork/Renderer"]
-script = ExtResource( 9 )
-
-[node name="MeshInstance" type="MeshInstance" parent="HTerrain/RoadNetwork"]
-visible = false
+[node name="MeshInstance" type="MeshInstance" parent="HTerrain"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 255, 0, 255 )
 mesh = SubResource( 7 )
+skeleton = NodePath("../RoadNetwork")
+
+[node name="RoadNetwork" parent="HTerrain" instance=ExtResource( 4 )]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 3 )
 
-[connection signal="graph_changed" from="HTerrain/RoadNetwork/Graph" to="HTerrain/RoadNetwork" method="_on_Graph_graph_changed"]
+[node name="Tools" type="Spatial" parent="."]
+
+[node name="RoadTool" type="Spatial" parent="Tools"]
+script = ExtResource( 10 )
+world_road_network_node = NodePath("../../HTerrain/RoadNetwork")
+buildable_mat = ExtResource( 12 )
+non_buildable_mat = ExtResource( 11 )
+
+[node name="RoadNetwork" parent="Tools/RoadTool" instance=ExtResource( 4 )]
+
+[node name="States" type="Spatial" parent="Tools/RoadTool"]
+
+[node name="RoadToolStraight" type="Spatial" parent="Tools/RoadTool/States"]
+script = ExtResource( 5 )

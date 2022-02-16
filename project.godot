@@ -64,6 +64,16 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://roads_system/RoadIntersectionNode.gd"
 }, {
+"base": "Reference",
+"class": "RoadLane",
+"language": "GDScript",
+"path": "res://roads_system/RoadLane.gd"
+}, {
+"base": "Resource",
+"class": "RoadLaneInfo",
+"language": "GDScript",
+"path": "res://roads_system/RoadLaneInfo.gd"
+}, {
 "base": "Spatial",
 "class": "RoadNetwork",
 "language": "GDScript",
@@ -82,22 +92,22 @@ _global_script_classes=[ {
 "base": "Reference",
 "class": "RoadSegmentBase",
 "language": "GDScript",
-"path": "res://roads_system/base/RoadSegmentBase.gd"
+"path": "res://roads_system/segment_types/base/RoadSegmentBase.gd"
 }, {
-"base": "Node",
+"base": "Reference",
 "class": "RoadSegmentBaseRenderer",
 "language": "GDScript",
-"path": "res://roads_system/base/RoadSegmentBaseRenderer.gd"
+"path": "res://roads_system/segment_types/base/RoadSegmentBaseRenderer.gd"
 }, {
 "base": "RoadSegmentBase",
 "class": "RoadSegmentBezier",
 "language": "GDScript",
-"path": "res://roads_system/bezier/RoadSegmentBezier.gd"
+"path": "res://roads_system/segment_types/bezier/RoadSegmentBezier.gd"
 }, {
 "base": "RoadSegmentBase",
 "class": "RoadSegmentLinear",
 "language": "GDScript",
-"path": "res://roads_system/linear/RoadSegmentLinear.gd"
+"path": "res://roads_system/segment_types/linear/RoadSegmentLinear.gd"
 }, {
 "base": "MeshInstance",
 "class": "SegmentRenderer",
@@ -116,6 +126,8 @@ _global_script_class_icons={
 "QuadTreeNode": "",
 "RoadIntersection": "",
 "RoadIntersectionNode": "",
+"RoadLane": "",
+"RoadLaneInfo": "",
 "RoadNetwork": "",
 "RoadNetworkInfo": "",
 "RoadNetworkOneLine": "",
@@ -137,6 +149,9 @@ config/icon="res://icon.png"
 DrawingUtils="*res://drawing_tools/DrawingUtils.gd"
 AABBUtils="*res://addons/sairam.quadtree/AABBUtils.gd"
 MetaStaticFuncs="*res://addons/sairam.quadtree/Meta_Static_Funcs.gd"
+PathServer="*res://file_system/PathServer.gd"
+RoadNetworkInfoLoader="*res://roads_system/RoadNetworkInfoLoader.gd"
+RoadNetworkInfoRegister="*res://roads_system/RoadNetworkInfoRegister.gd"
 
 [editor_plugins]
 

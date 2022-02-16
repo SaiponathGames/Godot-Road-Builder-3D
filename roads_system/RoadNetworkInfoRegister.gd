@@ -1,16 +1,20 @@
 extends Node
 
 
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
+var road_net_infos: Dictionary
 
+func register(road_net_info: RoadNetworkInfo):
+	road_net_infos[road_net_info.id] = road_net_info
 
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	pass # Replace with function body.
+func unregister(net_info_name: String):
+	road_net_infos.erase(net_info_name)
 
+func get(net_info_name: String):
+	return road_net_infos.get(net_info_name)
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
+func find(mask: String):
+	var matching_array = []
+	for road_net_info in road_net_infos.values():
+		if road_net_info.id.match(mask):
+			matching_array.append(road_net_info)
+	return matching_array

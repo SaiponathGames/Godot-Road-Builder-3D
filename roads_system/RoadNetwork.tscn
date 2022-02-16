@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://roads_system/RoadRenderer.tscn" type="PackedScene" id=1]
+[ext_resource path="res://roads_system/RoadNetwork.gd" type="Script" id=2]
+[ext_resource path="res://roads_system/GraphNode.gd" type="Script" id=3]
+[ext_resource path="res://addons/sairam.quadtree/QuadTreeNode.gd" type="Script" id=4]
+
+[node name="RoadNetwork" type="Spatial"]
+script = ExtResource( 2 )
+graph_node = NodePath("Graph")
+quad_tree_node = NodePath("QuadTree")
+use_astar = true
+
+[node name="Graph" type="Spatial" parent="."]
+script = ExtResource( 3 )
+
+[node name="QuadTree" type="Spatial" parent="."]
+script = ExtResource( 4 )
+extents = Vector3( 256, 64, 256 )
+capacity = 6
+max_levels = 12
+
+[node name="Renderer" parent="." instance=ExtResource( 1 )]
+
+[connection signal="graph_changed" from="Graph" to="." method="_on_Graph_graph_changed"]
