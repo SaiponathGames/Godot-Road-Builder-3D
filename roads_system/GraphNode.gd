@@ -43,5 +43,8 @@ func are_points_connected_with_segment(from_id, to_id, seg_id, bidrectional: boo
 func get_all_segments():
 	return graph.get_all_segments()
 
+func get_all_intersections():
+	return graph.get_all_intersections()
+
 func _on_Graph_res_changed():
 	emit_signal("graph_changed")

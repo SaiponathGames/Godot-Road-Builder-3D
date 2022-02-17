@@ -69,7 +69,6 @@ func remove_body(body: Spatial) -> void:
 
 	# get the QuadTreeNode
 	var qt_node = MetaStaticFuncs.get_meta_or_null(body, "_qt")
-	prints(qt_node, "test")
 	if qt_node == null: 
 		print("no meta")
 		push_error("Body not in tree")  # body not in tree

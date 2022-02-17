@@ -51,6 +51,7 @@ script = ExtResource( 7 )
 [node name="HTerrain" type="Spatial" parent="."]
 script = ExtResource( 3 )
 lod_scale = 2.0
+map_scale = Vector3( 5, 5, 5 )
 _terrain_data = ExtResource( 1 )
 chunk_size = 32
 collision_enabled = true
@@ -68,13 +69,13 @@ shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 [node name="Camera" parent="HTerrain" instance=ExtResource( 8 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1 )
 far = 500.0
-edge_scroll/enabled = false
 panning/enabled = false
 movement/speed = 0.5
 tilting/max_angle = 50.0
 zooming/min_distance = 3.0
+zooming/max_distance = 150.0
 perspective_panning/enabled = true
-limits/rect = Rect2( 1, 1, 255, 255 )
+limits/rect = Rect2( 1, 1, 1275, 1275 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )

@@ -6,9 +6,13 @@ var _drag_end: RoadIntersection
 var _drag_current: RoadIntersection
 var _is_dragging: bool
 
+var _cache_previous_segment: RoadSegmentBase
 var _enabled: bool
 
 var local_road_network: RoadNetwork
+var global_road_network: RoadNetwork
+
+var road_net_info: RoadNetworkInfo
 
 func _input(event: InputEvent):
 	if !_enabled:
@@ -24,18 +28,31 @@ func _input(event: InputEvent):
 		continue_dragging(event)
 
 func setup_dragging(event: InputEventMouseButton):
-	_drag_start = RoadIntersection.new(_cast_ray_to(event.position), RoadNetworkInfoRegister.find("*two_lane*")[0])
+	_drag_start = RoadIntersection.new(_cast_ray_to(event.position), road_net_info)
 	_is_dragging = true
+	print("started")
 
 func stop_dragging(event: InputEventMouseButton):
-	_drag_end = RoadIntersection.new(_cast_ray_to(event.position), RoadNetworkInfoRegister.find("*two_lane*")[0])
+	_drag_end = RoadIntersection.new(_cast_ray_to(event.position), road_net_info)
 	_is_dragging = false
 	
-	var segment = RoadSegmentLinear.new(_drag_start, _drag_end, RoadNetworkInfoRegister.find("*two_lane*")[0], RoadSegmentLinear.FORWARD)
-	local_road_network.create_segment(segment)
+	var segment = RoadSegmentLinear.new(_drag_start, _drag_end, road_net_info, RoadSegmentLinear.FORWARD)
+	global_road_network.create_segment(segment)
+	print("stopped")
+	local_road_network.delete_segment(_cache_previous_segment)
+	_cache_previous_segment = null
+	
+	_drag_start = null
+	_drag_end = null
 	
 func continue_dragging(event: InputEventMouseMotion):
-	pass
+	_drag_current = RoadIntersection.new(_cast_ray_to(event.position), road_net_info)
+	if _cache_previous_segment:
+		local_road_network.delete_segment(_cache_previous_segment)
+		_cache_previous_segment = null
+	if _drag_start and _drag_start.distance_to(_drag_current) > 1:
+		_cache_previous_segment = RoadSegmentLinear.new(_drag_start, _drag_current, road_net_info, RoadSegmentLinear.FORWARD)
+		local_road_network.create_segment(_cache_previous_segment)
 
 func set_enabled(value: bool):
 	_enabled = value
@@ -55,3 +72,5 @@ func is_vec_nan(vec) -> bool:
 		return is_nan(vec)
 	return false
 
+func _ready():
+	road_net_info = RoadNetworkInfoRegister.find("*two_lane*")[0]

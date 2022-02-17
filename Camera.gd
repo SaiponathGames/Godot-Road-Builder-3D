@@ -119,9 +119,9 @@ func _input(event: InputEvent) -> void:
 
 	if event is InputEventMouseButton and option_disable_edge_scrolling_when_using_mouse and edge_scroll_enabled:
 		if event.button_index in [BUTTON_MIDDLE, BUTTON_RIGHT] and event.pressed:
-			_mouse_pressed = false
-		if event.button_index in [BUTTON_MIDDLE, BUTTON_RIGHT] and !event.pressed:
 			_mouse_pressed = true
+		if event.button_index in [BUTTON_MIDDLE, BUTTON_RIGHT] and !event.pressed:
+			_mouse_pressed = false
 
 	if event is InputEventMouseButton:
 		if scrolling_enabled:
@@ -157,12 +157,16 @@ func _process(delta: float) -> void:
 		if _mouse_in and !_is_panning and !_mouse_pressed:
 			if _mouse_position.x < int(float(visible_rect.size.x)*edge_scroll_detection_area):
 				_new_translation -= global_transform.basis.x
+				print("left")
 			if _mouse_position.x > visible_rect.size.x-(visible_rect.size.x*edge_scroll_detection_area):
 				_new_translation += global_transform.basis.x
+				print("right")
 			if _mouse_position.y < int(float(visible_rect.size.y)*edge_scroll_detection_area):
 				_new_translation -= global_transform.basis.z
+				print("top")
 			if _mouse_position.y > visible_rect.size.y-(visible_rect.size.y*edge_scroll_detection_area):
 				_new_translation += global_transform.basis.z
+				print("bottom")
 			global_transform.origin = global_transform.origin.linear_interpolate(_new_translation*edge_scroll_speed, delta*edge_scroll_time)
 			if limits_enabled:
 				global_transform.origin = clamp_camera(limits_rect, global_transform.origin)

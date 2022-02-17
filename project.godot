@@ -65,6 +65,11 @@ _global_script_classes=[ {
 "path": "res://roads_system/RoadIntersectionNode.gd"
 }, {
 "base": "Reference",
+"class": "RoadIntersectionRenderer",
+"language": "GDScript",
+"path": "res://roads_system/intersection_renderer/RoadIntersectionRenderer.gd"
+}, {
+"base": "Reference",
 "class": "RoadLane",
 "language": "GDScript",
 "path": "res://roads_system/RoadLane.gd"
@@ -126,6 +131,7 @@ _global_script_class_icons={
 "QuadTreeNode": "",
 "RoadIntersection": "",
 "RoadIntersectionNode": "",
+"RoadIntersectionRenderer": "",
 "RoadLane": "",
 "RoadLaneInfo": "",
 "RoadNetwork": "",

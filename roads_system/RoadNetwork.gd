@@ -20,7 +20,7 @@ func _ready():
 	if quad_tree_node:
 		quad_tree = get_node(quad_tree_node)
 
-## For graoh intersection
+## For graph intersections
 var graph_inter_map = {}
 ## For graph segments
 var graph_seg_map = {}
@@ -57,7 +57,7 @@ func create_segment(segment: RoadSegmentBase) -> RoadSegmentBase:
 
 func delete_segment(segment: RoadSegmentBase): 
 	var from = segment.start_position.intersection
-	var to =  segment.end_position.intersection
+	var to = segment.end_position.intersection
 	
 	var from_id = from.get_id(min_vector)
 	var to_id = to.get_id(min_vector)
@@ -144,6 +144,16 @@ func get_all_segment_of_net_info(net_info: RoadNetworkInfo):
 			segments.append(segment)
 	return segments
 
+func get_all_intersections():
+	var intersection_dicts =  graph.get_all_intersections()
+	var intersections = []
+	for intersection_dict in intersection_dicts:
+		var inter_id = intersection_dict.get("id")
+		if inter_id:
+			intersections.append(graph_inter_map[inter_id])
+	return intersections
+	
+
 func upgrade_segment(segment: RoadSegmentBase, road_net_info: RoadNetworkInfo): 
 	segment.road_network_info = road_net_info
 
@@ -208,10 +218,10 @@ func _get_aabb_to_test(position, radius = 1, height = 2):
 func _make_quad_tree_object(road_object = null) -> Spatial:
 	var spatial = Spatial.new()
 	if road_object is RoadIntersection:
-		spatial.name = "Node"
+		spatial.name = "QuadTree - Node"
 		spatial.set_meta("_intersection", road_object)
 	elif road_object is RoadSegmentBase:
-		spatial.name = "Edge"
+		spatial.name = "QuadTree - Edge"
 		spatial.set_meta("_segment", road_object)
 	spatial.set_meta("_aabb", road_object.get_aabb())
 	return spatial

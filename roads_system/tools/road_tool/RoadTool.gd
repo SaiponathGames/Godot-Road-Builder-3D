@@ -21,3 +21,4 @@ onready var local_road_network = $RoadNetwork
 func _ready():
 	$States/RoadToolStraight.set_enabled(true)
 	$States/RoadToolStraight.local_road_network = local_road_network
+	$States/RoadToolStraight.global_road_network = world_road_network

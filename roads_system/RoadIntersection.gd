@@ -10,10 +10,12 @@ var visible_connections: Array = []
 var road_network
 var road_network_info
 var visible = true
+var renderer = null
 
 func _init(_position, _road_net_info):
 	self.position = _position
 	self.road_network_info = _road_net_info
+	renderer = RoadIntersectionRenderer
 
 func set_owner(road_net):
 	self.road_network = road_net

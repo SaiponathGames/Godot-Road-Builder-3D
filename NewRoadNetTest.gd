@@ -5,6 +5,8 @@ extends Spatial
 # var a = 2
 # var b = "text"
 
+func _init():
+	VisualServer.set_debug_generate_wireframes(true)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -47,6 +49,12 @@ func _ready():
 	print(stepify(id/1000.0, 0.001))
 	print(float(id)/100.0)
 #	$HTerrain/RoadNetwork.delete_segment(segment)
+
+func _unhandled_key_input(event: InputEventKey):
+	if event.scancode == KEY_L:
+		get_viewport().debug_draw = Viewport.DEBUG_DRAW_WIREFRAME
+	elif event.scancode == KEY_K:
+		get_viewport().debug_draw = Viewport.DEBUG_DRAW_DISABLED
 
 func draw():
 	var road_net = $HTerrain/RoadNetwork

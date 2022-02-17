@@ -7,7 +7,7 @@ var connections = {}
 var edges = {}
 
 func add_point(id: int, point: Vector3) -> Vector3:
-	points[id] = point
+	points[id] = {"point": point, "id": id}
 	_emit_graph_changed()
 	return points[id]
 
@@ -19,7 +19,7 @@ func get_point(id: int) -> Vector3:
 	if not has_point(id):
 		push_error("Condition !has_point is true.")
 		return Vector3.ONE * NAN
-	return points[id]
+	return points[id].point
 
 func has_point(id: int) -> bool:
 	return points.keys().has(id)
@@ -83,7 +83,10 @@ func get_all_segments_from_to(from_id: int, to_id: int, bidirectional: bool = tr
 
 func get_all_segments():
 	return edges.values()
-		
+
+func get_all_intersections():
+	return points.values()
+
 func _emit_graph_changed() -> void:
 	emit_signal("graph_changed")
 
