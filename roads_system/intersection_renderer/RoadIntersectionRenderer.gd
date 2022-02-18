@@ -1,6 +1,6 @@
 extends Reference
 class_name RoadIntersectionRenderer
 
-func render(mesh_drawer: MeshDrawer, road_intersection, immediate_geo: ImmediateGeometry):
-	pass
+func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: ImmediateGeometry):
 	# implement the rendering system
+	pass

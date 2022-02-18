@@ -1,4 +1,4 @@
-extends Reference
+extends Object
 class_name RoadIntersectionNode
 
 var position: Vector3
@@ -40,4 +40,4 @@ func update_position():
 
 func delete_node():
 	intersection.delete_node(self)
-	
+	call_deferred('free')

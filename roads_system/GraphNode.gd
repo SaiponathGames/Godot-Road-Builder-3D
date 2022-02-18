@@ -8,6 +8,7 @@ var graph: Graph
 
 func _ready():
 	graph = Graph.new()
+# warning-ignore:return_value_discarded
 	graph.connect("graph_changed", self, "_on_Graph_res_changed")
 
 func add_point(id: int, point: Vector3) -> Vector3:

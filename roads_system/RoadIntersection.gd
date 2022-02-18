@@ -1,4 +1,4 @@
-extends Reference
+extends Object
 class_name RoadIntersection
 
 
@@ -51,6 +51,7 @@ func create_node(road_segment):
 	return node
 
 func delete_node(road_intersection_node):
+# warning-ignore:return_value_discarded
 	connections.erase(road_intersection_node)
 
 func get_aabb() -> AABB:

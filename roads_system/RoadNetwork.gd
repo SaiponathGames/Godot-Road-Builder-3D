@@ -50,7 +50,7 @@ func create_segment(segment: RoadSegmentBase) -> RoadSegmentBase:
 			astar.connect_points(from_id, to_id)
 		
 		graph_seg_map[seg_id] = segment
-	
+		emit_signal("graph_changed", self)
 		return segment
 	return null
 
@@ -84,7 +84,7 @@ func delete_segment(segment: RoadSegmentBase):
 		
 		if to.connections.empty() and graph.has_point(to_id):
 			_remove_road_intersection(to_id)
-
+	emit_signal("graph_changed", self)
 
 func get_all_segments_from_to(from: RoadIntersection, to: RoadIntersection) -> Array:
 	var from_id = from.get_id(min_vector)
@@ -246,13 +246,15 @@ func _remove_road_intersection(id: int):
 	if use_astar:
 		astar.remove_point(id)
 	intersection.set_owner(null)
-	graph_inter_map.erase(id)
+	print_debug(graph_inter_map.erase(id))
 	if quad_tree:
 		var qt_node = intersection.get_meta('_qt_node')
-		quad_tree.remove_body(qt_node)
-		intersection.remove_meta("_qt_node")
-		qt_node.queue_free()
+		if is_instance_valid(qt_node):
+			quad_tree.remove_body(qt_node)
+			intersection.remove_meta("_qt_node")
+			qt_node.queue_free()
+#	intersection.call_deferred('free') #FIXME: RoadIntersectionNode doesn't delete itself properly causing a crash.
 
 
 func _on_Graph_graph_changed():
-	emit_signal("graph_changed", self)
+	pass

@@ -139,3 +139,6 @@ func direction_from_intersection(intersection: RoadIntersectionNode):
 			return _average_direction(end_position.intersection, middle_position.intersection)
 		_:
 			return direction_from_intersection(intersection)
+
+func _delete():
+	middle_position.delete_node()

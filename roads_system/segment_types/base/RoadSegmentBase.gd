@@ -1,4 +1,4 @@
-extends Reference
+extends Object
 class_name RoadSegmentBase
 
 var start_position: RoadIntersectionNode
@@ -60,7 +60,7 @@ func project_point(_position: Vector3):
 func get_aabb():
 	pass
 
-func _average_direction(road_intersection: RoadIntersection, position: RoadIntersection):
+func _average_direction(_road_intersection: RoadIntersection, _position: RoadIntersection):
 	pass
 
 func _delete():

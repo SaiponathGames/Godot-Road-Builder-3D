@@ -7,6 +7,7 @@ func register(road_net_info: RoadNetworkInfo):
 	road_net_infos[road_net_info.id] = road_net_info
 
 func unregister(net_info_name: String):
+# warning-ignore:return_value_discarded
 	road_net_infos.erase(net_info_name)
 
 func get(net_info_name: String):
