@@ -11,6 +11,7 @@ var road_network
 var road_network_info
 var visible = true
 var renderer = null
+var id: int = 0
 
 func _init(_position, _road_net_info):
 	self.position = _position
@@ -19,6 +20,8 @@ func _init(_position, _road_net_info):
 
 func set_owner(road_net):
 	self.road_network = road_net
+	if road_net:
+		id = get_id(road_net.min_vector)
 
 func update_visiblity_connections():
 	visible_connections.clear()
@@ -67,3 +70,13 @@ func get_id(_min_vec: Vector3 = Vector3()):
 	else:
 		p_min = (_min_vec.x + _min_vec.y + _min_vec.z)
 	return int((position.x + + position.z * -(p_min) + position.y * -(p_min*p_min) - pow(p_min, 3)))
+
+func duplicate():
+	var clone = get_script().new(self.position, self.connections)
+	return clone
+
+func _notification(what):
+	match what:
+		NOTIFICATION_PREDELETE:
+			prints("About to be deleted RoadIntersection Intersection ID:", id)
+

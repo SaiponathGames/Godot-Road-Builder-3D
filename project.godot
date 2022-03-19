@@ -54,12 +54,12 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://addons/sairam.quadtree/QuadTreeNode.gd"
 }, {
-"base": "Reference",
+"base": "Object",
 "class": "RoadIntersection",
 "language": "GDScript",
 "path": "res://roads_system/RoadIntersection.gd"
 }, {
-"base": "Reference",
+"base": "Object",
 "class": "RoadIntersectionNode",
 "language": "GDScript",
 "path": "res://roads_system/RoadIntersectionNode.gd"
@@ -94,7 +94,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://roads_system/one_file_lines/road_system.gd"
 }, {
-"base": "Reference",
+"base": "Object",
 "class": "RoadSegmentBase",
 "language": "GDScript",
 "path": "res://roads_system/segment_types/base/RoadSegmentBase.gd"
@@ -108,6 +108,11 @@ _global_script_classes=[ {
 "class": "RoadSegmentBezier",
 "language": "GDScript",
 "path": "res://roads_system/segment_types/bezier/RoadSegmentBezier.gd"
+}, {
+"base": "RoadSegmentBaseRenderer",
+"class": "RoadSegmentBezierRenderer",
+"language": "GDScript",
+"path": "res://roads_system/segment_types/bezier/RoadSegmentBezierRenderer.gd"
 }, {
 "base": "RoadSegmentBase",
 "class": "RoadSegmentLinear",
@@ -140,6 +145,7 @@ _global_script_class_icons={
 "RoadSegmentBase": "",
 "RoadSegmentBaseRenderer": "",
 "RoadSegmentBezier": "",
+"RoadSegmentBezierRenderer": "",
 "RoadSegmentLinear": "",
 "SegmentRenderer": ""
 }

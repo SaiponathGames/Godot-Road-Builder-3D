@@ -45,6 +45,7 @@ func cancel_dragging(_event: InputEvent):
 
 func setup_dragging(event: InputEventMouseButton):
 	_drag_start = RoadIntersection.new(_cast_ray_to(event.position), road_net_info)
+	_drag_start.set_meta("_auto_delete", false)
 	_is_dragging = true
 	print("started")
 
@@ -52,12 +53,14 @@ func stop_dragging(event: InputEventMouseButton):
 	_drag_end = RoadIntersection.new(_cast_ray_to(event.position), road_net_info)
 	_is_dragging = false
 	
-	var segment = RoadSegmentLinear.new(_drag_start, _drag_end, road_net_info, RoadSegmentLinear.FORWARD)
+	var segment = RoadSegmentLinear.new(_drag_start.duplicate(), _drag_end.duplicate(), road_net_info, RoadSegmentLinear.FORWARD)
 	segment = global_road_network.create_segment(segment)
+	global_road_network.update()
 	print("stopped")
-	local_road_network.delete_segment(_cache_previous_segment)
-	_cache_previous_segment.free()
-	_cache_previous_segment = null
+	if is_instance_valid(_cache_previous_segment):
+		local_road_network.delete_segment(_cache_previous_segment)
+		_cache_previous_segment.free()
+		_cache_previous_segment = null
 	
 	if _continue_dragging:
 		_drag_start = _drag_end
@@ -68,15 +71,27 @@ func stop_dragging(event: InputEventMouseButton):
 		_drag_end = null
 	
 func continue_dragging(event: InputEventMouseMotion):
-	_drag_current = RoadIntersection.new(_cast_ray_to(event.position), road_net_info)
-	if _cache_previous_segment:
-		local_road_network.delete_segment(_cache_previous_segment)
-		_cache_previous_segment.free()
-		_cache_previous_segment = null
-		print_debug(_drag_start, _drag_current)
+	var previous_drag_current
+	var previous_cache_segment
+	if is_instance_valid(_drag_start):
+		previous_drag_current = _drag_current
+		previous_cache_segment = _cache_previous_segment
+		_drag_current = RoadIntersection.new(_cast_ray_to(event.position), road_net_info)
+	
+		
+	if is_instance_valid(previous_cache_segment):
+		print(_cache_previous_segment)
+		local_road_network.delete_segment(previous_cache_segment)
+		previous_cache_segment.free()
+		previous_cache_segment = null
+		
 	if _drag_start and _drag_start.distance_to(_drag_current) > 1:
-		_cache_previous_segment = RoadSegmentLinear.new(_drag_start, _drag_current, road_net_info, RoadSegmentLinear.FORWARD)
+		_cache_previous_segment = RoadSegmentLinear.new(_drag_start.duplicate(), _drag_current, road_net_info, RoadSegmentLinear.FORWARD)
 		_cache_previous_segment = local_road_network.create_segment(_cache_previous_segment)
+		local_road_network.update()
+		
+#	if is_instance_valid(previous_drag_current):
+#		previous_drag_current.free()
 
 func set_enabled(value: bool):
 	_enabled = value

@@ -51,4 +51,3 @@ func split_at_position(position) -> Array:
 	seg_2 = self.road_network.create_segment(seg_2)
 	
 	return [seg_1, seg_2]
-	

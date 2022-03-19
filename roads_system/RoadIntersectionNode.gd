@@ -6,11 +6,20 @@ var offset: Vector2 setget set_offset
 
 var intersection # RoadIntersection
 var segment # RoadSegmentBase
+var road_network # RoadNetwork
 
+var id
 func _init(_intersection, _segment):
 	intersection = _intersection
 	segment = _segment
 	position = _intersection.position
+	road_network = _intersection.road_network
+	id = intersection.id + segment.id
+
+func set_owner(road_net):
+	road_network = road_net
+	if road_net:
+		id = intersection.id + segment.id
 
 func distance_to(to_intersection: RoadIntersectionNode):
 	return self.position.distance_to(to_intersection.position)
@@ -39,5 +48,18 @@ func update_position():
 	position += Vector3(-direction.z, direction.y, direction.x).normalized() * offset.x
 
 func delete_node():
-	intersection.delete_node(self)
+	if is_instance_valid(intersection):
+		intersection.delete_node(self)
 	call_deferred('free')
+
+func _notification(what):
+	match what:
+		NOTIFICATION_PREDELETE:
+			if is_instance_valid(segment):
+				prints("About to be deleted RoadIntersectionNode", "IntersectionNode ID: ", id, "Segment ID:", segment.id)
+			elif is_instance_valid(intersection):
+				prints("About to be deleted RoadIntersectionNode", "IntersectionNode ID: ", id, "Intersection ID:", intersection.id)
+			elif is_instance_valid(segment) and is_instance_valid(intersection):
+				prints("About to be deleted RoadIntersectionNode", "IntersectionNode ID: ", id, "Intersection ID:", intersection.id, "Segment ID:", segment.id)
+			else:
+				prints("About to be deleted RoadIntersectionNode", "IntersectionNode ID: ", id)

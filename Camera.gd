@@ -11,8 +11,8 @@ var edge_scroll_speed = 1
 var movement_enabled = true
 var movement_time = 5
 var movement_speed = 1
-var movement_fast_speed_wait_time = 0.5
-var movement_speed_multiplier = 1.5
+var movement_fast_speed_wait_time = 3
+var movement_speed_multiplier = 2
 
 var rotation_enabled = true
 var rotation_time = 5
@@ -63,7 +63,13 @@ var _new_rotation
 var _new_tilt_rotation
 var _new_zoom
 
-#var _translation_timer = Timer.new()
+var _translation_speed = movement_speed
+var _translation_time = movement_time
+
+var _edge_speed = edge_scroll_speed
+var _edge_time = edge_scroll_time
+
+var _translation_timer = Timer.new()
 #var _rotation_timer = Timer.new()
 #var _tilting_timer = Timer.new()
 #var _zooming_timer = Timer.new()
@@ -91,7 +97,7 @@ func _ready() -> void:
 	if !Engine.editor_hint:
 		$CameraTilt/CameraZoom.current = true
 
-#		_setup_timer(_translation_timer, movement_fast_speed_wait_time, "move")
+		_setup_timer(_translation_timer, movement_fast_speed_wait_time, "move")
 #		_setup_timer(_rotation_timer, rotation_fast_speed_wait_time, "rotate")
 #		_setup_timer(_tilting_timer, tilting_fast_speed_wait_time, "tilt")
 #		_setup_timer(_zooming_timer, zooming_fast_speed_wait_time, "zoom")
@@ -99,7 +105,7 @@ func _ready() -> void:
 #		_setup_timer(_panning_timer, panning_fast_speed_wait_time, "pan")
 #		_setup_timer(_scrolling_timer, scrolling_fast_speed_wait_time, "scroll")
 
-#		add_child(_translation_timer)
+		add_child(_translation_timer)
 #		add_child(_rotation_timer)
 #		add_child(_tilting_timer)
 #		add_child(_zooming_timer)
@@ -167,55 +173,53 @@ func _process(delta: float) -> void:
 			if _mouse_position.y > visible_rect.size.y-(visible_rect.size.y*edge_scroll_detection_area):
 				_new_translation += global_transform.basis.z
 				print("bottom")
-			global_transform.origin = global_transform.origin.linear_interpolate(_new_translation*edge_scroll_speed, delta*edge_scroll_time)
+			global_transform.origin = global_transform.origin.linear_interpolate(_new_translation*_edge_speed, delta*_edge_time)
 			if limits_enabled:
 				global_transform.origin = clamp_camera(limits_rect, global_transform.origin)
 
 	if movement_enabled:
 		if OS.is_window_focused() and !_is_panning:
-#			if Input.is_action_just_pressed("camera_forward"):
-#				if _translation_timer.is_stopped():
-#					_translation_timer.start()
-#			if Input.is_action_just_pressed("camera_back"):
-#				if _translation_timer.is_stopped():
-#					_translation_timer.start()
-#			if Input.is_action_just_pressed("camera_left"):
-#				if _translation_timer.is_stopped():
-#					_translation_timer.start()
-#			if Input.is_action_just_pressed("camera_right"):
-#				if _translation_timer.is_stopped():
-#					_translation_timer.start()
+			if Input.is_action_just_pressed("camera_forward"):
+				if _translation_timer.is_stopped():
+					_translation_timer.start()
+			if Input.is_action_just_pressed("camera_back"):
+				if _translation_timer.is_stopped():
+					_translation_timer.start()
+			if Input.is_action_just_pressed("camera_left"):
+				if _translation_timer.is_stopped():
+					_translation_timer.start()
+			if Input.is_action_just_pressed("camera_right"):
+				if _translation_timer.is_stopped():
+					_translation_timer.start()
 			if Input.is_action_pressed("camera_forward"):
-				_new_translation -= global_transform.basis.z
+				_new_translation -= global_transform.basis.z * _translation_speed
 			if Input.is_action_pressed("camera_back"):
-				_new_translation += global_transform.basis.z
+				_new_translation += global_transform.basis.z * _translation_speed
 			if Input.is_action_pressed("camera_left"):
-				_new_translation -= global_transform.basis.x
+				_new_translation -= global_transform.basis.x * _translation_speed
 			if Input.is_action_pressed("camera_right"):
-				_new_translation += global_transform.basis.x
-#			if Input.is_action_just_released("camera_forward"):
-#				_translation_timer.stop()
-#				movement_speed /= movement_speed_multiplier
-#				movement_time /= movement_speed_multiplier
-#			if Input.is_action_just_released("camera_back"):
-#				_translation_timer.stop()
-#				movement_speed /= movement_speed_multiplier
-#				movement_time /= movement_speed_multiplier
-#			if Input.is_action_just_released("camera_left"):
-#				_translation_timer.stop()
-#				movement_speed /= movement_speed_multiplier
-#				movement_time /= movement_speed_multiplier
-#			if Input.is_action_just_released("camera_right"):
-#				_translation_timer.stop()
-#				movement_speed /= movement_speed_multiplier
-#				movement_time /= movement_speed_multiplier
+				_new_translation += global_transform.basis.x * _translation_speed
+			if Input.is_action_just_released("camera_forward"):
+				_translation_timer.stop()
+				_translation_speed = movement_speed
+				_translation_time = movement_time
+			if Input.is_action_just_released("camera_back"):
+				_translation_timer.stop()
+				_translation_speed = movement_speed
+				_translation_time = movement_time
+			if Input.is_action_just_released("camera_left"):
+				_translation_timer.stop()
+				_translation_speed = movement_speed
+				_translation_time = movement_time
+			if Input.is_action_just_released("camera_right"):
+				_translation_timer.stop()
+				_translation_speed = movement_speed
+				_translation_time = movement_time
 			if limits_enabled:
 				_new_translation = clamp_camera(limits_rect, _new_translation)
-			var _motion_translation = _new_translation*movement_speed
-			if limits_enabled:
-				_motion_translation = clamp_camera(limits_rect, _motion_translation)
-			global_transform.origin = global_transform.origin.linear_interpolate(_motion_translation, delta*movement_time)
+			global_transform.origin = global_transform.origin.linear_interpolate(_new_translation, delta*_translation_time)
 #			print(limits_rect.end)
+#			$Label.text = "Camera: Motion Translation %s\n" % _motion_translation
 			if limits_enabled:
 				global_transform.origin = clamp_camera(limits_rect, global_transform.origin)
 #				print(_new_translation)
@@ -262,11 +266,13 @@ func _process(delta: float) -> void:
 			var new_translation = _cast_ray_to(_mouse_position)
 			if new_translation != null and new_translation != Vector3.INF:
 				_new_translation += (current_translation - new_translation)
+	$PanelContainer/Label.text = "DEBUG INFO\n"
+	$PanelContainer/Label.text += "Camera: Position %s\n" % global_transform.origin 
+	$PanelContainer/Label.text += "Camera: Target Position %s\n" % _new_translation 
+	$PanelContainer/Label.text += "Engine: FPS %s\n" % Engine.get_frames_per_second()
 
 func clamp_camera(rect: Rect2, position: Vector3):
-	# FIXME: rect.end.x gives the proper value but somehow the clamped vector is halved (255 -> 127)
-	# HACK: Currently multiplying the result into 2. 
-	return Vector3(clamp(position.x, rect.position.x, rect.end.x*2), position.y, clamp(position.z, rect.position.y, rect.end.y*2))
+	return Vector3(clamp(position.x, rect.position.x, rect.end.x), position.y, clamp(position.z, rect.position.y, rect.end.y))
 
 func _cast_ray_to(postion: Vector2) -> Vector3:
 	var camera = get_viewport().get_camera()
@@ -274,17 +280,18 @@ func _cast_ray_to(postion: Vector2) -> Vector3:
 	var to = from + camera.project_ray_normal(postion) * camera.far
 	return get_world().direct_space_state.intersect_ray(from, to).get("position", Vector3.INF)
 
-#func _timeout(movement):
-#	match movement:
-#		"move":
-#			movement_speed *= movement_speed_multiplier
-#			movement_time *= movement_speed_multiplier
-#			print(movement_speed)
-#
-#func _setup_timer(timer: Timer, wait_time: float, type: String) -> void:
-#	timer.wait_time = wait_time
-#	timer.one_shot = true
-#	timer.connect("timeout", self, "_timeout", [type])
+func _timeout(movement):
+	match movement:
+		"move":
+			_translation_speed *= movement_speed_multiplier
+			_translation_time /= movement_speed_multiplier
+			print(_translation_speed)
+			print(_translation_time)
+
+func _setup_timer(timer: Timer, wait_time: float, type: String) -> void:
+	timer.wait_time = wait_time
+	timer.one_shot = true
+	timer.connect("timeout", self, "_timeout", [type])
 
 func _get_property_list() -> Array:
 	var properties = []

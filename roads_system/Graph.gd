@@ -26,7 +26,7 @@ func has_point(id: int) -> bool:
 
 func connect_points(from_id: int, to_id: int, seg_id: int, bidirectional: bool = true) -> Dictionary:
 	if are_points_connected_with_segment(from_id, to_id, seg_id, bidirectional):
-		push_error("Condition are_points_connected is true")
+		push_error("Condition are_points_connected_with_segment() is true")
 		return {}
 	
 	var from_to_id = _get_from_to_id(from_id, to_id)
@@ -40,7 +40,7 @@ func connect_points(from_id: int, to_id: int, seg_id: int, bidirectional: bool =
 
 func disconnect_points(from_id: int, to_id: int, seg_id: int) -> void: # void
 	if not are_points_connected_with_segment(from_id, to_id, seg_id):
-		push_error("Condition !are_points_connected is true")
+		push_error("Condition !are_points_connected_with_segment() is true")
 		return
 #
 	edges.erase(seg_id)
@@ -49,7 +49,7 @@ func disconnect_points(from_id: int, to_id: int, seg_id: int) -> void: # void
 
 func get_segment(from_id: int, to_id: int, seg_id: int, bidirectional: bool = true) -> Dictionary:
 	if !are_points_connected(from_id, to_id, bidirectional):
-		push_error("Condition are_points_connected is true")
+		push_error("Condition !are_points_connected() is true")
 		return {}
 	
 	if edges.has(seg_id) and are_points_connected_with_segment(from_id, to_id, seg_id):
@@ -59,10 +59,10 @@ func get_segment(from_id: int, to_id: int, seg_id: int, bidirectional: bool = tr
 
 func are_points_connected(from_id: int, to_id: int, _bidirectional: bool = true) -> bool:
 	if not from_id in points.keys():
-		push_error("Condition !from_id in points is true.")
+		push_error("Condition !points.has(from_id) is true.")
 		return false
 	if not to_id in points.keys():
-		push_error("Condition !to_id in points is true.")
+		push_error("Condition !points.has(to_id) in points is true.")
 		return false
 	return connections.has(_get_from_to_id(from_id, to_id))
 
@@ -74,7 +74,7 @@ func are_points_connected_with_segment(from_id: int, to_id: int, seg_id: int, bi
 
 func get_all_segments_from_to(from_id: int, to_id: int, bidirectional: bool = true) -> Array:
 	if !are_points_connected(from_id, to_id, bidirectional):
-		push_error("Condition !are_points_connected(from_id, to_id) is true")
+		push_error("Condition !are_points_connected() is true")
 		return []
 	var segments = []
 	for seg_id in connections.get(_get_from_to_id(from_id, to_id), []):

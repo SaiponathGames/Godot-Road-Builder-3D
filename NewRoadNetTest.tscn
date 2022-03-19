@@ -69,20 +69,32 @@ shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 [node name="Camera" parent="HTerrain" instance=ExtResource( 8 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1 )
 far = 500.0
+edge_scroll/enabled = false
 panning/enabled = false
-movement/speed = 0.5
-tilting/max_angle = 50.0
+movement/speed = 1.0
 zooming/min_distance = 3.0
 zooming/max_distance = 150.0
 perspective_panning/enabled = true
 limits/rect = Rect2( 1, 1, 1275, 1275 )
+
+[node name="PanelContainer" type="PanelContainer" parent="HTerrain/Camera"]
+margin_left = 20.0
+margin_top = 20.0
+margin_right = 14.0
+margin_bottom = 14.0
+
+[node name="Label" type="Label" parent="HTerrain/Camera/PanelContainer"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 7.0
+margin_bottom = 21.0
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
 material_override = SubResource( 4 )
 
 [node name="MeshInstance" type="MeshInstance" parent="HTerrain"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 255, 0, 255 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1275, 0, 1275 )
 mesh = SubResource( 7 )
 skeleton = NodePath("../RoadNetwork")
 
@@ -105,3 +117,5 @@ non_buildable_mat = ExtResource( 11 )
 
 [node name="RoadToolStraight" type="Spatial" parent="Tools/RoadTool/States"]
 script = ExtResource( 5 )
+
+[connection signal="graph_changed" from="HTerrain/RoadNetwork" to="." method="_on_RoadNetwork_graph_changed"]

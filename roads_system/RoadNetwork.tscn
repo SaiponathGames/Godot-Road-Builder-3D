@@ -22,4 +22,4 @@ max_levels = 12
 
 [node name="Renderer" parent="." instance=ExtResource( 1 )]
 
-[connection signal="graph_changed" from="Graph" to="." method="_on_Graph_graph_changed"]
+[connection signal="graph_changed" from="." to="Renderer" method="_on_RoadNetwork_graph_changed"]

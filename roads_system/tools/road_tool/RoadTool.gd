@@ -19,6 +19,10 @@ var tool_state: Spatial # RoadState
 onready var local_road_network = $RoadNetwork
 
 func _ready():
-	$States/RoadToolStraight.set_enabled(true)
+	$States/RoadToolStraight.set_enabled(false)
 	$States/RoadToolStraight.local_road_network = local_road_network
 	$States/RoadToolStraight.global_road_network = world_road_network
+
+func _unhandled_key_input(event):
+	if event.scancode == KEY_KP_9 and event.pressed:
+		$States/RoadToolStraight.set_enabled(!$States/RoadToolStraight._enabled)

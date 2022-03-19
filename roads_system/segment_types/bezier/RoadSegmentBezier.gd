@@ -8,13 +8,14 @@ var lut = []
 
 var current_resolution setget set_current_resolution
 
-func _init(_start_position, _middle_position, _end_position, _road_net_info, _direction).(_start_position, _end_position, _road_net_info, _direction):
+func _init(_start_position: RoadIntersection, _middle_position: RoadIntersection, _end_position: RoadIntersection, _road_net_info, _direction).(_start_position, _end_position, _road_net_info, _direction):
 	self.middle_position = _middle_position.create_node(self)
 	calculate_lut()
 	modder_id = 0
 	seg_type = 2
 	custom_id = (5.625)*rad2deg(middle_position.intersection.angle_to(start_position.intersection))+rad2deg(middle_position.intersection.angle_to(end_position.intersection))
-	positions.append(_middle_position)
+	positions.append(middle_position)
+	renderer = RoadSegmentBezierRenderer
 	
 func set_current_resolution(value):
 	current_resolution = value
@@ -26,11 +27,10 @@ func _quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 	return q0.linear_interpolate(q1, t)
 
 func get_length(resolution = 16):
-	if current_resolution != resolution:
-		calculate_lut(resolution, false)
+	var _lut = generate_lut(resolution)
 	var sum = 0
 	var previous_point = start_position.position
-	for point_t in lut:
+	for point_t in _lut:
 		var point = point_t[0]
 		sum += previous_point.distance_to(point)
 		previous_point = point
@@ -50,10 +50,10 @@ func get_aabb():
 	return aabb
 
 func _average_direction(road_intersection: RoadIntersection, position: RoadIntersection):
-	var projected_time = project_point(position.position, true)[1]
+	var projected_time = project_point(road_intersection.position, true)[1]
 	var direction = Vector3.ZERO
 	for t in range(0, projected_time, 0.01):
-		direction += road_intersection.position.direction_to(get_point(t))
+		direction += position.position.direction_to(get_point(t))
 	direction = direction.normalized()
 	return direction
 
@@ -110,14 +110,20 @@ func _refine_binary(point: Vector3, index: int, send_time = false,  max_iters = 
 
 
 func calculate_lut(resolution = 20, change_resolution = true) -> void:
-	var t = 0
-	while t <= 0.9:
-		t += 1/float(resolution)
-		t = clamp(t, 0, 1)
-		var position = _quadratic_bezier(start_position.position, middle_position.position, end_position.position, t)
-		lut.append([position, t])
+	lut.clear()
+	lut = generate_lut(resolution)
 	if change_resolution:
 		current_resolution = resolution
+
+func generate_lut(res = 20):
+	var _lut = []
+	var t = 0
+	while t <= 0.9:
+		t += 1/float(res)
+		t = clamp(t, 0, 1)
+		var position = _quadratic_bezier(start_position.position, middle_position.position, end_position.position, t)
+		_lut.append([position, t])
+	return _lut
 
 func hull(t):
 	var list = []
@@ -131,14 +137,32 @@ func hull(t):
 		positions = _p.duplicate()
 	return list
 	
+func average_dir(from_int, to_int):
+	var avg_dir = from_int.direction_to(middle_position) + middle_position.direction_to(to_int)
+	print(avg_dir.normalized())
+	return avg_dir.normalized()
+	
 func direction_from_intersection(intersection: RoadIntersectionNode):
 	match intersection:
 		start_position:
-			return _average_direction(start_position.intersection, middle_position.intersection)
+			return start_position.direction_to(middle_position)
 		end_position:
-			return _average_direction(end_position.intersection, middle_position.intersection)
+			return middle_position.direction_to(end_position)
+		middle_position:
+			return average_dir(start_position, end_position)
 		_:
-			return direction_from_intersection(intersection)
+			return .direction_from_intersection(intersection)
 
 func _delete():
 	middle_position.delete_node()
+
+func set_owner(road_net):
+	.set_owner(road_net)
+	if road_net:
+		middle_position.road_network = road_net
+
+func get_lerp_func():
+	return funcref(self, 'interpolate')
+
+func interpolate(start_position, middle_position, end_position, t):
+	return _quadratic_bezier(start_position, middle_position, end_position, t)

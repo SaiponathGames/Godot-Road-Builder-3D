@@ -3,6 +3,7 @@ class_name SegmentRenderer
 
 func update(road_net: RoadNetwork):
 	var mesh_drawer = MeshDrawer.new()
+	$ImmediateGeometry.clear()
 	mesh = ArrayMesh.new()
 	for type in RoadNetworkInfoRegister.road_net_infos.values():
 		mesh_drawer.begin(Mesh.PRIMITIVE_TRIANGLES)

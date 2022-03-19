@@ -1,6 +1,7 @@
 extends Spatial
 class_name RoadNetwork
 
+# warning-ignore:unused_signal
 signal graph_changed(road_net)
 
 export(NodePath) var graph_node
@@ -48,9 +49,8 @@ func create_segment(segment: RoadSegmentBase) -> RoadSegmentBase:
 			segment.set_meta("_qt_segment", qt_segment)
 		if use_astar:
 			astar.connect_points(from_id, to_id)
-		
+		segment.set_owner(self)
 		graph_seg_map[seg_id] = segment
-		emit_signal("graph_changed", self)
 		return segment
 	return null
 
@@ -69,8 +69,6 @@ func delete_segment(segment: RoadSegmentBase):
 		if use_astar:
 			astar.disconnect_points(from_id, to_id)
 		
-		from.connections.erase(segment)
-		to.connections.erase(segment)
 		if quad_tree:
 			var qt_node = segment.get_meta("_qt_segment")
 			quad_tree.remove_body(qt_node)
@@ -78,13 +76,13 @@ func delete_segment(segment: RoadSegmentBase):
 			qt_node.queue_free()
 		
 		graph_seg_map.erase(seg_id)
+		segment.set_owner(null)
 		segment.delete()
 		if from.connections.empty() and graph.has_point(from_id):
 			_remove_road_intersection(from_id)
 		
 		if to.connections.empty() and graph.has_point(to_id):
 			_remove_road_intersection(to_id)
-	emit_signal("graph_changed", self)
 
 func get_all_segments_from_to(from: RoadIntersection, to: RoadIntersection) -> Array:
 	var from_id = from.get_id(min_vector)
@@ -99,7 +97,7 @@ func get_all_segments_from_to(from: RoadIntersection, to: RoadIntersection) -> A
 	return segments
 
 
-func get_all_segmentas_from_to_of_net_info(from: RoadIntersection, to: RoadIntersection, net_info: RoadNetworkInfo):
+func get_all_segments_from_to_of_net_info(from: RoadIntersection, to: RoadIntersection, net_info: RoadNetworkInfo):
 	var segments_got = get_all_segments_from_to(from, to)
 	var segments = []
 	for segment in segments_got:
@@ -246,15 +244,18 @@ func _remove_road_intersection(id: int):
 	if use_astar:
 		astar.remove_point(id)
 	intersection.set_owner(null)
-	print_debug(graph_inter_map.erase(id))
+	graph_inter_map.erase(id)
+#	print_debug(id, " ", graph_inter_map.erase(id))
 	if quad_tree:
 		var qt_node = intersection.get_meta('_qt_node')
 		if is_instance_valid(qt_node):
 			quad_tree.remove_body(qt_node)
 			intersection.remove_meta("_qt_node")
 			qt_node.queue_free()
-#	intersection.call_deferred('free') #FIXME: RoadIntersectionNode doesn't delete itself properly causing a crash.
+#	print(intersection.has_meta("_auto_delete"), intersection.get_meta("_auto_delete"))
+#	if intersection.has_meta("_auto_delete") and !intersection.get_meta("_auto_delete"):
+	intersection.call_deferred('free') #FIXME: RoadIntersectionNode doesn't delete itself properly causing a crash.
+#		print("intersection deleted")
 
-
-func _on_Graph_graph_changed():
-	pass
+func update():
+	emit_signal("graph_changed", self)
