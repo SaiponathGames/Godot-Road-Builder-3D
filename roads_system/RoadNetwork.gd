@@ -3,6 +3,9 @@ class_name RoadNetwork
 
 # warning-ignore:unused_signal
 signal graph_changed(road_net)
+signal road_segment_created(segment)
+signal road_segment_deleted(segment)
+signal road_segment_upgraded(segment)
 
 export(NodePath) var graph_node
 export(NodePath) var quad_tree_node
@@ -51,6 +54,7 @@ func create_segment(segment: RoadSegmentBase) -> RoadSegmentBase:
 			astar.connect_points(from_id, to_id)
 		segment.set_owner(self)
 		graph_seg_map[seg_id] = segment
+		emit_signal('road_segment_created', segment)
 		return segment
 	return null
 
@@ -83,6 +87,8 @@ func delete_segment(segment: RoadSegmentBase):
 		
 		if to.connections.empty() and graph.has_point(to_id):
 			_remove_road_intersection(to_id)
+		emit_signal('road_segment_deleted', segment)
+	
 
 func get_all_segments_from_to(from: RoadIntersection, to: RoadIntersection) -> Array:
 	var from_id = from.get_id(min_vector)
@@ -154,6 +160,7 @@ func get_all_intersections():
 
 func upgrade_segment(segment: RoadSegmentBase, road_net_info: RoadNetworkInfo): 
 	segment.road_network_info = road_net_info
+	emit_signal("road_segment_upgraded", segment)
 
 
 func get_closest_segment_to(position: Vector3, distance: float = 0.5) -> RoadSegmentBase:
@@ -210,16 +217,17 @@ func _get_aabb_to_test(position, radius = 1, height = 2):
 	var a = position
 	var b = a + Vector3.UP * height
 	var tmp = Vector3.ONE * radius # Vector3(radius, radius, radius)
-	var aabb = AABB(min_vec(a, b) - tmp, max_vec(a, b) + tmp)
+	var aabb = AABB(min_vec(a, b) - tmp, Vector3.ONE)
+	aabb.end = max_vec(a, b) + tmp
 	return aabb
 
 func _make_quad_tree_object(road_object = null) -> Spatial:
 	var spatial = Spatial.new()
 	if road_object is RoadIntersection:
-		spatial.name = "QuadTree - Node"
+		spatial.name = "QuadTree - Node %s ID %s" % [road_object.position, road_object.id]
 		spatial.set_meta("_intersection", road_object)
 	elif road_object is RoadSegmentBase:
-		spatial.name = "QuadTree - Edge"
+		spatial.name = "QuadTree - Edge %s -> %s ID %s" % [road_object.start_position.position, road_object.end_position.position, road_object.get_id(min_vector)]
 		spatial.set_meta("_segment", road_object)
 	spatial.set_meta("_aabb", road_object.get_aabb())
 	return spatial

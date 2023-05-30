@@ -11,6 +11,7 @@ func _input(event):
 			update(road_net) # debug only
 		if event.scancode == KEY_KP_8 and event.pressed:
 			$SegmentRenderer/ImmediateGeometry.visible = !$SegmentRenderer/ImmediateGeometry.visible
+			$IntersectionRenderer/ImmediateGeometry.visible = !$IntersectionRenderer/ImmediateGeometry.visible
 
 func update(_road_net):
 #	pass

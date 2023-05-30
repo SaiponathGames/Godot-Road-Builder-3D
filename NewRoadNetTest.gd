@@ -5,12 +5,20 @@ extends Spatial
 # var a = 2
 # var b = "text"
 var segment = null
+var currently_hovering_seg = null
+
+var viewport_mode = {
+	0: "Default",
+	1: "Unshaded",
+	2: "Overdraw",
+	3: "Wireframe"
+}
 func _init():
 	VisualServer.set_debug_generate_wireframes(true)
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	randomize()
+	Engine.iterations_per_second = OS.get_screen_refresh_rate(OS.current_screen)
 #	yield(get_tree().create_timer(1), "timeout")
 #	OS.window_maximized = true
 #	yield(get_tree().create_timer(1), "timeout")
@@ -52,13 +60,37 @@ func _ready():
 #	print(float(id)/100.0)
 #	$HTerrain/RoadNetwork.delete_segment(segment)
 
+func _input(event):
+	if event is InputEventMouseMotion:
+		var pos = event.position
+		var pos_3d = _cast_ray_to(pos)
+		currently_hovering_seg = $HTerrain/GlobalRoadNetwork.get_closest_segment_to(pos_3d, 1)
+		var inter = $HTerrain/GlobalRoadNetwork.get_closest_point_to(pos_3d, 1)
+		if inter:
+			currently_hovering_seg = inter
+	if event is InputEventKey:
+		if event.scancode == KEY_Y:
+			$HTerrain/Camera.target_tilt_rotation.x = 90
+			$HTerrain/Camera.target_tilt_rotation.x = -90
+
+func _cast_ray_to(position: Vector2):
+	var camera = get_viewport().get_camera()
+	var from = camera.project_ray_origin(position)
+	var to = from + camera.project_ray_normal(position) * camera.far
+	return get_world().direct_space_state.intersect_ray(from, to).get("position", Vector3(NAN, NAN, NAN))
+
+
 func _unhandled_key_input(event: InputEventKey):
+	if event.scancode == KEY_KP_0:
+		OS.shell_open(ProjectSettings.globalize_path("user://logs/"))
+		$HTerrain/GlobalRoadNetwork/QuadTree.dump("test")
+		OS.shell_open(ProjectSettings.globalize_path("user://dumps/test.txt"))
 	var two_lane_info = RoadNetworkInfoRegister.find("*two_lane*")[0]
 	var four_lane_info = RoadNetworkInfoRegister.find("*four_lane*")[0]
 	if event.scancode == KEY_KP_ADD and event.pressed:
-		get_viewport().debug_draw = (get_viewport().debug_draw + 1) % 4
+		get_viewport().debug_draw = wrapi(get_viewport().debug_draw+1, 0, 4)
 	elif event.scancode == KEY_KP_SUBTRACT and event.pressed:
-		get_viewport().debug_draw = (get_viewport().debug_draw - 1) % 4
+		get_viewport().debug_draw = wrapi(get_viewport().debug_draw-1, 0, 4)
 	elif event.scancode == KEY_KP_MULTIPLY and event.pressed:
 		get_viewport().debug_draw = Viewport.DEBUG_DRAW_DISABLED
 	elif event.scancode == KEY_M and event.pressed:
@@ -71,8 +103,8 @@ func _unhandled_key_input(event: InputEventKey):
 		var position_inters = [previous_intersection]
 		var positions = [previous_pos]
 		var rect = AABB(Vector3(0, 0, 0), Vector3(1275, 0, 1275))
-		for i in rand_range(3, 15):
-			var intersection_1 = pick_random(position_inters) if randi() % 10 == 0 and !position_inters.empty() else previous_intersection
+		for i in rand_range(1, 2):
+			var intersection_1 = pick_random(position_inters) if rand_range(1, 1) == 1 and !position_inters.empty() else previous_intersection
 			var segment_1 = create_linear(intersection_1, rect)
 			if segment_1:
 				previous_intersection = segment_1.end_position.intersection
@@ -81,25 +113,25 @@ func _unhandled_key_input(event: InputEventKey):
 				position_inters.append(previous_intersection)
 			else:
 				break
-		$HTerrain/RoadNetwork.update()
+		$HTerrain/GlobalRoadNetwork.update()
 		var mid_position = sum_array(positions)/positions.size()
 		# move camera to the segment
-		$HTerrain/Camera._new_translation = mid_position
+		$HTerrain/Camera.target_translation = mid_position
 	elif event.scancode == KEY_KP_2 and event.pressed:
-		segment = pick_random($HTerrain/RoadNetwork.get_all_segments_of_type(RoadSegmentLinear))
+		segment = pick_random($HTerrain/GlobalRoadNetwork.get_all_segments_of_type(RoadSegmentLinear))
 		if is_instance_valid(segment):
-			$HTerrain/Camera._new_translation = segment.position
+			$HTerrain/Camera.target_translation = segment.position
 	elif event.scancode in [KEY_KP_3, KEY_KP_6] and event.pressed:
 		if is_instance_valid(segment):
-			$HTerrain/RoadNetwork.delete_segment(segment)
+			$HTerrain/GlobalRoadNetwork.delete_segment(segment)
 			segment.call_deferred('free')
-			$HTerrain/RoadNetwork.update()
+			$HTerrain/GlobalRoadNetwork.update()
 	elif event.scancode == KEY_KP_4 and event.pressed:
 		var rect = AABB(Vector3(0, 0, 0), Vector3(1275, 0, 1275))
 		var last_bez_pos = RoadIntersection.new(Vector3(rand_range(0, 1275), 0, rand_range(0, 1275)), two_lane_info)
 		var positions = []
 		var position_inters = []
-		for _i in rand_range(3, 15):
+		for _i in rand_range(1, 1):
 			var inter_1 =  pick_random(position_inters) if randi() % 10 == 0 and !position_inters.empty() else last_bez_pos
 			var segment_1 = create_bezier(inter_1, rect)
 			if segment_1:
@@ -109,15 +141,16 @@ func _unhandled_key_input(event: InputEventKey):
 				
 			else:
 				break
-		$HTerrain/RoadNetwork.update()
+		$HTerrain/GlobalRoadNetwork.update()
 		
 		var mid_pos = sum_array(positions)/positions.size()
-		$HTerrain/Camera._new_translation = mid_pos
+		$HTerrain/Camera.target_translation = mid_pos
 	elif event.scancode == KEY_KP_5 and event.pressed:
-		segment = pick_random($HTerrain/RoadNetwork.get_all_segments_of_type(RoadSegmentBezier))
+		segment = pick_random($HTerrain/GlobalRoadNetwork.get_all_segments_of_type(RoadSegmentBezier))
 		if is_instance_valid(segment):
-			$HTerrain/Camera._new_translation = segment.position
-
+			$HTerrain/Camera.target_translation = segment.position
+	
+	
 #var inter_1pos = Vector3(rand_range(0, 1275), 0, rand_range(0, 1275))
 #		var inter_1 = RoadIntersection.new(inter_1pos, two_lane_info)
 #		var inter_2 = RoadIntersection.new(Vector3(_move_distance_in_direction(inter_1pos, rand_range(10, 30), deg2rad(rand_range(-45, 135)))), two_lane_info)
@@ -130,7 +163,7 @@ func _unhandled_key_input(event: InputEventKey):
 #		$HTerrain/RoadNetwork.update()
 func draw():
 	$HTerrain/ImmediateGeometry.clear()
-	var road_net = $HTerrain/RoadNetwork
+	var road_net = $HTerrain/GlobalRoadNetwork
 	var im_geo = $HTerrain/ImmediateGeometry
 	for road_inter in road_net.graph_inter_map.values():
 		DrawingUtils.draw_empty_circle(im_geo, road_inter.position, 0.25)
@@ -139,7 +172,7 @@ func draw():
 			RoadSegmentBaseRenderer:
 				DrawingUtils.draw_line(im_geo, road_seg.start_position.position, road_seg.end_position.position, Color.aqua)
 			RoadSegmentBezierRenderer:
-				print("rendering")
+#				print("rendering")
 				DrawingUtils.draw_line(im_geo, road_seg.start_position.position, road_seg.middle_position.position, Color.aqua)				
 				DrawingUtils.draw_line(im_geo, road_seg.middle_position.position, road_seg.end_position.position, Color.aqua)				
 func sum_array(arr: Array) -> Vector3:
@@ -151,7 +184,7 @@ func sum_array(arr: Array) -> Vector3:
 func _notification(what):
 	match what:
 		NOTIFICATION_EXIT_WORLD:
-			clear_segments($HTerrain/RoadNetwork)
+			clear_segments($HTerrain/GlobalRoadNetwork)
 
 func _move_distance_in_direction(position, dist, direction):
 	return position + (Vector3(cos(direction), 0, sin(direction)) * dist)
@@ -181,20 +214,31 @@ func create_bezier(inter1, rect):
 	if !rect.has_point(inter3_pos):
 		return
 	var bez_seg = RoadSegmentBezier.new(inter1, inter2, inter3, two_lane_info, RoadSegmentBase.BIDIRECTIONAL)
-	$HTerrain/RoadNetwork.create_segment(bez_seg)
+	$HTerrain/GlobalRoadNetwork.create_segment(bez_seg)
 	return bez_seg
 
 func create_linear(inter1, rect):
 	var two_lane_info = RoadNetworkInfoRegister.find("*two_lane*")[0]
 	var four_lane_info = RoadNetworkInfoRegister.find("*four_lane*")[0]
 	var start_pos_int = inter1.position
-	var position = _move_distance_in_direction(start_pos_int, rand_range(10, 30), deg2rad(rand_range(-45, 135)))
+	var position = _move_distance_in_direction(start_pos_int, rand_range(10, 30), deg2rad(rand_range(-90, 90)))
 	if !rect.has_point(position):
 		return
 	var inter_2 = RoadIntersection.new(position, two_lane_info)
 	var start_pos = inter1
 	var segment = RoadSegmentLinear.new(start_pos, inter_2, two_lane_info, RoadSegmentBase.BIDIRECTIONAL)
-	$HTerrain/RoadNetwork.create_segment(segment)
+	$HTerrain/GlobalRoadNetwork.create_segment(segment)
 	return segment
 
 # pick_random(positions) if randi() % 10 == 0 and !positions.empty() else inter1_pos
+
+func _physics_process(delta):
+	DebugConsole.add_text("Engine: FPS %s" % Engine.get_frames_per_second())
+	DebugConsole.add_text("Viewport: Viewmode %s" % viewport_mode.get(get_viewport().debug_draw))
+	if not is_instance_valid(currently_hovering_seg):
+		return
+	if currently_hovering_seg is RoadSegmentBase:
+		DebugConsole.add_text("Currently Hovering Segment: %s" % currently_hovering_seg)
+	elif currently_hovering_seg is RoadIntersection:
+		DebugConsole.add_text("Currently Hovering Intersection: %s" % currently_hovering_seg)
+		

@@ -5,8 +5,9 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 	print("Rendering segment", segment)
 	
 	var positions = []
-	for i in resolution+1:
+	for i in resolution:
 		var t = i/float(resolution)
+		print(t)
 #		if t > 0.9:
 #			breakpoint
 		var v1 = segment.get_lerp_func().call_func(segment.start_position.position, segment.middle_position.position, segment.end_position.position, t)
@@ -14,14 +15,14 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 	
 #	print(s_v1, s_v2, e_v1, e_v2, m_v1, m_v2)
 	
-	var last_v2 = get_left_vertex_from_index(0, positions, segment)
 	var last_v1 = get_right_vertex_from_index(0, positions, segment)
+	var last_v2 = get_left_vertex_from_index(0, positions, segment)
 	
 	DrawingUtils.draw_empty_circle(debug_immediate_geo, last_v1, 0.125, Color.blue)
 	DrawingUtils.draw_empty_circle(debug_immediate_geo, last_v2, 0.125, Color.black)
 	
 	
-	for i in range(1, resolution+1):
+	for i in range(1, resolution):
 		var v1 = get_left_vertex_from_index(i, positions, segment)
 		var v2 = get_right_vertex_from_index(i, positions, segment)
 		

@@ -13,19 +13,24 @@ func project_point(to_position: Vector3):
 
 func get_aabb() -> AABB:
 	var aabb: AABB
-	if int(start_position.position.x) == int(end_position.position.x):
-		if int(start_position.position.z) == int(end_position.position.z):
-			return AABB()
-		else:
-			aabb = AABB(start_position.position + (Vector3(1, 0, 1)), Vector3(1, 0, 1))
-			aabb.end = end_position.position - (Vector3(1, 0, 1))
-	elif int(start_position.position.z) == int(end_position.position.z):
-		aabb =  AABB(start_position.position + (Vector3(1, 0, 1)), Vector3(1, 0, 1))
-		aabb.end = end_position.position - (Vector3(1, 0, 1))
-	else:
-		aabb = AABB(start_position.position, Vector3(1, 0, 1))
-		aabb.end = end_position.position
+	var r = road_network_info.segment_width * 0.5
+	
+	var min_vector = min_vec(start_position.position, end_position.position)-(Vector3.ONE * r)
+	var max_vector = max_vec(start_position.position, end_position.position)+(Vector3.ONE * r)
+#	var min_vector = Vector3(min(start_position.position.x, end_position.position.x)-r, min(start_position.position.y, end_position.position.y)-r, min(start_position.position.z, end_position.position.z)-r)
+#	var max_vector = Vector3(max(start_position.position.x, end_position.position.x)+r, max(start_position.position.y, end_position.position.y)+r, max(start_position.position.z, end_position.position.z)+r)
+	aabb = AABB(min_vector, Vector3.ONE)
+	aabb.end = max_vector
+	
 	return aabb
+#	DrawingUtils.draw_line(perpendicular)
+	
+
+func min_vec(a, b):
+	return Vector3(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z))
+
+func max_vec(a, b):
+	return Vector3(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z))
 
 func get_lerp_func():
 	return funcref(self, 'interpolate')
@@ -42,12 +47,13 @@ func get_length():
 func _average_direction(road_intersection: RoadIntersection, position: RoadIntersection):
 	return road_intersection.direction_to(position)
 
-func split_at_position(position) -> Array:
+func split_at_position(position: RoadIntersection) -> Array:
+	var seg_1 = get_script().new(self.start_position.intersection, position, road_network_info, direction)
+	var seg_2 = get_script().new(position, self.end_position.intersection, road_network_info, direction)
+	var road_net = self.road_network
+	print(self.start_position, position, self.end_position)
 	self.road_network.delete_segment(self)
-	var seg_1 = get_script().new(self.start_position, position, road_network_info, direction)
-	var seg_2 = get_script().new(position, self.end_position, road_network_info, direction)
-	
-	seg_1 = self.road_network.create_segment(seg_1)
-	seg_2 = self.road_network.create_segment(seg_2)
+	seg_1 = road_net.create_segment(seg_1)
+	seg_2 = road_net.create_segment(seg_2)
 	
 	return [seg_1, seg_2]

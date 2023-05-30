@@ -1,15 +1,18 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
 [ext_resource path="res://addons/zylann.hterrain/hterrain.gd" type="Script" id=3]
 [ext_resource path="res://roads_system/RoadNetwork.tscn" type="PackedScene" id=4]
-[ext_resource path="res://roads_system/tools/road_tool/states/RoadToolStraight.gd" type="Script" id=5]
+[ext_resource path="res://roads_system/tools/road_tool/states/RoadToolStraight.tscn" type="PackedScene" id=5]
+[ext_resource path="res://debug_console/DebugUI.gd" type="Script" id=6]
 [ext_resource path="res://NewRoadNetTest.gd" type="Script" id=7]
 [ext_resource path="res://Camera.tscn" type="PackedScene" id=8]
+[ext_resource path="res://zoning/ZoneSystem.gd" type="Script" id=9]
 [ext_resource path="res://roads_system/tools/road_tool/RoadTool.gd" type="Script" id=10]
 [ext_resource path="res://building_system/non_buildable.tres" type="Material" id=11]
 [ext_resource path="res://building_system/buildable.tres" type="Material" id=12]
+[ext_resource path="res://zoning/GridNode.gd" type="Script" id=13]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -33,6 +36,9 @@ shader_param/test = 8.59003e+09
 material = SubResource( 6 )
 size = Vector3( 10, 100, 10 )
 
+[sub_resource type="SpatialMaterial" id=8]
+vertex_color_use_as_albedo = true
+
 [sub_resource type="ProceduralSky" id=2]
 
 [sub_resource type="Environment" id=3]
@@ -51,7 +57,7 @@ script = ExtResource( 7 )
 [node name="HTerrain" type="Spatial" parent="."]
 script = ExtResource( 3 )
 lod_scale = 2.0
-map_scale = Vector3( 5, 5, 5 )
+map_scale = Vector3( 10, 10, 10 )
 _terrain_data = ExtResource( 1 )
 chunk_size = 32
 collision_enabled = true
@@ -67,55 +73,97 @@ shader_params/u_triplanar = false
 shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 
 [node name="Camera" parent="HTerrain" instance=ExtResource( 8 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1 )
-far = 500.0
-edge_scroll/enabled = false
-panning/enabled = false
-movement/speed = 1.0
-zooming/min_distance = 3.0
-zooming/max_distance = 150.0
-perspective_panning/enabled = true
-limits/rect = Rect2( 1, 1, 1275, 1275 )
-
-[node name="PanelContainer" type="PanelContainer" parent="HTerrain/Camera"]
-margin_left = 20.0
-margin_top = 20.0
-margin_right = 14.0
-margin_bottom = 14.0
-
-[node name="Label" type="Label" parent="HTerrain/Camera/PanelContainer"]
-margin_left = 7.0
-margin_top = 7.0
-margin_right = 7.0
-margin_bottom = 21.0
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, 100 )
+far = 1000.0
+tilting/max_angle = 90.0
+zooming/max_distance = 200.0
+scrolling/enabled = true
+scrolling/speed = 30
+limits/rect = Rect2( 1, 1, 2559, 2559 )
+option/movement/zoom_speed_enabled = true
+option/movement/zoom_speed_factor = 32
+option/invert/zooming = false
+option/invert/panning = false
+option/invert/rotation = false
+option/invert/rotation_keys = false
+option/invert/tilting = false
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
 material_override = SubResource( 4 )
 
 [node name="MeshInstance" type="MeshInstance" parent="HTerrain"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 1275, 0, 1275 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 2560, 0, 2560 )
 mesh = SubResource( 7 )
-skeleton = NodePath("../RoadNetwork")
+skeleton = NodePath("../GlobalRoadNetwork")
 
-[node name="RoadNetwork" parent="HTerrain" instance=ExtResource( 4 )]
+[node name="GlobalRoadNetwork" parent="HTerrain" instance=ExtResource( 4 )]
+
+[node name="ZoneSystem" type="Spatial" parent="HTerrain"]
+script = ExtResource( 9 )
+
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/ZoneSystem"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+material_override = SubResource( 8 )
+
+[node name="GridNode" type="Spatial" parent="HTerrain/ZoneSystem"]
+script = ExtResource( 13 )
+
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/ZoneSystem/GridNode"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 3 )
 
+[node name="DirectionalLight" type="DirectionalLight" parent="WorldEnvironment"]
+transform = Transform( 1, 0, 0, 0, -0.707107, 0.707107, 0, -0.707107, -0.707107, 0, 0, 0 )
+
 [node name="Tools" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.001, 0 )
 
 [node name="RoadTool" type="Spatial" parent="Tools"]
 script = ExtResource( 10 )
-world_road_network_node = NodePath("../../HTerrain/RoadNetwork")
+world_road_network_node = NodePath("../../HTerrain/GlobalRoadNetwork")
 buildable_mat = ExtResource( 12 )
 non_buildable_mat = ExtResource( 11 )
 
-[node name="RoadNetwork" parent="Tools/RoadTool" instance=ExtResource( 4 )]
+[node name="LocalRoadNetwork" parent="Tools/RoadTool" instance=ExtResource( 4 )]
 
 [node name="States" type="Spatial" parent="Tools/RoadTool"]
 
-[node name="RoadToolStraight" type="Spatial" parent="Tools/RoadTool/States"]
-script = ExtResource( 5 )
+[node name="RoadToolStraight" parent="Tools/RoadTool/States" instance=ExtResource( 5 )]
 
-[connection signal="graph_changed" from="HTerrain/RoadNetwork" to="." method="_on_RoadNetwork_graph_changed"]
+[node name="Debug" type="Control" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource( 6 )
+text_label_np = NodePath("PanelContainer/VBoxContainer/DebugText")
+
+[node name="PanelContainer" type="PanelContainer" parent="Debug"]
+margin_left = 20.0
+margin_top = 20.0
+margin_right = 14.0
+margin_bottom = 14.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Debug/PanelContainer"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 90.0
+margin_bottom = 39.0
+
+[node name="Name" type="Label" parent="Debug/PanelContainer/VBoxContainer"]
+margin_right = 83.0
+margin_bottom = 14.0
+text = "DEBUG INFO"
+align = 1
+valign = 1
+
+[node name="DebugText" type="Label" parent="Debug/PanelContainer/VBoxContainer"]
+margin_top = 18.0
+margin_right = 83.0
+margin_bottom = 32.0
+
+[connection signal="graph_changed" from="HTerrain/GlobalRoadNetwork" to="." method="_on_RoadNetwork_graph_changed"]
+[connection signal="road_segment_created" from="HTerrain/GlobalRoadNetwork" to="HTerrain/ZoneSystem" method="_on_RoadNetwork_road_segment_created"]
+[connection signal="road_segment_deleted" from="HTerrain/GlobalRoadNetwork" to="HTerrain/ZoneSystem" method="_on_RoadNetwork_road_segment_deleted"]

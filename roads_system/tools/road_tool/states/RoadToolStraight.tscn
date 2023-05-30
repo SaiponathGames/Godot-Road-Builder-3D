@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://roads_system/tools/road_tool/states/RoadToolStraight.gd" type="Script" id=1]
+
+[sub_resource type="CylinderMesh" id=1]
+height = 0.05
+
+[node name="RoadToolStraight" type="Spatial"]
+script = ExtResource( 1 )
+
+[node name="RoadMesh" type="MeshInstance" parent="."]
+mesh = SubResource( 1 )

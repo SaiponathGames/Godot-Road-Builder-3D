@@ -48,7 +48,7 @@ func quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 	var q1 = p1.linear_interpolate(p2, t)
 	return q0.linear_interpolate(q1, t)
 
-func draw_curve(immediate_geo: ImmediateGeometry, p0: Vector3, mp: Vector3, p1: Vector3, color: Color, resolution: int = 10):
+func draw_curve(immediate_geo: ImmediateGeometry, p0: Vector3, mp: Vector3, p1: Vector3, color: Color = Color.white, resolution: int = 10):
 	var last_point = p0
 	for t in range(resolution):
 		immediate_geo.set_color(color)
@@ -63,7 +63,7 @@ func draw_curve(immediate_geo: ImmediateGeometry, p0: Vector3, mp: Vector3, p1: 
 	immediate_geo.add_vertex(p1)
 
 
-func draw_curve_triangles(immediate_geo: ImmediateGeometry, p0: Vector3, mp: Vector3, p1: Vector3, center: Vector3, color: Color, resolution: int = 10):
+func draw_curve_triangles(immediate_geo: ImmediateGeometry, p0: Vector3, mp: Vector3, p1: Vector3, center: Vector3, color: Color = Color.white, resolution: int = 10):
 	var last_point = p0
 	for t in range(resolution+1):
 		var new_point = quadratic_bezier(p0, mp, p1, t/float(resolution))

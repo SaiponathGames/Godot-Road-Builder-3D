@@ -72,11 +72,11 @@ func get_id(_min_vec: Vector3 = Vector3()):
 	return int((position.x + + position.z * -(p_min) + position.y * -(p_min*p_min) - pow(p_min, 3)))
 
 func duplicate():
-	var clone = get_script().new(self.position, self.connections)
+	var clone = get_script().new(self.position, self.road_network_info)
 	return clone
 
 func _notification(what):
 	match what:
 		NOTIFICATION_PREDELETE:
-			prints("About to be deleted RoadIntersection Intersection ID:", id)
+			prints("About to be deleted RoadIntersection Intersection ID:", id, "RoadNetwork:", road_network)
 

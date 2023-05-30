@@ -42,11 +42,15 @@ func get_point(t) -> Vector3:
 func get_aabb():
 	var minima = Vector3.INF
 	var maxima = -Vector3.INF
+	var r = road_network_info.segment_width * 0.5
 	for point_t in lut:
 		var point = point_t[0]
 		minima = Vector3(min(minima.x, point.x), min(minima.y, point.y), min(minima.z, point.z))
 		maxima = Vector3(max(maxima.x, point.x), max(maxima.y, point.y), max(maxima.z, point.z))
-	var aabb = AABB((minima + maxima)/2, maxima - minima)
+	minima -= Vector3.ONE * r
+	maxima += Vector3.ONE * r
+	var aabb = AABB(minima, Vector3.ONE)
+	aabb.end = maxima
 	return aabb
 
 func _average_direction(road_intersection: RoadIntersection, position: RoadIntersection):
@@ -118,9 +122,8 @@ func calculate_lut(resolution = 20, change_resolution = true) -> void:
 func generate_lut(res = 20):
 	var _lut = []
 	var t = 0
-	while t <= 0.9:
-		t += 1/float(res)
-		t = clamp(t, 0, 1)
+	for i in range(res+1):
+		t = i/float(res)
 		var position = _quadratic_bezier(start_position.position, middle_position.position, end_position.position, t)
 		_lut.append([position, t])
 	return _lut

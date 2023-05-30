@@ -45,6 +45,7 @@ func set_seg_type(value):
 	push_error("Segment type is too big, range is 0 - 63")
 		
 func get_position():
+	return Vector3(100, 0, 100)
 	var result = Vector3()
 	for _position in positions:
 		result += _position.position
@@ -53,8 +54,10 @@ func get_position():
 # Abstract methods (do not delete)
 
 func get_road_length():
-	if is_nan(_length):
-		_length = get_length()
+#	if is_nan(_length):
+#		_length = get_length()
+#
+	_length = 10
 	return _length
 
 func get_length():
@@ -103,6 +106,10 @@ func instance_lanes():
 		lanes.append(lane.instance(self))
 
 func set_owner(road_net):
+#	if road_net == null:
+#		print("Ignored for now")
+#		push_warning("Delete this message ASAP! Debug only!")
+#		return
 	self.road_network = road_net
 	if road_net:
 		id = get_id(road_net.min_vector)
@@ -129,17 +136,17 @@ func get_points(spacing, resolution):
 		previous_point = point
 	return points
 
-func distance_to(position: Vector3):
-	var closest_point = project_point(position)
-	return closest_point.distance_to(position)
+func distance_to(_position: Vector3):
+	var closest_point = project_point(_position)
+	return closest_point.distance_to(_position)
 	
-func distance_squared_to(position: Vector3):
-	var closest_point = project_point(position)
-	return closest_point.distance_squared_to(position)
+func distance_squared_to(_position: Vector3):
+	var closest_point = project_point(_position)
+	return closest_point.distance_squared_to(_position)
 
-func direction_to(position: Vector3):
-	var closest_point = project_point(position)
-	return closest_point.direction_to(position)
+func direction_to(_position: Vector3):
+	var closest_point = project_point(_position)
+	return closest_point.direction_to(_position)
 
 # Abstract features, recommend to implement, but can be left unimplemented.
 
@@ -163,11 +170,14 @@ func get_id(min_vec: Vector3):
 	var custom_left_shift = 12 + seg_type_left_shift
 	var modder_left_shift = 10 + custom_left_shift
 	
-	var _id = int(((modder_id << modder_left_shift)
+	var _id = int(
+		((modder_id << modder_left_shift)
 				| (custom_id << custom_left_shift)
 				| (seg_type << seg_type_left_shift)
 				| (start_position.intersection.get_id(min_vec) << from_bit_left_shift)
-				| (end_position.intersection.get_id(min_vec))))
+				| (end_position.intersection.get_id(min_vec))
+		)
+	)
 	return _id
 
 func set_renderer(_renderer):
@@ -179,7 +189,7 @@ func _notification(what):
 			prints("About to be deleted RoadSegmentBase Segment ID:", id)
 
 func _sum_array(arr: Array) -> Vector3:
-	var result: Vector3
+	var result: Vector3 = Vector3.ZERO
 	for value in arr:
 		result += value
 	return result

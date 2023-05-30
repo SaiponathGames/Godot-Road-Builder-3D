@@ -4,7 +4,7 @@
 
 [resource]
 shader = ExtResource( 1 )
-shader_param/asphalt_color = Color( 0.5, 0.5, 0.5, 1 )
+shader_param/asphalt_color = Color( 0.501961, 0.501961, 0.501961, 0 )
 shader_param/line_width = 0.03
 shader_param/center_line_distance = 0.1
 shader_param/center_line_color = Color( 1, 1, 1, 1 )

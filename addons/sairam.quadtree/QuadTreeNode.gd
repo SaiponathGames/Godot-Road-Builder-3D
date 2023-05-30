@@ -4,6 +4,7 @@ const QuadTree = preload("res://addons/sairam.quadtree/QuadTree.gd")
 
 
 export var extents: Vector3 setget set_bounds
+export var debug_bounds: AABB setget set_aabb
 export var capacity: int
 export var max_levels: int
 export var draw_quadtree: bool
@@ -16,7 +17,7 @@ var immediate_geo_node: ImmediateGeometry
 var _quad_tree: QuadTree
 
 func _ready():
-	_quad_tree = QuadTree.new(bounds, capacity, max_levels)
+	_quad_tree = QuadTree.new(debug_bounds, capacity, max_levels)
 	if immediate_geo_node_path:
 		immediate_geo_node = get_node(immediate_geo_node_path)
 		_quad_tree.set_drawing_node(immediate_geo_node)
@@ -33,6 +34,9 @@ func update_body(body: Spatial, bounds: AABB = AABB()):
 func clear():
 	return _quad_tree.clear()
 
+func dump(file_name: String, indent='\t'):
+	_quad_tree.dump(file_name, indent)
+
 func query(bounds: AABB):
 	return _quad_tree.query(bounds)
 
@@ -43,6 +47,14 @@ func set_bounds(value):
 	extents = value
 	bounds = AABB(-extents, extents * 2)
 	update_gizmo()
+	if _quad_tree:
+		_quad_tree._bounds = bounds
+
+func set_aabb(value):
+	debug_bounds = value
+	if _quad_tree:
+		_quad_tree._bounds = debug_bounds
+	update_gizmo()
 
 func set_extents(value):
 	set_bounds(value)
@@ -50,6 +62,11 @@ func set_extents(value):
 func _process(delta):
 	if draw_quadtree:
 		draw()
+
+func _unhandled_key_input(event):
+	if event.scancode == KEY_KP_8 and event.pressed:
+		draw_quadtree = !draw_quadtree
+		immediate_geo_node.visible = !immediate_geo_node.visible
 
 #func _exit_tree():
 #	_quad_tree.clear()

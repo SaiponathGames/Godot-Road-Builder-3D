@@ -5,7 +5,7 @@ func get_road_network_info() -> RoadNetworkInfo:
 		"Four Lane Basic Road",
 		0.5,
 		4,
-		0.5,
+		1.0,
 		0.3
 	)
 	# Add lanes

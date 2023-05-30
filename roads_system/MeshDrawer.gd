@@ -4,28 +4,28 @@ class_name MeshDrawer
 func draw_triangle_with_uv(v0: Vector3, uv0: Vector2, v1: Vector3, uv1: Vector2, v2: Vector3, uv2: Vector2, color: Color = Color()):
 	add_color(color)
 	add_uv(uv0)
-	add_normal(Vector3.BACK)
+	add_normal(Vector3.UP)
 	add_vertex(v0)
 	add_color(color)
 	add_uv(uv1)
-	add_normal(Vector3.BACK)
+	add_normal(Vector3.UP)
 	add_vertex(v1)
 	add_color(color)
 	add_uv(uv2)
-	add_normal(Vector3.BACK)
+	add_normal(Vector3.UP)
 	add_vertex(v2)
 
 func draw_triangle(v0: Vector3, v1: Vector3, v2: Vector3, color: Color = Color()):
 		draw_triangle_with_uv(v0,
-		Vector2(v0.x, v0.z),
+		Vector2(0, 0),
 		v1,
-		Vector2(v1.x, v1.z),
+		Vector2(0, 1),
 		v2,
-		Vector2(v2.x, v2.z),
+		Vector2(1, 0),
 		color
 	)
 
-func draw_curve_triangles(p0: Vector3, mp: Vector3, p1: Vector3, center: Vector3, color: Color = Color(), resolution: int = 20):
+func draw_curve_triangles(p0: Vector3, mp: Vector3, p1: Vector3, center: Vector3, color: Color = Color.white, resolution: int = 20):
 	var last_point = p0
 	for t in range(resolution+1):
 		var new_point = _quadratic_bezier(p0, mp, p1, t/float(resolution))
