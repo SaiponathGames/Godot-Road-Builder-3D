@@ -1,8 +1,9 @@
 extends Spatial
 class_name RoadNetwork
 
-# warning-ignore:unused_signal
+
 signal graph_changed(road_net)
+
 signal road_segment_created(segment)
 signal road_segment_deleted(segment)
 signal road_segment_upgraded(segment)

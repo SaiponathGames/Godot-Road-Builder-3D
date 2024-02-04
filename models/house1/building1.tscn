@@ -43,17 +43,14 @@ transform = Transform( 0.29, 0, 0, 0, 0.29, 0, 0, 0, 0.29, 0, 0, 0 )
 script = ExtResource( 2 )
 
 [node name="StaticBody" type="StaticBody" parent="." index="0"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 collision_layer = 2
 
 [node name="building_tri_lp" type="MeshInstance" parent="StaticBody" index="0"]
 mesh = SubResource( 1 )
-material/0 = null
 
 [node name="Plane" type="MeshInstance" parent="StaticBody" index="1"]
 transform = Transform( 3.5, 0, 0, 0, 1, 0, 0, 0, 3.5, 0, 0, 0 )
 mesh = SubResource( 2 )
-material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="StaticBody" index="2"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.82365, 0 )

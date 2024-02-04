@@ -25,20 +25,21 @@ var road_net_info: RoadNetworkInfo setget set_road_net_info
 func _input(event: InputEvent):
 	if !_enabled:
 		return
+	$ImmediateGeometry.clear()
 	
 	if event is InputEventMouseButton:
 		if event.pressed and event.button_index == BUTTON_LEFT:
 			if !_is_dragging:
-				update_snapping(event)
+				update_network_snapping(event)
 				setup_dragging(event)
 			elif _is_dragging:
-				update_snapping(event)
+				update_network_snapping(event)
 				stop_dragging(event)
 		elif event.pressed and event.button_index == BUTTON_RIGHT:
 			if _is_dragging:
 				cancel_dragging(event)
 	if event is InputEventMouseMotion:
-		update_snapping(event)
+		update_network_snapping(event)
 		continue_dragging(event)
 		if not is_instance_valid(_drag_start):
 			$RoadMesh.show()
@@ -81,12 +82,19 @@ func stop_dragging(event: InputEventMouseButton):
 	var inter2 = global_road_network.get_closest_point_to(_drag_end.position)
 	if not inter2:
 		inter2 = _drag_end.duplicate()
+		
+#	inter2 = snap_intersection(inter, inter2)
+#	var new_inter2 = global_road_network.get_closest_point_to(inter2.position)
+#	if new_inter2:
+#		inter2 = new_inter2
+	
 	if _start_segment:
 		print("Splitting start segment")
 		print("Start segment ROAD NET: ", _start_segment.road_network)
 		_start_segment.split_at_position(inter)
 	if _end_segment:
 		_end_segment.split_at_position(inter2)
+	
 	var segment = RoadSegmentLinear.new(inter, inter2, road_net_info, RoadSegmentLinear.FORWARD)
 	segment = global_road_network.create_segment(segment)
 	global_road_network.update()
@@ -113,7 +121,11 @@ func continue_dragging(event: InputEventMouseMotion):
 		previous_drag_current = _drag_current
 		previous_cache_segment = _cache_previous_segment
 		_drag_current = _get_current_position(event)
-	
+		var _global_drag_start = global_road_network.get_closest_point_to(_drag_start.position)
+		_drag_current = snap_intersection(
+			_global_drag_start if _global_drag_start else _drag_start,
+			_drag_current
+			)
 		
 	if is_instance_valid(previous_cache_segment):
 		print(_cache_previous_segment)
@@ -166,11 +178,11 @@ func _get_start_position(event: InputEventMouseButton):
 	else:
 		return RoadIntersection.new(position, road_net_info)
 
-func update_snapping(event: InputEventMouse):
+func update_network_snapping(event: InputEventMouse):
 	var position = _cast_ray_to(event.position)
 	snapped_intersection = null
 	snapped_segment = null
-	var intersection = global_road_network.get_closest_point_to(position, road_net_info.intersection_length)
+	var intersection = global_road_network.get_closest_point_to(position, road_net_info.intersection_length*2)
 	if intersection:
 		snapped_intersection = intersection
 		return
@@ -178,6 +190,48 @@ func update_snapping(event: InputEventMouse):
 	if segment:
 		snapped_segment = segment
 		return
+
+func snap_intersection(base_global: RoadIntersection, position: RoadIntersection, length_snap_u: float = 5.0, angle_snap_deg: float = 45.0) -> RoadIntersection:
+	# please fix this below code
+	push_error("Fix this code!!!")
+#	var length = base_global.distance_to(position)
+#	var direction = base_global.direction_to(position)
+#	if base_global.road_network in [null, local_road_network]:
+#		# we are yet to add a new segment, only snap length
+#		var snapped_length = round(length / length_snap_u) * length_snap_u
+#		if abs(length-snapped_length) > (length_snap_u/4.0) and length > road_net_info.segment_width:
+#			snapped_length = length
+#		DebugConsole.add_text("Current Seg Length: %s" % snapped_length)
+#		var new_position = RoadIntersection.new(base_global.position + direction * snapped_length, road_net_info)
+#		return new_position
+#	elif base_global.road_network in [global_road_network]:
+#		# we have already added segments and are extending it, snap length and relative angle
+#		var snapped_length = round(length / length_snap_u) * length_snap_u
+#		if abs(length-snapped_length) > (length_snap_u/4.0) and length > road_net_info.segment_width:
+#			snapped_length = length
+#		DebugConsole.add_text("Current Seg Length: %s" % snapped_length)
+##		var new_position = RoadIntersection.new(base_global.position + direction * snapped_length, road_net_info)
+#		var shortest_angle = 2 * PI
+#		for conn in base_global.connections:
+#			var segment: RoadSegmentBase = base_global.connections[conn]
+#			var seg_dir = segment.direction_from_intersection(conn).abs()
+#			DrawingUtils.draw_line($ImmediateGeometry, base_global.position, base_global.position + -seg_dir * 10, Color.aqua)
+#			DrawingUtils.draw_empty_circle($ImmediateGeometry, base_global.position, 0.5, Color.aqua)
+#			DrawingUtils.draw_empty_circle($ImmediateGeometry, base_global.position + -seg_dir * 10, 0.5, Color.aqua)
+#			var angle = seg_dir.signed_angle_to(direction, Vector3.UP)
+#			if angle < shortest_angle:
+#				shortest_angle = angle
+##
+#		var snapped_angle = round(shortest_angle / deg2rad(angle_snap_deg)) * deg2rad(angle_snap_deg)
+#		DebugConsole.add_text("Snapped Angle: %s Tolerance: %s" % [rad2deg(snapped_angle), (angle_snap_deg/4.0) ])
+#		if abs(shortest_angle-snapped_angle) > deg2rad(angle_snap_deg/4.0):
+#			snapped_angle = shortest_angle
+#		DebugConsole.add_text("Current Seg Angle: %s" % rad2deg(shortest_angle))
+#		var snapped_direction = Vector3(snapped_length * cos(snapped_angle), 0, snapped_length * sin(snapped_angle))
+##
+#		var new_position = RoadIntersection.new(base_global.position + snapped_direction, road_net_info)
+#		return new_position
+	return position
 
 func _get_end_position(event: InputEventMouseButton):
 	var position = _cast_ray_to(event.position)

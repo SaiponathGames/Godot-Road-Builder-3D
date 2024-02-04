@@ -19,6 +19,7 @@ func _init():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	Engine.iterations_per_second = OS.get_screen_refresh_rate(OS.current_screen)
+	
 #	yield(get_tree().create_timer(1), "timeout")
 #	OS.window_maximized = true
 #	yield(get_tree().create_timer(1), "timeout")
@@ -103,7 +104,7 @@ func _unhandled_key_input(event: InputEventKey):
 		var position_inters = [previous_intersection]
 		var positions = [previous_pos]
 		var rect = AABB(Vector3(0, 0, 0), Vector3(1275, 0, 1275))
-		for i in rand_range(1, 2):
+		for i in rand_range(5, 12):
 			var intersection_1 = pick_random(position_inters) if rand_range(1, 1) == 1 and !position_inters.empty() else previous_intersection
 			var segment_1 = create_linear(intersection_1, rect)
 			if segment_1:

@@ -16,6 +16,7 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 		var dir1 = next_connection.direction
 		var angle1 = atan2(dir1.x, dir1.z)
 		
+		# Implemented by Jaynabonne (Thanks a ton!)
 		var midpoint = compute_edge_intersection(
 			connection.get_left_vertex(), 
 			next_connection.get_right_vertex(), 
@@ -31,10 +32,11 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 		con_idx += 1
 		
 		if connections.size() == 1:
-			
+			# Cap generation
+			var hermite_offset = (midpoint - connection.position)
 			_mesh_drawer.draw_curve_triangles(
-				next_connection.get_left_vertex(),
-				midpoint,
+				connection.get_left_vertex(),
+				midpoint+hermite_offset,
 				connection.get_right_vertex(),
 				connection.position,
 				Color.white,
@@ -56,6 +58,7 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 			connection.get_right_vertex()
 		)
 		
+		# debug
 		_immediate_geo.begin(Mesh.PRIMITIVE_LINES)
 		DrawingUtils.draw_curve(
 			_immediate_geo, 
@@ -91,7 +94,7 @@ func compute_edge_intersection(p0, p1, angle0, angle1, end_radius):
 		offset = Vector3(sin(midangle), 0, cos(midangle))*midpoint.distance_to(p0) * end_radius
 	return midpoint - offset
 
-
+# found this on unity Q/A modified it to suite the needs of godot
 func sort_by_angle(a, b, origin):
 	var a_position = a.start_position.position if a.end_position == origin else a.end_position.position
 	var b_position = b.start_position.position if b.end_position == origin else b.end_position.position

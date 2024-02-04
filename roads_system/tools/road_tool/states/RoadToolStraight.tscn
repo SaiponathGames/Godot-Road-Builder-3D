@@ -9,4 +9,5 @@ height = 0.05
 script = ExtResource( 1 )
 
 [node name="RoadMesh" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0 )
 mesh = SubResource( 1 )

@@ -1,20 +1,21 @@
 extends Resource
 class_name BuildingType
 
-var name: String
-var id: String
-var scene: PackedScene
-var door_face_direction = Vector3.ZERO
-var width = 2
+export var name: String
+export var id: String
+export var scene: PackedScene
+export var face_direction: Vector3 = Vector3.ZERO
+export var dimensions: Vector3
 
-func instance():
+func instance_at(transform: Transform) -> BuildingInstance:
 	var building_inst = scene.instance()
+	building_inst.transform = transform
+	
 	building_inst.building = self
-	building_inst.id = id
 	return building_inst
 
 func _init(_id, _name, _scene, _width = 2):
 	self.id = _id
 	self.name = _name
 	self.scene = _scene
-	self.width = width
+	self.width = _width

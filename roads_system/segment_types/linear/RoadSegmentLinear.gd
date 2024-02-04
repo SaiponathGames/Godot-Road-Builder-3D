@@ -11,6 +11,7 @@ func _init(_start_position, _end_position, _road_net_info, _direction).(_start_p
 func project_point(to_position: Vector3):
 	return Geometry.get_closest_point_to_segment(to_position, start_position.position, end_position.position)
 
+
 func get_aabb() -> AABB:
 	var aabb: AABB
 	var r = road_network_info.segment_width * 0.5
@@ -23,7 +24,6 @@ func get_aabb() -> AABB:
 	aabb.end = max_vector
 	
 	return aabb
-#	DrawingUtils.draw_line(perpendicular)
 	
 
 func min_vec(a, b):
@@ -42,7 +42,13 @@ func get_point(t):
 	return interpolate(start_position.position, end_position.position, t)
 
 func get_length():
+	if not (is_instance_valid(start_position) or is_instance_valid(end_position)):
+		return 0
 	return start_position.distance_to(end_position)
+
+func _delete():
+	start_position.delete_node()
+	end_position.delete_node()
 
 func _average_direction(road_intersection: RoadIntersection, position: RoadIntersection):
 	return road_intersection.direction_to(position)
@@ -55,5 +61,6 @@ func split_at_position(position: RoadIntersection) -> Array:
 	self.road_network.delete_segment(self)
 	seg_1 = road_net.create_segment(seg_1)
 	seg_2 = road_net.create_segment(seg_2)
+	self.call_deferred('free')
 	
 	return [seg_1, seg_2]

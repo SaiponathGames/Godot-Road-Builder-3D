@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=2]
+
+[ext_resource path="res://addons/sairam.quadtree/QuadTreeNode.gd" type="Script" id=1]
+[ext_resource path="res://building_system/building_network.gd" type="Script" id=2]
+
+[node name="BuildingNetwork" type="Spatial"]
+script = ExtResource( 2 )
+quad_tree_node_path = NodePath("QuadTreeNode")
+buildings_path = NodePath("Renderer/Buildings")
+
+[node name="QuadTreeNode" type="Spatial" parent="."]
+script = ExtResource( 1 )
+immediate_geo_node_path = NodePath("ImmediateGeometry")
+
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="QuadTreeNode"]
+
+[node name="Renderer" type="Spatial" parent="."]
+
+[node name="Buildings" type="Spatial" parent="Renderer"]

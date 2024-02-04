@@ -45,20 +45,22 @@ func set_seg_type(value):
 	push_error("Segment type is too big, range is 0 - 63")
 		
 func get_position():
-	return Vector3(100, 0, 100)
+#	return Vector3(100, 0, 100)
 	var result = Vector3()
+	print(positions.empty(), not is_instance_valid(positions), positions)
+	if not positions or positions.empty():
+		return result
 	for _position in positions:
-		result += _position.position
+		if is_instance_valid(_position):
+			result += _position.position
 	return result/positions.size()
 
-# Abstract methods (do not delete)
-
 func get_road_length():
-#	if is_nan(_length):
-#		_length = get_length()
-#
-	_length = 10
+	if not _length:
+		_length = get_length()
 	return _length
+
+# Abstract methods (do not delete) (must be implemented)
 
 func get_length():
 	pass
@@ -84,8 +86,7 @@ func _delete():
 
 func delete():
 	_delete()
-	start_position.delete_node()
-	end_position.delete_node()
+
 
 func direction_from(from: int):
 	match from:

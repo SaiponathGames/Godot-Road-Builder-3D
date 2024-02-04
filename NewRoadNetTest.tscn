@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=2]
+[gd_scene load_steps=25 format=2]
 
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
@@ -13,6 +13,7 @@
 [ext_resource path="res://building_system/non_buildable.tres" type="Material" id=11]
 [ext_resource path="res://building_system/buildable.tres" type="Material" id=12]
 [ext_resource path="res://zoning/GridNode.gd" type="Script" id=13]
+[ext_resource path="res://building_system/building_network.tscn" type="PackedScene" id=14]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -37,6 +38,11 @@ material = SubResource( 6 )
 size = Vector3( 10, 100, 10 )
 
 [sub_resource type="SpatialMaterial" id=8]
+flags_unshaded = true
+vertex_color_use_as_albedo = true
+
+[sub_resource type="SpatialMaterial" id=9]
+flags_unshaded = true
 vertex_color_use_as_albedo = true
 
 [sub_resource type="ProceduralSky" id=2]
@@ -50,6 +56,9 @@ fog_color = Color( 0.32549, 0, 0, 0.568627 )
 fog_depth_enabled = false
 fog_transmit_enabled = true
 tonemap_mode = 4
+
+[sub_resource type="SpatialMaterial" id=10]
+vertex_color_use_as_albedo = true
 
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 7 )
@@ -99,11 +108,13 @@ skeleton = NodePath("../GlobalRoadNetwork")
 
 [node name="GlobalRoadNetwork" parent="HTerrain" instance=ExtResource( 4 )]
 
+[node name="GlobalBuildingNetwork" parent="HTerrain" instance=ExtResource( 14 )]
+
 [node name="ZoneSystem" type="Spatial" parent="HTerrain"]
 script = ExtResource( 9 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/ZoneSystem"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0 )
 material_override = SubResource( 8 )
 
 [node name="GridNode" type="Spatial" parent="HTerrain/ZoneSystem"]
@@ -111,6 +122,7 @@ script = ExtResource( 13 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/ZoneSystem/GridNode"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+material_override = SubResource( 9 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 3 )
@@ -132,6 +144,10 @@ non_buildable_mat = ExtResource( 11 )
 [node name="States" type="Spatial" parent="Tools/RoadTool"]
 
 [node name="RoadToolStraight" parent="Tools/RoadTool/States" instance=ExtResource( 5 )]
+
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="Tools/RoadTool/States/RoadToolStraight"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0 )
+material_override = SubResource( 10 )
 
 [node name="Debug" type="Control" parent="."]
 anchor_right = 1.0

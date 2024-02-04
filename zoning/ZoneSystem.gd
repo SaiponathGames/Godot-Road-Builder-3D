@@ -7,7 +7,7 @@ extends Spatial
 
 onready var grid_node = $GridNode
 
-var grids = []
+var road_grid_map = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -31,9 +31,11 @@ func _on_RoadNetwork_road_segment_created(segment: RoadSegmentBase):
 
 	var z_padding = 0.015
 	var z_lr_padding = 2  # LR = Left Right
-
+	
+	var seg_w = left * segment.road_network_info.segment_width
+	
 	var z_start = segment.road_network_info.segment_width/2 + z_padding
-	var zone_height = 4
+	var zone_height = 8
 	var z_end = zone_height+z_padding
 
 	var seg_start_pos = segment.start_position.position
@@ -48,18 +50,28 @@ func _on_RoadNetwork_road_segment_created(segment: RoadSegmentBase):
 	var zone_end_end_pos = seg_end_pos - z_end * left - z_lr_padding * dir
 	DrawingUtils.draw_empty_circle($ImmediateGeometry, zone_end_end_pos, 0.25, Color.maroon)
 	
-	var grid = grid_node.create_grid(str(segment.id), zone_end_start_pos, zone_start_end_pos)
+	var zone_poly = PoolVector3Array([zone_start_start_pos, zone_end_start_pos, zone_end_end_pos, zone_start_end_pos])
+	var zone_poly_2 = PoolVector3Array([zone_start_start_pos+seg_w, zone_end_start_pos+seg_w * zone_height, zone_end_end_pos+seg_w * zone_height, zone_start_end_pos+seg_w])
+	for point in zone_poly_2:
+		DrawingUtils.draw_empty_circle($ImmediateGeometry, point, 0.25, Color.blueviolet)
+	
+	DrawingUtils.triangulate_points($ImmediateGeometry, zone_poly)
+	DrawingUtils.triangulate_points($ImmediateGeometry, zone_poly_2, Color.brown)
+	var grid = grid_node.create_grid(str(segment.id), zone_start_start_pos, zone_end_end_pos)
 	print("GRID: ", grid)
-	grids.append(grid)
-#	var pos_point = zone_end_start_pos+zone_start_end_pos/2
-#	var a = segment.project_point(pos_point)
-#	var dir_seg = segment.direction_from(0)
-#	var angle_a = atan2(a.z, a.x)
-#	var angle_b = atan2(dir_seg.z, dir_seg.x)
-#	var angle = angle_b - angle_a
-#	prints(angle_a, angle_b, angle)
-#	grid.rotation = Basis.IDENTITY.rotated(Vector3.UP, angle)
+	road_grid_map[segment] = (grid)
+	var pos_point = (zone_start_start_pos+zone_end_end_pos)/2
+	var a = segment.project_point(pos_point)
+	var ang = -(a - pos_point).normalized()
+	DrawingUtils.draw_line($ImmediateGeometry, pos_point, a, Color.rebeccapurple)
+	var angle_a = atan2(ang.z, ang.x)
+	var d = -(seg_end_pos - seg_start_pos).normalized()
+	DrawingUtils.draw_line($ImmediateGeometry, seg_end_pos, seg_end_pos + d * 100, Color.red)
+	var angle_b = atan2(d.z, -d.x)
+	var angle = angle_b - angle_a
+	prints("ANGLES:", angle_a, angle_b, angle)
 	grid.draw()
+	# PI/2 + 
 	
 #	var zone_start_start_pos_mir = seg_start_pos + z_start * left + z_lr_padding * dir
 #	var zone_end_start_pos_mir = seg_start_pos + z_end * left + z_lr_padding * dir
@@ -147,7 +159,16 @@ func _on_RoadNetwork_road_segment_created(segment: RoadSegmentBase):
 #			$ImmediateGeometry,
 #			start_mir, end_mir
 #		)
-	
+
+var angle = 0
+
+func _unhandled_key_input(event):
+	if event.scancode == KEY_KP_PERIOD:
+		$GridNode/ImmediateGeometry.clear()
+		for grid in road_grid_map.values():
+			angle += 0.1
+			grid.rotation = Basis.IDENTITY.rotated(Vector3.UP, PI/2 + angle)
+			grid.draw()
 
 
 

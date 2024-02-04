@@ -51,7 +51,7 @@ func remove_all_item(from_vec: Vector3, to_vec: Vector3):
 func set_drawing_node(drawing_node: ImmediateGeometry):
 	im_geo = drawing_node
 
-func draw(height: float = 1.0):
+func draw(height: float = 0.0):
 	var x_pos = bounds.position.x
 	var z_pos = bounds.position.z
 	var x_end = bounds.end.x
@@ -63,17 +63,17 @@ func draw(height: float = 1.0):
 	var local_x_end = x_end-center.x
 	var local_z_end = z_end-center.z
 	
-	var Apoint = rotation.xform(Vector3(local_x_pos, height, local_z_pos))+center
-	var Bpoint = rotation.xform(Vector3(local_x_end, height, local_z_pos))+center
-	var Cpoint = rotation.xform(Vector3(local_x_end, height, local_z_end))+center
-	var Dpoint = rotation.xform(Vector3(local_x_pos, height, local_z_end))+center
+	var Apoint = (Vector3(local_x_pos, height, local_z_pos))+center
+	var Bpoint = (Vector3(local_x_end, height, local_z_pos))+center
+	var Cpoint = (Vector3(local_x_end, height, local_z_end))+center
+	var Dpoint = (Vector3(local_x_pos, height, local_z_end))+center
 	
 	print(Apoint, Bpoint)
 	
 	DrawingUtils.draw_empty_circle(im_geo, Apoint, 0.125, Color.black)
-	DrawingUtils.draw_empty_circle(im_geo, Bpoint, 0.125, Color.black)
-	DrawingUtils.draw_empty_circle(im_geo, Cpoint, 0.125, Color.black)
-	DrawingUtils.draw_empty_circle(im_geo, Dpoint, 0.125, Color.black)
+	DrawingUtils.draw_empty_circle(im_geo, Bpoint, 0.125, Color.blue)
+	DrawingUtils.draw_empty_circle(im_geo, Cpoint, 0.125, Color.orange)
+	DrawingUtils.draw_empty_circle(im_geo, Dpoint, 0.125, Color.tomato)
 	
 	DrawingUtils.draw_line(im_geo, Apoint, Bpoint)
 	DrawingUtils.draw_line(im_geo, Bpoint, Cpoint)

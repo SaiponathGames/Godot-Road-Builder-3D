@@ -59,3 +59,4 @@ func draw_filled_arc(radius: float, center: Vector3, resolution: int = 64, start
 
 func draw_filled_circle(radius: float, center: Vector3, resolution: int = 64):
 	draw_filled_arc(radius, center, resolution)
+

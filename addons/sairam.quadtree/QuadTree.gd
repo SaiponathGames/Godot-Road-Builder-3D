@@ -177,7 +177,7 @@ func _query(bound: AABB) -> Array:
 		if not is_instance_valid(object):
 			# it should never be reached!!
 			# quadtree either must be corrupted, try dumping the quadtree
-			push_error("This line in _query must not be executed, if you see this message, then the quadtree is either corrupted, or something has went wrong, try dumping the quadtree")
+#			push_error("This line in _query must not be executed, if you see this message, then the quadtree is either corrupted, or something has went wrong, try dumping the quadtree")
 			continue
 		if object is Spatial and object.has_meta("_bounds"):
 			transformed_aabb = object.get_meta("_bounds").abs()

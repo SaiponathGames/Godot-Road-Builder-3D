@@ -14,7 +14,7 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://building_system/building_instance.gd"
 }, {
-"base": "Node",
+"base": "Spatial",
 "class": "BuildingNetwork",
 "language": "GDScript",
 "path": "res://building_system/building_network.gd"
@@ -48,6 +48,11 @@ _global_script_classes=[ {
 "class": "MeshDrawer",
 "language": "GDScript",
 "path": "res://roads_system/MeshDrawer.gd"
+}, {
+"base": "Node",
+"class": "OldBuildingNetwork",
+"language": "GDScript",
+"path": "res://building_system/old/building_network.gd"
 }, {
 "base": "Spatial",
 "class": "QuadTreeNode",
@@ -133,6 +138,7 @@ _global_script_class_icons={
 "HTerrainDataLoader": "",
 "HTerrainDataSaver": "",
 "MeshDrawer": "",
+"OldBuildingNetwork": "",
 "QuadTreeNode": "",
 "RoadIntersection": "",
 "RoadIntersectionNode": "",

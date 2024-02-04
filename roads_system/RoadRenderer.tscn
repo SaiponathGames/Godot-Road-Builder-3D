@@ -12,7 +12,7 @@ vertex_color_use_as_albedo = true
 script = ExtResource( 2 )
 
 [node name="IntersectionRenderer" type="MeshInstance" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
 material_override = ExtResource( 4 )
 script = ExtResource( 3 )
 
@@ -20,7 +20,7 @@ script = ExtResource( 3 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
 
 [node name="SegmentRenderer" type="MeshInstance" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0 )
 material_override = ExtResource( 4 )
 script = ExtResource( 1 )
 

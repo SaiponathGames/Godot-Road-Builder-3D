@@ -2,18 +2,22 @@ extends Spatial
 class_name BuildingInstance
 
 var building
+var building_network
 var id
+var position: Vector3
 
 var _mesh_child_index_array = []
 var _collision_child_index_array = []
 
 # thanks to Einlander
 func _get_aabb_tree(node: Node):
-	var final_aabb:AABB
+	var final_aabb: AABB
+	
 	if (node is VisualInstance) and !(node is ImmediateGeometry):
-		var local_aabb:AABB = node.get_aabb()
+		var local_aabb: AABB = node.get_aabb()
 		if !local_aabb.has_no_area():
 			final_aabb = node.get_aabb()
+	
 	if node.get_child_count() > 0:
 		var children = node.get_children()
 		for child in children:
@@ -34,3 +38,7 @@ func _ready():
 			_mesh_child_index_array.append(child.get_index())
 		elif child is CollisionShape:
 			_collision_child_index_array.append(child.get_index())
+
+func get_id(_min_vec):
+	var p_min = (_min_vec.x + _min_vec.y + _min_vec.z)
+	return int((position.x + + position.z * -(p_min) + position.y * -(p_min*p_min) - pow(p_min, 3)))

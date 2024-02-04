@@ -130,6 +130,20 @@ func draw_box_with_aabb(immediate_geo: ImmediateGeometry, aabb: AABB, color: Col
 			immediate_geo.set_color(color)
 			immediate_geo.add_vertex(point)
 	immediate_geo.end()
+
+func triangulate_points(immediate_geo: ImmediateGeometry, points: PoolVector3Array, color: Color = Color.bisque):
+	immediate_geo.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var _2d_points = PoolVector2Array()
+	for point in points:
+		_2d_points.push_back(Vector2(point.x, point.z))
+	var indices = Geometry.triangulate_delaunay_2d(_2d_points)
+	indices.invert()
+	for ind in indices:
+		immediate_geo.set_color(color)
+		immediate_geo.add_vertex(points[ind])
+	immediate_geo.end()
+	
+
 #	var path = []
 #
 #	#bottom
