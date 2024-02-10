@@ -88,19 +88,23 @@ func delete():
 	_delete()
 
 
-func direction_from(from: int):
+func direction_from(from: int) -> Vector3:
 	match from:
 		DirectionFrom.START:
 			return _average_direction(start_position.intersection, end_position.intersection)
 		DirectionFrom.END:
 			return _average_direction(end_position.intersection, start_position.intersection)
+		_:
+			return Vector3.ONE * NAN
 
-func direction_from_intersection(intersection: RoadIntersectionNode):
+func direction_from_intersection(intersection: RoadIntersectionNode) -> Vector3:
 	match intersection:
 		start_position:
 			return _average_direction(start_position.intersection, end_position.intersection)
 		end_position:
 			return _average_direction(end_position.intersection, start_position.intersection)
+		_:
+			return Vector3.ONE * NAN
 	
 func instance_lanes():
 	for lane in self.road_network_info.lanes:

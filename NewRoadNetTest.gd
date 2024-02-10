@@ -82,74 +82,96 @@ func _cast_ray_to(position: Vector2):
 
 
 func _unhandled_key_input(event: InputEventKey):
-	if event.scancode == KEY_KP_0:
+	if event.scancode == KEY_KP_0 and event.pressed and !event.echo:
 		OS.shell_open(ProjectSettings.globalize_path("user://logs/"))
 		$HTerrain/GlobalRoadNetwork/QuadTree.dump("test")
 		OS.shell_open(ProjectSettings.globalize_path("user://dumps/test.txt"))
+		
 	var two_lane_info = RoadNetworkInfoRegister.find("*two_lane*")[0]
 	var four_lane_info = RoadNetworkInfoRegister.find("*four_lane*")[0]
-	if event.scancode == KEY_KP_ADD and event.pressed:
-		get_viewport().debug_draw = wrapi(get_viewport().debug_draw+1, 0, 4)
-	elif event.scancode == KEY_KP_SUBTRACT and event.pressed:
-		get_viewport().debug_draw = wrapi(get_viewport().debug_draw-1, 0, 4)
-	elif event.scancode == KEY_KP_MULTIPLY and event.pressed:
-		get_viewport().debug_draw = Viewport.DEBUG_DRAW_DISABLED
-	elif event.scancode == KEY_M and event.pressed:
-		OS.window_maximized = !OS.window_maximized
-	elif event.scancode == KEY_N and event.pressed:
-		OS.window_fullscreen = !OS.window_fullscreen
-	elif event.scancode == KEY_KP_1 and event.pressed:
-		var previous_pos = Vector3(rand_range(0, 1275), 0, rand_range(0, 1275))
-		var previous_intersection = RoadIntersection.new(previous_pos, two_lane_info)
-		var position_inters = [previous_intersection]
-		var positions = [previous_pos]
-		var rect = AABB(Vector3(0, 0, 0), Vector3(1275, 0, 1275))
-		for i in rand_range(5, 12):
-			var intersection_1 = pick_random(position_inters) if rand_range(1, 1) == 1 and !position_inters.empty() else previous_intersection
-			var segment_1 = create_linear(intersection_1, rect)
-			if segment_1:
-				previous_intersection = segment_1.end_position.intersection
-				previous_pos = previous_intersection.position
-				positions.append(previous_pos)
-				position_inters.append(previous_intersection)
-			else:
-				break
-		$HTerrain/GlobalRoadNetwork.update()
-		var mid_position = sum_array(positions)/positions.size()
-		# move camera to the segment
-		$HTerrain/Camera.target_translation = mid_position
-	elif event.scancode == KEY_KP_2 and event.pressed:
-		segment = pick_random($HTerrain/GlobalRoadNetwork.get_all_segments_of_type(RoadSegmentLinear))
-		if is_instance_valid(segment):
-			$HTerrain/Camera.target_translation = segment.position
-	elif event.scancode in [KEY_KP_3, KEY_KP_6] and event.pressed:
-		if is_instance_valid(segment):
-			$HTerrain/GlobalRoadNetwork.delete_segment(segment)
-			segment.call_deferred('free')
+	if !event.shift and !event.alt and !event.control:
+		if event.scancode == KEY_KP_ADD and event.pressed:
+			get_viewport().debug_draw = wrapi(get_viewport().debug_draw+1, 0, 4)
+		elif event.scancode == KEY_KP_SUBTRACT and event.pressed:
+			get_viewport().debug_draw = wrapi(get_viewport().debug_draw-1, 0, 4)
+		elif event.scancode == KEY_KP_MULTIPLY and event.pressed:
+			get_viewport().debug_draw = Viewport.DEBUG_DRAW_DISABLED
+		elif event.scancode == KEY_M and event.pressed:
+			OS.window_maximized = !OS.window_maximized
+		elif event.scancode == KEY_N and event.pressed:
+			OS.window_fullscreen = !OS.window_fullscreen
+		elif event.scancode == KEY_KP_1 and event.pressed:
+			var previous_pos = Vector3(rand_range(0, 1275), 0, rand_range(0, 1275))
+			var previous_intersection = RoadIntersection.new(previous_pos, two_lane_info)
+			var position_inters = [previous_intersection]
+			var positions = [previous_pos]
+			var rect = AABB(Vector3(0, 0, 0), Vector3(1275, 0, 1275))
+			for i in rand_range(1, 1):
+				var intersection_1 = pick_random(position_inters) if rand_range(1, 1) == 1 and !position_inters.empty() else previous_intersection
+				var segment_1 = create_linear(intersection_1, rect)
+				if segment_1:
+					previous_intersection = segment_1.end_position.intersection
+					previous_pos = previous_intersection.position
+					positions.append(previous_pos)
+					position_inters.append(previous_intersection)
+				else:
+					break
 			$HTerrain/GlobalRoadNetwork.update()
-	elif event.scancode == KEY_KP_4 and event.pressed:
-		var rect = AABB(Vector3(0, 0, 0), Vector3(1275, 0, 1275))
-		var last_bez_pos = RoadIntersection.new(Vector3(rand_range(0, 1275), 0, rand_range(0, 1275)), two_lane_info)
-		var positions = []
-		var position_inters = []
-		for _i in rand_range(1, 1):
-			var inter_1 =  pick_random(position_inters) if randi() % 10 == 0 and !position_inters.empty() else last_bez_pos
-			var segment_1 = create_bezier(inter_1, rect)
-			if segment_1:
-				last_bez_pos = segment_1.end_position.intersection
-				positions.append(last_bez_pos.position)
-				position_inters.append(last_bez_pos)
-				
-			else:
-				break
-		$HTerrain/GlobalRoadNetwork.update()
-		
-		var mid_pos = sum_array(positions)/positions.size()
-		$HTerrain/Camera.target_translation = mid_pos
-	elif event.scancode == KEY_KP_5 and event.pressed:
-		segment = pick_random($HTerrain/GlobalRoadNetwork.get_all_segments_of_type(RoadSegmentBezier))
-		if is_instance_valid(segment):
-			$HTerrain/Camera.target_translation = segment.position
+			var mid_position = sum_array(positions)/positions.size()
+			# move camera to the segment
+			$HTerrain/Camera.target_translation = mid_position
+		elif event.scancode == KEY_KP_2 and event.pressed:
+			segment = pick_random($HTerrain/GlobalRoadNetwork.get_all_segments_of_type(RoadSegmentLinear))
+			if is_instance_valid(segment):
+				$HTerrain/Camera.target_translation = segment.position
+		elif event.scancode in [KEY_KP_3, KEY_KP_6] and event.pressed:
+			if is_instance_valid(segment):
+				$HTerrain/GlobalRoadNetwork.delete_segment(segment)
+				segment.call_deferred('free')
+				$HTerrain/GlobalRoadNetwork.update()
+		elif event.scancode == KEY_KP_4 and event.pressed:
+			var rect = AABB(Vector3(0, 0, 0), Vector3(1275, 0, 1275))
+			var last_bez_pos = RoadIntersection.new(Vector3(rand_range(0, 1275), 0, rand_range(0, 1275)), two_lane_info)
+			var positions = []
+			var position_inters = []
+			for _i in rand_range(1, 1):
+				var inter_1 =  pick_random(position_inters) if randi() % 10 == 0 and !position_inters.empty() else last_bez_pos
+				var segment_1 = create_bezier(inter_1, rect)
+				if segment_1:
+					last_bez_pos = segment_1.end_position.intersection
+					positions.append(last_bez_pos.position)
+					position_inters.append(last_bez_pos)
+					
+				else:
+					break
+			$HTerrain/GlobalRoadNetwork.update()
+			
+			var mid_pos = sum_array(positions)/positions.size()
+			$HTerrain/Camera.target_translation = mid_pos
+		elif event.scancode == KEY_KP_5 and event.pressed:
+			segment = pick_random($HTerrain/GlobalRoadNetwork.get_all_segments_of_type(RoadSegmentBezier))
+			if is_instance_valid(segment):
+				$HTerrain/Camera.target_translation = segment.position
+	elif event.alt:
+		if event.scancode == KEY_KP_1 and event.pressed:
+			print("activating?")
+			var previous_pos = Vector3(rand_range(0, 1275), 0, rand_range(0, 1275))
+			var previous_intersection = RoadIntersection.new(previous_pos, two_lane_info)
+			var position_inters = [previous_intersection]
+			var positions = [previous_pos]
+			var rect = AABB(Vector3(0, 0, 0), Vector3(1275, 0, 1275))
+			for i in rand_range(1, 1):
+				var intersection_1 = pick_random(position_inters) if rand_range(1, 1) == 1 and !position_inters.empty() else previous_intersection
+				var segment_1 := create_linear(intersection_1, rect, 80)
+				if segment_1:
+					var start_pos = segment_1.start_position.intersection.position
+					var end_pos = segment_1.end_position.intersection.position
+					var mid_pos = RoadIntersection.new((start_pos+end_pos) / 2, two_lane_info)
+					print("Splitting road segment")
+					segment_1.split_at_position(mid_pos)
+			$HTerrain/GlobalRoadNetwork.update()
+#			$HTerrain/GlobalBuildingNetwork/QuadTreeNode.dump()
+			$HTerrain/Camera.target_translation = previous_pos
 	
 	
 #var inter_1pos = Vector3(rand_range(0, 1275), 0, rand_range(0, 1275))
@@ -218,13 +240,17 @@ func create_bezier(inter1, rect):
 	$HTerrain/GlobalRoadNetwork.create_segment(bez_seg)
 	return bez_seg
 
-func create_linear(inter1, rect):
+func create_linear(inter1, rect, distance = null) -> RoadSegmentLinear:
 	var two_lane_info = RoadNetworkInfoRegister.find("*two_lane*")[0]
 	var four_lane_info = RoadNetworkInfoRegister.find("*four_lane*")[0]
 	var start_pos_int = inter1.position
-	var position = _move_distance_in_direction(start_pos_int, rand_range(10, 30), deg2rad(rand_range(-90, 90)))
+	var dist = rand_range(10, 30)
+	if distance:
+		dist = distance
+		
+	var position = _move_distance_in_direction(start_pos_int, dist, deg2rad(rand_range(-90, 90)))
 	if !rect.has_point(position):
-		return
+		return null
 	var inter_2 = RoadIntersection.new(position, two_lane_info)
 	var start_pos = inter1
 	var segment = RoadSegmentLinear.new(start_pos, inter_2, two_lane_info, RoadSegmentBase.BIDIRECTIONAL)

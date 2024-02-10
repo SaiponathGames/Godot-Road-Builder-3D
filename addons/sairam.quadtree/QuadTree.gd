@@ -10,6 +10,7 @@ var _objects = []
 var _is_leaf: bool = true
 var _center: Vector3
 var _immediate_geo_node: ImmediateGeometry
+var _verbose: bool = false
 
 func _init(bounds, capacity, max_level, level = 0, parent = null, immediate_geo_node = null) -> void:
 	self._bounds = bounds
@@ -54,6 +55,8 @@ func add_body(body: Spatial, bounds: AABB = AABB()) -> Spatial:
 		if children:
 			for child in children:
 				child.add_body(body, bounds)
+				if _verbose:
+					prints(child, "add body called!")
 			return body
 	
 	# add the object into the tree
@@ -66,6 +69,8 @@ func add_body(body: Spatial, bounds: AABB = AABB()) -> Spatial:
 	if body is Spatial:
 		body.set_meta("_bounds", bounds)
 	_objects.push_back(body)
+	if _verbose:
+		prints("Body", body, "added successfully!")
 	if _is_leaf and _level < _max_level and _objects.size() >= _capacity:
 		_subdivide()
 
@@ -85,17 +90,21 @@ func remove_body(body: Spatial) -> void:
 		return
 	
 	if !qt_nodes.has(self): # check if is different from the current level
-		for qt_node in qt_nodes:
+		for qt_node in qt_nodes.duplicate():
 			qt_node.remove_body(body) # remove body
-			print("remove body from qt node")
+			if _verbose:
+				prints("remove body from qt node", qt_node)
 		return
-	
 	# remove the `_qt` node because it's no longer in quad tree
 	_remove_qt_metadata(body)
-	MetaStaticFuncs.remove_meta_with_check(body, "_bounds")
+	qt_nodes = MetaStaticFuncs.get_meta_or_null(body, "_qt")
 	_objects.erase(body)
 	_unsubdivide()
-	print("Removed body successfully!", body)
+	if is_instance_valid(qt_nodes) and qt_nodes.empty():
+		MetaStaticFuncs.remove_meta_with_check(body, "_bounds")
+	if _verbose:
+		print("Removed body successfully!", body)
+#	assert(_objects.has(body), "Something wrong with the body!")
 
 
 func update_body(body: Spatial, bounds: AABB = AABB()) -> void:
@@ -104,8 +113,8 @@ func update_body(body: Spatial, bounds: AABB = AABB()) -> void:
 	"""
 	assert(_parent == null) # do not call this except on the root
 
-	if remove_body(body):
-		add_body(body, bounds)
+	remove_body(body)
+	add_body(body, bounds)
 
 func _subdivide() -> void:
 	"""
@@ -253,7 +262,7 @@ func _get_child(body_bounds: AABB):
 func _get_childs(body_bounds: AABB):
 	var children = []
 	for child in _children:
-		if _bounds.intersects(body_bounds):
+		if child._bounds.intersects(body_bounds):
 			children.append(child)
 	return children
 func _create_rect_lines(drawer, height) -> void:
@@ -344,10 +353,13 @@ func _draw(drawer: ImmediateGeometry, height: float) -> void:
 	# draw the bodies
 	for body in _objects:
 		var rect: Rect2
+		if body == null:
+			push_error("Body is NULL, please dump the quadtree!")
+			continue
 		if not is_instance_valid(body):
 			# it should never be reached!!
 			# quadtree must be corrupted, try dumping the quadtree
-			push_error("This line in _draw must not be executed, if you see this message, then the quadtree is either corrupted, or something has went wrong, try dumping the quadtree")
+			push_error("This line in _draw must not be executed, if you see this message, then the quadtree is either corrupted, or something has went wrong, try dumping the quadtree. %s" % body)
 			continue
 		# convert aabb to rect for easier usage
 		if body is Spatial and body.has_meta("_bounds"):
@@ -390,7 +402,11 @@ func _remove_qt_metadata(body):
 	if typeof(qt) == TYPE_ARRAY:
 		if qt.has(self):
 			qt.erase(self)
-			return
+		body.set_meta("_qt", qt)
+		if qt.empty():
+			MetaStaticFuncs.remove_meta_with_check(body, "_qt")
+		return
+	
 	MetaStaticFuncs.remove_meta_with_check(body, "_qt")
 
 static func _calculate_bounds(extents: Vector3) -> AABB:

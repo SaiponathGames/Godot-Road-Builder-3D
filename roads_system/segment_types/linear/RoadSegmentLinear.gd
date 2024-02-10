@@ -58,9 +58,9 @@ func split_at_position(position: RoadIntersection) -> Array:
 	var seg_2 = get_script().new(position, self.end_position.intersection, road_network_info, direction)
 	var road_net = self.road_network
 	print(self.start_position, position, self.end_position)
-	self.road_network.delete_segment(self)
 	seg_1 = road_net.create_segment(seg_1)
 	seg_2 = road_net.create_segment(seg_2)
+	self.road_network.delete_segment(self)
 	self.call_deferred('free')
 	
 	return [seg_1, seg_2]

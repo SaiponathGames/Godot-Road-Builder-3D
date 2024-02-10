@@ -186,7 +186,7 @@ func get_closest_point_to(position: Vector3, distance: float = 0.5) -> RoadInter
 #	aabb = aabb.abs()
 	var query = quad_tree.query(aabb)
 	for object in query:
-		if object.has_meta("_intersection"): 
+		if object.has_meta("_intersection") and is_instance_valid(object.get_meta("_intersection")): 
 			var dist = object.get_meta("_intersection").position.distance_to(position)
 			if dist < distance and dist < closest_dist:
 				if object.get_meta("_intersection").visible:
@@ -249,6 +249,7 @@ func _add_road_intersection(id: int, intersection: RoadIntersection) -> void:
 
 func _remove_road_intersection(id: int):
 	var intersection: RoadIntersection = graph_inter_map[id]
+	assert(intersection.connections.empty())
 	graph.remove_point(id)
 	if use_astar:
 		astar.remove_point(id)
