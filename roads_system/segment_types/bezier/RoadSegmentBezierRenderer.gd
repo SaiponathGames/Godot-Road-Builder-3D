@@ -5,7 +5,7 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 	print("Rendering segment", segment)
 	
 	var positions = []
-	for i in resolution:
+	for i in resolution+1:
 		var t = i/float(resolution)
 		print(t)
 #		if t > 0.9:
@@ -15,14 +15,37 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 	
 #	print(s_v1, s_v2, e_v1, e_v2, m_v1, m_v2)
 	
+	var s_v1 = segment.start_position.get_left_vertex()
+	var s_v2 = segment.start_position.get_right_vertex()
+	
+	var e_v1 = segment.end_position.get_left_vertex()
+	var e_v2 = segment.end_position.get_right_vertex()
+	
+	
 	var last_v1 = get_right_vertex_from_index(0, positions, segment)
 	var last_v2 = get_left_vertex_from_index(0, positions, segment)
+	
+	mesh_drawer.draw_triangle(
+		last_v2, last_v1, s_v2 
+	)
+	
+	mesh_drawer.draw_triangle(
+		s_v2, last_v1, s_v1
+	)
+	
+	mesh_drawer.draw_triangle(
+		s_v2, s_v1, last_v2 
+	)
+	
+	mesh_drawer.draw_triangle(
+		last_v2, s_v1, last_v1
+	)
 	
 	DrawingUtils.draw_empty_circle(debug_immediate_geo, last_v1, 0.125, Color.blue)
 	DrawingUtils.draw_empty_circle(debug_immediate_geo, last_v2, 0.125, Color.black)
 	
 	
-	for i in range(1, resolution):
+	for i in range(1, resolution+1):
 		var v1 = get_left_vertex_from_index(i, positions, segment)
 		var v2 = get_right_vertex_from_index(i, positions, segment)
 		
@@ -38,6 +61,22 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 			last_v2)
 		last_v1 = v2
 		last_v2 = v1
+	
+	mesh_drawer.draw_triangle(
+		last_v2, last_v1, e_v2 
+	)
+	
+	mesh_drawer.draw_triangle(
+		e_v2, last_v1, e_v1
+	)
+	
+	mesh_drawer.draw_triangle(
+		e_v2, e_v1, last_v2 
+	)
+	
+	mesh_drawer.draw_triangle(
+		last_v2, e_v1, last_v1
+	)
 		
 #	DrawingUtils.draw_empty_circle(debug_immediate_geo, s_v1, 0.125, Color.black)
 #	DrawingUtils.draw_empty_circle(debug_immediate_geo, s_v2, 0.125, Color.black)
@@ -84,7 +123,7 @@ func get_left_vertex_from_index(index, array, segment):
 		v1 = get_left_vertex(array[0], array[1], Vector3(NAN, NAN, NAN), segment)
 	elif index > 0 and index+1 < array.size(): # middle case
 		v1 = get_left_vertex(array[index], array[index+1], array[index-1], segment)
-	elif index-1 < array.size(): # end case
+	elif index < array.size(): # end case
 		v1 = get_left_vertex(array[index], Vector3(NAN, NAN, NAN), array[index-1], segment)
 	return v1
 
@@ -94,6 +133,6 @@ func get_right_vertex_from_index(index, array, segment):
 		v1 = get_right_vertex(array[0], array[1], Vector3(NAN, NAN, NAN), segment)
 	elif index > 0 and index+1 < array.size(): # middle case
 		v1 = get_right_vertex(array[index], array[index+1], array[index-1], segment)
-	elif index-1 < array.size(): # end case
+	elif index < array.size(): # end case
 		v1 = get_right_vertex(array[index], Vector3(NAN, NAN, NAN), array[index-1], segment)
 	return v1

@@ -165,12 +165,12 @@ config/icon="res://icon.png"
 [autoload]
 
 DrawingUtils="*res://drawing_tools/DrawingUtils.gd"
-AABBUtils="*res://addons/sairam.quadtree/AABBUtils.gd"
-MetaStaticFuncs="*res://addons/sairam.quadtree/Meta_Static_Funcs.gd"
 PathServer="*res://file_system/PathServer.gd"
 RoadNetworkInfoLoader="*res://roads_system/RoadNetworkInfoLoader.gd"
 RoadNetworkInfoRegister="*res://roads_system/RoadNetworkInfoRegister.gd"
 DebugConsole="*res://debug_console/DebugConsole.gd"
+AABBUtils="*res://addons/sairam.quadtree/AABBUtils.gd"
+MetaStaticFuncs="*res://addons/sairam.quadtree/Meta_Static_Funcs.gd"
 
 [display]
 

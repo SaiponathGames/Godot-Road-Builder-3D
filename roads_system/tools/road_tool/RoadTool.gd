@@ -22,6 +22,12 @@ func _ready():
 	$States/RoadToolStraight.set_enabled(false)
 	$States/RoadToolStraight.local_road_network = local_road_network
 	$States/RoadToolStraight.global_road_network = world_road_network
+	
+	
+	$States/RoadToolCurved.set_enabled(false)
+	$States/RoadToolCurved.local_road_network = local_road_network
+	$States/RoadToolCurved.global_road_network = world_road_network
+	
 	$LocalRoadNetwork/Renderer/SegmentRenderer.material_override = buildable_mat # HACK
 	$LocalRoadNetwork/Renderer/IntersectionRenderer.material_override = buildable_mat # HACK
 	$States/RoadToolStraight/RoadMesh.material_override = buildable_mat # HACK
@@ -30,3 +36,5 @@ func _ready():
 func _unhandled_key_input(event):
 	if event.scancode == KEY_KP_9 and event.pressed:
 		$States/RoadToolStraight.set_enabled(!$States/RoadToolStraight._enabled)
+	if event.scancode == KEY_2 and event.pressed:
+		$States/RoadToolCurved.set_enabled(!$States/RoadToolCurved._enabled)

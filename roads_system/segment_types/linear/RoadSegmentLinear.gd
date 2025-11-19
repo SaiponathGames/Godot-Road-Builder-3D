@@ -62,5 +62,7 @@ func split_at_position(position: RoadIntersection) -> Array:
 	seg_2 = road_net.create_segment(seg_2)
 	self.road_network.delete_segment(self)
 	self.call_deferred('free')
+	seg_1.recalculate_offset()
+	seg_2.recalculate_offset()
 	
 	return [seg_1, seg_2]

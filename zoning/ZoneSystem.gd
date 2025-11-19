@@ -22,6 +22,9 @@ func _ready():
 func _on_RoadNetwork_road_segment_created(segment: RoadSegmentBase):
 	print("SEGMENT CREATED", segment)
 	print('creating zones!')
+#
+#	if segment is RoadSegmentBezier:
+#		return #TODO: Implement support for beziers too
 	
 	var dir = segment.start_position.direction
 	DrawingUtils.draw_line($ImmediateGeometry, segment.start_position.position, segment.start_position.position + dir * 10, Color.webgreen)

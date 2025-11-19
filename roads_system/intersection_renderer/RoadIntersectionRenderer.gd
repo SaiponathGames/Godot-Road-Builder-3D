@@ -9,20 +9,30 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 	var sorter = CustomSorter.new(self, "sort_by_angle", [_road_intersection])
 	var connections = sorter.sort_dict(_road_intersection.connections)
 	for connection in connections:
+		connection = connection as RoadIntersectionNode
 		var new_idx = (con_idx+1) % connections.size()
 		prints(con_idx, new_idx)
 		var next_connection = connections.keys()[new_idx]
-		var angle0 = atan2(connection.direction.x, connection.direction.z)
+		var dir0 = connection.direction
+		var angle0 = atan2(dir0.x, dir0.z)
 		var dir1 = next_connection.direction
 		var angle1 = atan2(dir1.x, dir1.z)
 		
+		if !is_instance_valid(connection.segment) or !is_instance_valid(next_connection.segment):
+			continue
+		
+		
+		print(connection == next_connection)
+		
+		# Use 1.25 for the best looks
+		var end_radius = _road_intersection.road_network_info.segment_width
 		# Implemented by Jaynabonne (Thanks a ton!)
 		var midpoint = compute_edge_intersection(
 			connection.get_left_vertex(), 
 			next_connection.get_right_vertex(), 
 			angle0,
 			angle1,
-			_road_intersection.road_network_info.intersection_end_radius
+			end_radius
 		)
 
 		
@@ -32,13 +42,28 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 		con_idx += 1
 		
 		if connections.size() == 1:
+			print("Generating cap")
 			# Cap generation
-			var hermite_offset = (midpoint - connection.position)
+			var v1 = connection.get_left_vertex()
+			var v2 = connection.get_right_vertex()
+			var offset_midpoint = midpoint + dir0 * 0.5
+			var real_midpoint = (v1 + v2) / 2.0
+			var offset = offset_midpoint - real_midpoint
+			DrawingUtils.draw_empty_circle(_immediate_geo, connection.get_left_vertex(), 0.25, Color.aqua)
+			DrawingUtils.draw_empty_circle(_immediate_geo, next_connection.get_right_vertex(), 0.25, Color.gold)
 			_mesh_drawer.draw_curve_triangles(
-				connection.get_left_vertex(),
-				midpoint+hermite_offset,
-				connection.get_right_vertex(),
-				connection.position,
+				v1,
+				v1+offset,
+				offset_midpoint,
+				real_midpoint,
+				Color.white,
+				resolution
+			)
+			_mesh_drawer.draw_curve_triangles(
+				offset_midpoint,
+				v2+offset,
+				v2,
+				real_midpoint,
 				Color.white,
 				resolution
 			)
@@ -79,8 +104,8 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 #			next_connection.get_right_vertex()
 #		)
 		
-	
-		
+
+
 
 # Implemented by Jaynabonne.
 func compute_edge_intersection(p0, p1, angle0, angle1, end_radius):

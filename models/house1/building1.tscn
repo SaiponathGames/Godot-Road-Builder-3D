@@ -39,7 +39,7 @@ surfaces/0 = {
 extents = Vector3( 3.10742, 3.13244, 3.21798 )
 
 [node name="building1" instance=ExtResource( 1 )]
-transform = Transform( 0.29, 0, 0, 0, 0.29, 0, 0, 0, 0.29, 0, 0, 0 )
+transform = Transform( 0.35, 0, 0, 0, 0.35, 0, 0, 0, 0.35, 0, 0, 0 )
 script = ExtResource( 2 )
 
 [node name="StaticBody" type="StaticBody" parent="." index="0"]

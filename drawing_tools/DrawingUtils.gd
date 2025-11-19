@@ -42,6 +42,21 @@ func draw_empty_circle(immediate_geometry, circle_center, circle_radius, color =
 	immediate_geometry.set_color(Color.white)
 	immediate_geometry.end()
 
+func draw_filled_circle(immediate_geometry, circle_center, circle_radius, color = Color.white):
+	immediate_geometry.begin(Mesh.PRIMITIVE_TRIANGLES)
+	immediate_geometry.set_color(color)
+	immediate_geometry.add_vertex(circle_center)
+	print("Drawing filled circle")
+	for i in range(int(20)):
+		var rotation = float(i) / 20 * TAU
+		var position = Vector3(0, 0, circle_radius)
+#		print("working?")
+		immediate_geometry.set_color(color)
+		immediate_geometry.add_vertex(position.rotated(Vector3.UP, rotation) + circle_center)
+	immediate_geometry.set_color(Color.white)
+	immediate_geometry.end()
+	
+
 
 func quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 	var q0 = p0.linear_interpolate(p1, t)

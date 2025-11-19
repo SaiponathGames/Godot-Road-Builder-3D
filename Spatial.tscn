@@ -44,6 +44,7 @@ extents = Vector3( 250, 0.125, 250 )
 
 [node name="HTerrain" type="Spatial" parent="."]
 script = ExtResource( 2 )
+lod_scale = 2.0
 _terrain_data = ExtResource( 1 )
 chunk_size = 32
 collision_enabled = true
@@ -72,10 +73,13 @@ invert_faces = true
 polygon = PoolVector2Array( -0.25, 0, 0, -0.01, 0.25, 0 )
 mode = 2
 path_node = NodePath("..")
+path_interval_type = 0
 path_interval = 1.0
+path_simplify_angle = 0.0
 path_rotation = 2
 path_local = true
 path_continuous_u = true
+path_u_distance = 1.0
 path_joined = false
 material = SubResource( 3 )
 
@@ -87,10 +91,13 @@ invert_faces = true
 polygon = PoolVector2Array( -0.25, 0, 0, -0.01, 0.25, 0 )
 mode = 2
 path_node = NodePath("..")
+path_interval_type = 0
 path_interval = 1.0
+path_simplify_angle = 0.0
 path_rotation = 2
 path_local = true
 path_continuous_u = true
+path_u_distance = 1.0
 path_joined = false
 material = SubResource( 5 )
 
@@ -99,7 +106,6 @@ visible = false
 
 [node name="MeshInstance" type="MeshInstance" parent="StaticBody"]
 mesh = SubResource( 7 )
-material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="StaticBody"]
 shape = SubResource( 8 )

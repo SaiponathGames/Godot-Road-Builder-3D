@@ -4,6 +4,7 @@ class_name RoadIntersectionNode
 var position: Vector3 = Vector3.ZERO
 var offset: Vector2 = Vector2(NAN, NAN) setget set_offset
 var direction: Vector3
+var _og_position: Vector3
 
 var intersection # RoadIntersection
 var segment # RoadSegmentBase
@@ -16,6 +17,7 @@ func _init(_intersection, _segment):
 	position = _intersection.position
 	road_network = _intersection.road_network
 	id = intersection.id + segment.id
+	_og_position = _intersection.position
 
 func set_owner(road_net):
 	road_network = road_net
@@ -30,11 +32,15 @@ func direction_to(_intersection: RoadIntersectionNode):
 	return self.position.direction_to(_intersection.position)
 
 func get_left_vertex():
+	if !is_instance_valid(segment):
+		return
 	var direction = segment.direction_from_intersection(self)
 	var left = Vector3(-direction.z, direction.y, direction.x).normalized()
 	return position + left * segment.road_network_info.segment_width/2
 
 func get_right_vertex():
+	if !is_instance_valid(segment):
+		return
 	var direction = segment.direction_from_intersection(self)
 	var left = Vector3(-direction.z, direction.y, direction.x).normalized()
 	return position + -left * segment.road_network_info.segment_width/2
@@ -52,7 +58,7 @@ func set_offset(value: Vector2):
 func update_position():
 	direction = segment.direction_from_intersection(self) 
 	print(position)
-	position += direction * offset.y
+	position = _og_position + direction * offset.y
 	position += Vector3(-direction.z, direction.y, direction.x).normalized() * offset.x
 
 func delete_node():
@@ -77,7 +83,8 @@ func calculate_offset():
 	var l = intersection.road_network_info.intersection_length
 	var n = intersection.get_connected_nodes().size()
 	var w = segment.road_network_info.segment_width
-	return c + l + (n * w) * c
+	prints("SCurve", c, "SLen", l, "DCount", n, "SWidth", w)
+	return (c + l) * 1 if n >= 3 else 0 + (n * w) * c
 
 func is_vec_nan(vec) -> bool:
 	if typeof(vec) == TYPE_VECTOR3:

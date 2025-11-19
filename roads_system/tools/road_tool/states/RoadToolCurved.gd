@@ -1,9 +1,11 @@
 extends Spatial
+# Tool for Bezier
 
 
 var _drag_start: RoadIntersection
 var _drag_end: RoadIntersection
 var _drag_current: RoadIntersection
+var _drag_control: RoadIntersection
 var _is_dragging: bool
 
 var _continue_dragging = true
@@ -32,7 +34,10 @@ func _input(event: InputEvent):
 			if !_is_dragging:
 				update_network_snapping(event)
 				setup_dragging(event)
-			elif _is_dragging:
+			elif _is_dragging and !is_instance_valid(_drag_control):
+				update_network_snapping(event)
+				add_control_point(event)
+			elif _is_dragging and is_instance_valid(_drag_control):
 				update_network_snapping(event)
 				stop_dragging(event)
 		elif event.pressed and event.button_index == BUTTON_RIGHT:
@@ -49,12 +54,13 @@ func _input(event: InputEvent):
 
 func cancel_dragging(_event: InputEvent):
 	_drag_start = null
+	_drag_control = null
 	_drag_current = null
 	_drag_end = null
 	_is_dragging = false
 	_start_segment = null
 	_end_segment = null
-	if _cache_previous_segment:
+	if is_instance_valid(_cache_previous_segment):
 		local_road_network.delete_segment(_cache_previous_segment)
 		_cache_previous_segment.free()
 	_cache_previous_segment = null
@@ -68,6 +74,11 @@ func setup_dragging(event: InputEventMouseButton):
 	_is_dragging = true
 	_drag_current = null
 	print("started")
+
+func add_control_point(event: InputEventMouseButton):
+	_drag_control = _get_control_position(event)
+	print("Added midpoint")
+	
 
 func stop_dragging(event: InputEventMouseButton):
 	if !is_instance_valid(_drag_start):
@@ -95,7 +106,9 @@ func stop_dragging(event: InputEventMouseButton):
 	if _end_segment:
 		_end_segment.split_at_position(inter2)
 	
-	var segment = RoadSegmentLinear.new(inter, inter2, road_net_info, RoadSegmentLinear.FORWARD)
+	var inter_mid = _drag_control.duplicate()
+	
+	var segment = RoadSegmentBezier.new(inter, inter_mid, inter2, road_net_info, RoadSegmentLinear.FORWARD)
 	segment = global_road_network.create_segment(segment)
 	global_road_network.update()
 	print("stopped")
@@ -110,8 +123,10 @@ func stop_dragging(event: InputEventMouseButton):
 		_drag_start = _drag_end
 		_drag_end = null
 		_is_dragging = true
+		_drag_control = null
 	else:
 		_drag_start = null
+		_drag_control = null
 		_drag_end = null
 	
 func continue_dragging(event: InputEventMouseMotion):
@@ -136,8 +151,11 @@ func continue_dragging(event: InputEventMouseMotion):
 		previous_cache_segment.free()
 		previous_cache_segment = null
 		
-	if is_instance_valid(_drag_start) and _drag_start.distance_to(_drag_current) > 1:
+	if is_instance_valid(_drag_start) and _drag_start.distance_to(_drag_current) > 1 and !is_instance_valid(_drag_control):
 		_cache_previous_segment = RoadSegmentLinear.new(_drag_start.duplicate(), _drag_current, road_net_info, RoadSegmentLinear.FORWARD)
+		_cache_previous_segment = local_road_network.create_segment(_cache_previous_segment)
+	if is_instance_valid(_drag_start) and _drag_start.distance_to(_drag_current) > 1 and is_instance_valid(_drag_control) and _drag_control.distance_to(_drag_current) > 1:
+		_cache_previous_segment = RoadSegmentBezier.new(_drag_start.duplicate(), _drag_control.duplicate(), _drag_current, road_net_info, RoadSegmentLinear.FORWARD)
 		_cache_previous_segment = local_road_network.create_segment(_cache_previous_segment)
 
 	local_road_network.update()
@@ -180,6 +198,10 @@ func _get_start_position(event: InputEventMouseButton):
 		return RoadIntersection.new(_start_segment.project_point(position), road_net_info)
 	else:
 		return RoadIntersection.new(position, road_net_info)
+
+func _get_control_position(event: InputEventMouseButton):
+	var position = _cast_ray_to(event.position)	
+	return RoadIntersection.new(position, road_net_info)
 
 func update_network_snapping(event: InputEventMouse):
 	var position = _cast_ray_to(event.position)
@@ -292,10 +314,10 @@ func _get_current_position(event: InputEventMouseMotion):
 	return intersection
 
 func _physics_process(_delta):
-	DebugConsole.add_text("RoadToolStraight: Snapping Intersection %s" % snapped_intersection)
-	DebugConsole.add_text("RoadToolStraight: Snapping Segment %s" % snapped_segment)
-	DebugConsole.add_text("RoadToolStraight: Start Segment %s" % _start_segment)
-	DebugConsole.add_text("RoadToolStraight: End Segment %s" % _end_segment)
+	DebugConsole.add_text("RoadToolCurved: Snapping Intersection %s" % snapped_intersection)
+	DebugConsole.add_text("RoadToolCurved: Snapping Segment %s" % snapped_segment)
+	DebugConsole.add_text("RoadToolCurved: Start Segment %s" % _start_segment)
+	DebugConsole.add_text("RoadToolCurved: End Segment %s" % _end_segment)
 
 #	snapped_intersection = global_road_network.get_closest_point_to(_cast_ray_to(get_viewport().get_mouse_position()))
 #	snapped_segment = global_road_network.get_closest_segment_to(_cast_ray_to(get_viewport().get_mouse_position()))

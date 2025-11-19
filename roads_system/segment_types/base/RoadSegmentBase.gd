@@ -47,7 +47,7 @@ func set_seg_type(value):
 func get_position():
 #	return Vector3(100, 0, 100)
 	var result = Vector3()
-	print(positions.empty(), not is_instance_valid(positions), positions)
+#	print(positions.empty(), not is_instance_valid(positions), positions)
 	if not positions or positions.empty():
 		return result
 	for _position in positions:
@@ -57,7 +57,9 @@ func get_position():
 
 func get_road_length():
 	if not _length:
-		_length = get_length()
+		var _new_length = get_length()
+		if is_instance_valid(_new_length):
+			_length = _new_length
 	return _length
 
 # Abstract methods (do not delete) (must be implemented)
@@ -85,8 +87,13 @@ func _delete():
 # End of abstract methods
 
 func delete():
+	start_position.delete_node()
+	end_position.delete_node()
 	_delete()
 
+func recalculate_offset():
+	self.start_position.set_offset(Vector2.ONE * NAN)
+	self.end_position.set_offset(Vector2.ONE * NAN)
 
 func direction_from(from: int) -> Vector3:
 	match from:

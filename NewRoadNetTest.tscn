@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=2]
+[gd_scene load_steps=28 format=2]
 
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
@@ -15,6 +15,7 @@
 [ext_resource path="res://zoning/GridNode.gd" type="Script" id=13]
 [ext_resource path="res://building_system/building_network.tscn" type="PackedScene" id=14]
 [ext_resource path="res://building_system/builder.tscn" type="PackedScene" id=15]
+[ext_resource path="res://roads_system/tools/road_tool/states/RoadToolCurved.tscn" type="PackedScene" id=16]
 
 [sub_resource type="Resource" id=1]
 script = ExtResource( 2 )
@@ -61,6 +62,9 @@ tonemap_mode = 4
 [sub_resource type="SpatialMaterial" id=10]
 vertex_color_use_as_albedo = true
 
+[sub_resource type="SpatialMaterial" id=11]
+vertex_color_use_as_albedo = true
+
 [node name="Spatial" type="Spatial"]
 script = ExtResource( 7 )
 
@@ -85,6 +89,7 @@ shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 [node name="Camera" parent="HTerrain" instance=ExtResource( 8 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, 100 )
 far = 1000.0
+edge_scroll/detection_area = 0.02
 tilting/max_angle = 90.0
 zooming/max_distance = 200.0
 scrolling/enabled = true
@@ -117,7 +122,6 @@ script = ExtResource( 9 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/ZoneSystem"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0 )
-visible = false
 material_override = SubResource( 8 )
 
 [node name="GridNode" type="Spatial" parent="HTerrain/ZoneSystem"]
@@ -125,7 +129,6 @@ script = ExtResource( 13 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/ZoneSystem/GridNode"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
-visible = false
 material_override = SubResource( 9 )
 
 [node name="Builder" parent="HTerrain" instance=ExtResource( 15 )]
@@ -157,6 +160,13 @@ non_buildable_mat = ExtResource( 11 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0 )
 visible = false
 material_override = SubResource( 10 )
+
+[node name="RoadToolCurved" parent="Tools/RoadTool/States" instance=ExtResource( 16 )]
+
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="Tools/RoadTool/States/RoadToolCurved"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.004, 0 )
+visible = false
+material_override = SubResource( 11 )
 
 [node name="Debug" type="Control" parent="."]
 anchor_right = 1.0

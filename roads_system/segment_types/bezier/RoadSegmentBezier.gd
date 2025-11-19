@@ -27,6 +27,8 @@ func _quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 	return q0.linear_interpolate(q1, t)
 
 func get_length(resolution = 16):
+	if not (is_instance_valid(start_position) and is_instance_valid(middle_position) and is_instance_valid(end_position)):
+		return
 	var _lut = generate_lut(resolution)
 	var sum = 0
 	var previous_point = start_position.position
@@ -120,6 +122,8 @@ func calculate_lut(resolution = 20, change_resolution = true) -> void:
 		current_resolution = resolution
 
 func generate_lut(res = 20):
+	if not (is_instance_valid(start_position) and is_instance_valid(middle_position) and is_instance_valid(end_position)):
+		return
 	var _lut = []
 	var t = 0
 	for i in range(res+1):
@@ -150,7 +154,7 @@ func direction_from_intersection(intersection: RoadIntersectionNode):
 		start_position:
 			return start_position.direction_to(middle_position)
 		end_position:
-			return middle_position.direction_to(end_position)
+			return end_position.direction_to(middle_position)
 		middle_position:
 			return average_dir(start_position, end_position)
 		_:

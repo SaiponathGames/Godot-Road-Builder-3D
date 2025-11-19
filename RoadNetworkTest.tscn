@@ -5,7 +5,6 @@
 [ext_resource path="res://roads_system/old/RoadNetwork.gd" type="Script" id=3]
 [ext_resource path="res://Boulevard.png" type="Texture" id=4]
 
-
 [sub_resource type="SpatialMaterial" id=1]
 flags_unshaded = true
 albedo_texture = ExtResource( 4 )
@@ -41,6 +40,5 @@ transform = Transform( 1, 0, 0, 0, 0.5, 0.866026, 0, -0.866026, 0.5, 0, 0, 0 )
 
 [node name="MeshInstance" type="MeshInstance" parent="."]
 mesh = SubResource( 3 )
-material/0 = null
 
 [connection signal="graph_changed" from="RoadNetwork" to="RoadNetwork/MeshInstance" method="_on_RoadNetwork_graph_changed"]

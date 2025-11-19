@@ -10,7 +10,6 @@ size = Vector2( 1, 10 )
 [node name="MeshInstance" type="MeshInstance" parent="."]
 material_override = ExtResource( 1 )
 mesh = SubResource( 1 )
-material/0 = null
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0 )
