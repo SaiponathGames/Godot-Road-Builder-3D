@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=2]
+[gd_scene load_steps=29 format=2]
 
 [ext_resource path="res://_terrain_data/data.hterrain" type="Resource" id=1]
 [ext_resource path="res://addons/zylann.hterrain/hterrain_texture_set.gd" type="Script" id=2]
@@ -44,6 +44,10 @@ flags_unshaded = true
 vertex_color_use_as_albedo = true
 
 [sub_resource type="SpatialMaterial" id=9]
+flags_unshaded = true
+vertex_color_use_as_albedo = true
+
+[sub_resource type="SpatialMaterial" id=12]
 flags_unshaded = true
 vertex_color_use_as_albedo = true
 
@@ -135,6 +139,10 @@ material_override = SubResource( 9 )
 building_net_np = NodePath("../GlobalBuildingNetwork")
 road_network_np = NodePath("../GlobalRoadNetwork")
 
+[node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/Builder"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0 )
+material_override = SubResource( 12 )
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource( 3 )
 
@@ -201,4 +209,5 @@ margin_bottom = 32.0
 
 [connection signal="graph_changed" from="HTerrain/GlobalRoadNetwork" to="." method="_on_RoadNetwork_graph_changed"]
 [connection signal="road_segment_created" from="HTerrain/GlobalRoadNetwork" to="HTerrain/ZoneSystem" method="_on_RoadNetwork_road_segment_created"]
+[connection signal="road_segment_created" from="HTerrain/GlobalRoadNetwork" to="HTerrain/Builder" method="_on_GlobalRoadNetwork_road_segment_created"]
 [connection signal="road_segment_deleted" from="HTerrain/GlobalRoadNetwork" to="HTerrain/ZoneSystem" method="_on_RoadNetwork_road_segment_deleted"]

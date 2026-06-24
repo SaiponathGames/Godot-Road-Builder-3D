@@ -39,6 +39,8 @@ func get_length(resolution = 16):
 	return sum
 
 func get_point(t) -> Vector3:
+	if not (is_instance_valid(start_position) and is_instance_valid(middle_position) and is_instance_valid(end_position)):
+		return Vector3.ONE * NAN
 	return _quadratic_bezier(start_position.position, middle_position.position, end_position.position, t)
 
 func get_aabb():
@@ -81,7 +83,7 @@ func _refine_binary(point: Vector3, index: int, send_time = false,  max_iters = 
 	var count = 0
 	var dist = INF
 	var point_on_curve = _lut[index][0]
-	var return_t = 0
+	var return_t = -1
 	while count < max_iters:
 		var i1 = wrapi(index-1, 0, _lut.size())
 		var i2 = wrapi(index+1, 0, _lut.size())
@@ -114,6 +116,16 @@ func _refine_binary(point: Vector3, index: int, send_time = false,  max_iters = 
 		return [point_on_curve, return_t]
 	return point_on_curve
 
+func direction_at(point: Vector3):
+	var arr = project_point(point, true)
+	var t = arr[1]
+	var t1 = t+0.01
+	var t2 = t-0.01 # it could lead to bounding issues, verify if it's fine to leave it as is
+	var p1 = get_point(t1)
+	var p2 = get_point(t2)
+	
+	return (p2 - point + point - p1).normalized()
+	
 
 func calculate_lut(resolution = 20, change_resolution = true) -> void:
 	lut.clear()
@@ -134,6 +146,7 @@ func generate_lut(res = 20):
 
 func hull(t):
 	var list = []
+	var _positions = positions.duplicate()
 	list.append_array(positions)
 	while positions.size() > 1:
 		var _p = []
@@ -142,13 +155,23 @@ func hull(t):
 			list.append(pt)
 			_p.push_back(pt)
 		positions = _p.duplicate()
+	positions = _positions
 	return list
 	
 func average_dir(from_int, to_int):
 	var avg_dir = from_int.direction_to(middle_position) + middle_position.direction_to(to_int)
 	print(avg_dir.normalized())
 	return avg_dir.normalized()
-	
+
+func direction_from(from: int) -> Vector3:
+	match from:
+		DirectionFrom.START:
+			return _average_direction(start_position.intersection, middle_position.intersection)
+		DirectionFrom.END:
+			return _average_direction(end_position.intersection, middle_position.intersection)
+		_:
+			return Vector3.ONE * NAN
+
 func direction_from_intersection(intersection: RoadIntersectionNode):
 	match intersection:
 		start_position:
@@ -173,3 +196,41 @@ func get_lerp_func():
 
 func interpolate(start_position, middle_position, end_position, t):
 	return _quadratic_bezier(start_position, middle_position, end_position, t)
+#
+#func split_at_position(position: RoadIntersection) -> Array:
+#	var seg_1 = get_script().new(self.start_position.intersection, position, road_network_info, direction)
+#	var seg_2 = get_script().new(position, self.end_position.intersection, road_network_info, direction)
+#	var road_net = self.road_network
+#	print(self.start_position, position, self.end_position)
+#	seg_1 = road_net.create_segment(seg_1)
+#	seg_2 = road_net.create_segment(seg_2)
+#	self.road_network.delete_segment(self)
+#	self.call_deferred('free')
+#	seg_1.recalculate_offset()
+#	seg_2.recalculate_offset()
+#
+#	return [seg_1, seg_2]
+
+
+func split_at_position(position: RoadIntersection):
+	var arr = project_point(position.position, true)
+	var t = arr[1]
+	var ab = lerp(start_position.position, middle_position.position, t)
+	var bc = lerp(middle_position.position, end_position.position, t)
+	var p = lerp(ab, bc, t)
+	
+	var ab_road = RoadIntersection.new(ab, road_network_info)
+	var bc_road = RoadIntersection.new(bc, road_network_info)
+	
+	var seg_1 = get_script().new(start_position.intersection, ab_road, position, road_network_info, direction)
+	var seg_2 = get_script().new(position, bc_road, end_position.intersection, road_network_info, direction)
+	
+	seg_1 = road_network.create_segment(seg_1)
+	seg_2 = road_network.create_segment(seg_2)
+	road_network.delete_segment(self)
+	self.call_deferred('free')
+	
+	seg_1.recalculate_offset()
+	seg_2.recalculate_offset()
+	return [seg_1, seg_2]
+	

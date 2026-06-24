@@ -43,7 +43,7 @@ func create_building(building_type: BuildingType, transform_matrix: Transform, _
 func try_place_building(building_type: BuildingType, at_transform_matrix: Transform):
 	var building = building_type.instance_at(at_transform_matrix)
 	var building_aabb = building.get_aabb()
-	building_aabb = AABBUtils.transform_aabb(at_transform_matrix, building_aabb)	
+#	building_aabb = AABBUtils.transform_aabb(at_transform_matrix, building_aabb)	
 	var res = quadtree_node.query(building_aabb)
 	if !res:
 		return create_building(building_type, at_transform_matrix, building)

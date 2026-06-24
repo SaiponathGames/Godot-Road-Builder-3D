@@ -238,7 +238,7 @@ func snap_intersection(base_global: RoadIntersection, position: RoadIntersection
 			final_length = snapped_length
 		DebugConsole.add_text("Current Seg Length: %s" % final_length)
 		
-		var seg_dir = _start_segment.direction_from(RoadSegmentBase.DirectionFrom.START)
+		var seg_dir = _start_segment.direction_at(position.position)
 		var angle = seg_dir.signed_angle_to(direction, Vector3.UP)
 		print(angle)
 		var final_angle = -angle

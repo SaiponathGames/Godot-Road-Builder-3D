@@ -73,7 +73,7 @@ func get_point(_t):
 func get_lerp_func():
 	pass
 
-func project_point(_position: Vector3):
+func project_point(_position: Vector3, send_time = false):
 	pass
 
 func get_aabb():
@@ -147,6 +147,16 @@ func get_points(spacing, resolution):
 			previous_point = new_point
 		previous_point = point
 	return points
+
+func direction_at(point: Vector3):
+	var arr = project_point(point)
+	var t = arr[1]
+	var t1 = t+0.01
+	var t2 = t-0.01 # it could lead to bounding issues, verify if it's fine to leave it as is
+	var p1 = get_point(t1)
+	var p2 = get_point(t2)
+	
+	return (p2 - point + point - p1).normalized()
 
 func distance_to(_position: Vector3):
 	var closest_point = project_point(_position)

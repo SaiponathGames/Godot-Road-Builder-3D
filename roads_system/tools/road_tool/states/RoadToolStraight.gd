@@ -215,8 +215,8 @@ func snap_intersection(base_global: RoadIntersection, position: RoadIntersection
 		if abs(length-snapped_length) < 0.5 and length > road_net_info.segment_width:
 			final_length = snapped_length
 		DebugConsole.add_text("Current Seg Length: %s" % final_length)
-		
-		var seg_dir = _start_segment.direction_from(RoadSegmentBase.DirectionFrom.START)
+		DebugConsole.add_text("Start Segment with base detected in Local network")
+		var seg_dir = _start_segment.direction_at(position.position)
 		var angle = seg_dir.signed_angle_to(direction, Vector3.UP)
 		print(angle)
 		var final_angle = -angle

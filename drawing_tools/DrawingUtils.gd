@@ -31,7 +31,7 @@ func draw_triangle(immediate_geo: ImmediateGeometry, v0, v1, v2, color):
 		color
 	)
 
-func draw_empty_circle(immediate_geometry, circle_center, circle_radius, color = Color.white):
+func draw_empty_circle(immediate_geometry, circle_center, circle_radius = 0.25, color = Color.white):
 	immediate_geometry.begin(Mesh.PRIMITIVE_LINE_LOOP)
 	for i in range(int(20)):
 		var rotation = float(i) / 20 * TAU

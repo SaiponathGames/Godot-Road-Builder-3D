@@ -127,7 +127,7 @@ func get_all_segments() -> Array:
 	var segments = []
 	for segment_dict in segment_dicts:
 		var seg_id = segment_dict.get("seg_id")
-		if seg_id:
+		if seg_id and is_instance_valid(graph_seg_map[seg_id]):
 			segments.append(graph_seg_map[seg_id])
 	return segments
 
@@ -249,7 +249,7 @@ func _add_road_intersection(id: int, intersection: RoadIntersection) -> void:
 
 func _remove_road_intersection(id: int):
 	var intersection: RoadIntersection = graph_inter_map[id]
-	assert(intersection.connections.empty())
+	assert(intersection.connections.empty(), "Intersection contains %d connections." % len(intersection.connections))
 	graph.remove_point(id)
 	if use_astar:
 		astar.remove_point(id)

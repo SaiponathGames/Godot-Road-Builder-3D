@@ -8,7 +8,14 @@ func _init(_start_position, _end_position, _road_net_info, _direction).(_start_p
 	custom_id = 0
 	
 
-func project_point(to_position: Vector3):
+func project_point(to_position: Vector3, send_time = false):
+	if send_time:
+		var dir = (end_position.position - start_position.position).normalized()
+		var to_point = (to_position - start_position.position).normalized()
+		var t = dir.dot(to_point) / (end_position.position - start_position.position).length_squared()
+		t = clamp(t, 0.0, 1.0)
+		return [start_position.position + dir * t, t]
+	
 	return Geometry.get_closest_point_to_segment(to_position, start_position.position, end_position.position)
 
 

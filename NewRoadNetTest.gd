@@ -184,6 +184,7 @@ func _unhandled_key_input(event: InputEventKey):
 #		segment = $HTerrain/RoadNetwork.create_segment(segment)
 #		segment1 = $HTerrain/RoadNetwork.create_segment(segment1)
 #		$HTerrain/RoadNetwork.update()
+
 func draw():
 	$HTerrain/ImmediateGeometry.clear()
 	var road_net = $HTerrain/GlobalRoadNetwork
@@ -198,6 +199,7 @@ func draw():
 #				print("rendering")
 				DrawingUtils.draw_line(im_geo, road_seg.start_position.position, road_seg.middle_position.position, Color.aqua)				
 				DrawingUtils.draw_line(im_geo, road_seg.middle_position.position, road_seg.end_position.position, Color.aqua)				
+
 func sum_array(arr: Array) -> Vector3:
 	var result: Vector3
 	for value in arr:
