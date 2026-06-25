@@ -6,7 +6,7 @@ export var id: String
 export var scene: PackedScene
 export var face_direction: Vector3 = Vector3.ZERO
 export var dimensions: Vector3
-export var width: int
+export var width: float
 
 func instance_at(transform: Transform) -> BuildingInstance:
 	var building_inst = scene.instance()

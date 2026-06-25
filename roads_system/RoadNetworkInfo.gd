@@ -10,7 +10,10 @@ export var intersection_end_radius: float = 0.5
 export var intersection_curvature: float = 0.3
 export var segment_subdivision_length = 5.0
 
-func _init(_id: String, _name: String, _intersection_length: float, _segment_width: float, _intersection_end_radius: float, _intersection_curvature: float = 0.3, _segment_subdivision_length = 5):
+export var sidewalk_height = 0.062
+export var sidewalk_width = 0.5
+
+func _init(_id: String, _name: String, _intersection_length: float, _segment_width: float, _intersection_end_radius: float, _intersection_curvature: float = 0.3, _segment_subdivision_length = 5, sidewalk_height = 0.062, sidewalk_width = 0.5):
 	self.id = _id
 	self.name = _name
 	self.intersection_length = _intersection_length

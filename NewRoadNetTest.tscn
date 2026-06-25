@@ -95,6 +95,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, 100 )
 far = 1000.0
 edge_scroll/detection_area = 0.02
 tilting/max_angle = 90.0
+zooming/min_distance = 5.0
 zooming/max_distance = 200.0
 scrolling/enabled = true
 scrolling/speed = 30

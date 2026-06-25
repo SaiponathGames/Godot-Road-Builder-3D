@@ -7,6 +7,7 @@
 [ext_resource path="res://asphault 1K/road tile 2x2_DefaultMaterial_Roughness.png" type="Texture" id=5]
 
 [resource]
+vertex_color_use_as_albedo = true
 albedo_texture = ExtResource( 2 )
 metallic = 0.22
 metallic_specular = 0.76

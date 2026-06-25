@@ -30,7 +30,7 @@ func create_building(building_type: BuildingType, transform_matrix: Transform, _
 	building_id_map[building_id] = building
 	
 	buildings_node.add_child(building)
-	building_aabb = AABBUtils.transform_aabb(transform_matrix, building_aabb)
+#	building_aabb = AABBUtils.transform_aabb(transform_matrix, building_aabb)
 	var qt_node = Spatial.new()
 	qt_node.name = "QuadTree - Building %s" % building.position
 	qt_node.set_meta('_building_inst', building)

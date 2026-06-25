@@ -1,6 +1,9 @@
 extends Reference
 class_name RoadIntersectionRenderer
 
+var sidewalk_height = 0.062
+var sidewalk_width = 0.5
+
 func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: ImmediateGeometry):
 	# implement the rendering system
 	var resolution = 10
@@ -49,14 +52,38 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 			var offset_midpoint = midpoint + dir0 * 0.5
 			var real_midpoint = (v1 + v2) / 2.0
 			var offset = offset_midpoint - real_midpoint
-			DrawingUtils.draw_empty_circle(_immediate_geo, connection.get_left_vertex(), 0.25, Color.aqua)
-			DrawingUtils.draw_empty_circle(_immediate_geo, next_connection.get_right_vertex(), 0.25, Color.gold)
+			
+			var v1_h = v1 + Vector3.UP * sidewalk_height
+			var v2_h = v2 + Vector3.UP * sidewalk_height
+			# omp = offset midpoint
+			var omp_h = offset_midpoint + Vector3.UP * sidewalk_height
+			
+			var ldir0 = Vector3(-dir0.z, 0, dir0.x)
+			
+			# height & width
+			var v1_hwid = v1_h + ldir0 * sidewalk_width
+			var v2_hwid = v2_h + -ldir0 * sidewalk_width
+			var omp_hwid = omp_h + dir0 * sidewalk_width
+			
+			
+			_mesh_drawer.draw_curve_triangles(
+				v1_h, v1_hwid, 
+				omp_hwid, omp_h
+			)
+			
+			DrawingUtils.draw_empty_circle(_immediate_geo, offset_midpoint, 0.25, Color.white)
+			DrawingUtils.draw_empty_circle(_immediate_geo, real_midpoint, 0.25, Color.black)
+			
+			
+			
+#			DrawingUtils.draw_empty_circle(_immediate_geo, connection.get_left_vertex(), 0.25, Color.aqua)
+#			DrawingUtils.draw_empty_circle(_immediate_geo, next_connection.get_right_vertex(), 0.25, Color.gold)
 			_mesh_drawer.draw_curve_triangles(
 				v1,
 				v1+offset,
 				offset_midpoint,
 				real_midpoint,
-				Color.white,
+				Color.red,
 				resolution
 			)
 			_mesh_drawer.draw_curve_triangles(
@@ -64,7 +91,7 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 				v2+offset,
 				v2,
 				real_midpoint,
-				Color.white,
+				Color.blue,
 				resolution
 			)
 			continue

@@ -22,6 +22,7 @@ func _get_aabb_tree(node: Node):
 		var children = node.get_children()
 		for child in children:
 			var temp_aabb = _get_aabb_tree(child)
+			temp_aabb = AABBUtils.transform_aabb(node.transform, temp_aabb)
 			if !temp_aabb.has_no_area():
 				if final_aabb.has_no_area():
 					final_aabb = temp_aabb

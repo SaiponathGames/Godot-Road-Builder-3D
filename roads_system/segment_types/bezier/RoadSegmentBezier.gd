@@ -19,7 +19,7 @@ func _init(_start_position: RoadIntersection, _middle_position: RoadIntersection
 	
 func set_current_resolution(value):
 	current_resolution = value
-	calculate_lut(value, false)
+	calculate_lut(value)
 
 func _quadratic_bezier(p0: Vector3, p1: Vector3, p2: Vector3, t: float):
 	var q0 = p0.linear_interpolate(p1, t)
@@ -127,11 +127,10 @@ func direction_at(point: Vector3):
 	return (p2 - point + point - p1).normalized()
 	
 
-func calculate_lut(resolution = 20, change_resolution = true) -> void:
+func calculate_lut(resolution = 20) -> void:
 	lut.clear()
 	lut = generate_lut(resolution)
-	if change_resolution:
-		current_resolution = resolution
+	current_resolution = resolution
 
 func generate_lut(res = 20):
 	if not (is_instance_valid(start_position) and is_instance_valid(middle_position) and is_instance_valid(end_position)):

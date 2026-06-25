@@ -13,6 +13,7 @@ enum States {
 }
 
 var state = States.ROAD_TOOL_STRAIGHT
+var _enabled
 
 var tool_state: Spatial # RoadState
 
@@ -35,6 +36,14 @@ func _ready():
 
 func _unhandled_key_input(event):
 	if event.scancode == KEY_KP_9 and event.pressed:
+		_enabled = !_enabled
+		return
+	if !_enabled:
+		return
+	
+	if event.scancode == KEY_1 and event.pressed:
 		$States/RoadToolStraight.set_enabled(!$States/RoadToolStraight._enabled)
+		$States/RoadToolCurved.set_enabled(false)
 	if event.scancode == KEY_2 and event.pressed:
 		$States/RoadToolCurved.set_enabled(!$States/RoadToolCurved._enabled)
+		$States/RoadToolStraight.set_enabled(false)
