@@ -35,6 +35,10 @@ func get_connected_nodes():
 		connected_nodes.append(connection.end_position)
 	return connected_nodes
 
+func update_offsets():
+	for connection in connections:
+		connection.set_offset(Vector2.ONE * NAN)
+
 # shorthands
 func distance_to(to_intersection: RoadIntersection):
 	return self.position.distance_to(to_intersection.position)

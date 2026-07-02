@@ -29,6 +29,8 @@ func distance_to(to_intersection: RoadIntersectionNode):
 	return self.position.distance_to(to_intersection.position)
 
 func direction_to(_intersection: RoadIntersectionNode):
+	if !is_instance_valid(_intersection):
+		return Vector3.ZERO
 	return self.position.direction_to(_intersection.position)
 
 func get_left_vertex():
@@ -83,8 +85,9 @@ func calculate_offset():
 	var l = intersection.road_network_info.intersection_length
 	var n = intersection.get_connected_nodes().size()
 	var w = segment.road_network_info.segment_width
+	var sw = segment.road_network_info.sidewalk_width
 	prints("SCurve", c, "SLen", l, "DCount", n, "SWidth", w)
-	return (c + l) * 1 if n >= 3 else 0 + (n * w) * c
+	return ((c + l) * 3 if n >= 5 else 0 + (n * w) * c * 1.25) + sw * 1.15
 
 func is_vec_nan(vec) -> bool:
 	if typeof(vec) == TYPE_VECTOR3:

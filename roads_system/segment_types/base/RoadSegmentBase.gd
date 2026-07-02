@@ -37,6 +37,7 @@ func _init(_start_position: RoadIntersection, _end_position: RoadIntersection, _
 	positions.append(start_position)
 	positions.append(end_position)
 	renderer = RoadSegmentBaseRenderer
+	self.recalculate_offset()
 
 func set_seg_type(value):
 	if range(0, 64).has(value):
@@ -92,8 +93,8 @@ func delete():
 	_delete()
 
 func recalculate_offset():
-	self.start_position.set_offset(Vector2.ONE * NAN)
-	self.end_position.set_offset(Vector2.ONE * NAN)
+	self.start_position.intersection.update_offsets()
+	self.end_position.intersection.update_offsets()
 
 func direction_from(from: int) -> Vector3:
 	match from:

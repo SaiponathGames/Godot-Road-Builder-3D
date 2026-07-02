@@ -119,12 +119,20 @@ func _refine_binary(point: Vector3, index: int, send_time = false,  max_iters = 
 func direction_at(point: Vector3):
 	var arr = project_point(point, true)
 	var t = arr[1]
-	var t1 = t+0.01
-	var t2 = t-0.01 # it could lead to bounding issues, verify if it's fine to leave it as is
-	var p1 = get_point(t1)
-	var p2 = get_point(t2)
+#	var t1 = clamp(t+0.1, 0.0, 1.0)
+#	var t2 = clamp(t-0.1, 0.0, 1.0) # it could lead to bounding issues, verify if it's fine to leave it as is
+#	var p1 = get_point(t1)
+#	var p2 = get_point(t2)
+#
+#	print(p1, p2)
+#	return (p2 - p1).normalized()
 	
-	return (p2 - point + point - p1).normalized()
+	var p0 = start_position.position
+	var p1 = end_position.position
+	var mp0 = middle_position.position
+	
+	var dir = 2 * (1 - t) * (mp0 - p0) + 2 * t * (p1 - mp0)
+	return dir.normalized()
 	
 
 func calculate_lut(resolution = 20) -> void:

@@ -93,10 +93,14 @@ shader_params/u_tile_reduction = Plane( 0, 0, 0, 0 )
 [node name="Camera" parent="HTerrain" instance=ExtResource( 8 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 100, 0, 100 )
 far = 1000.0
+edge_scroll/enabled = false
+panning/enabled = false
 edge_scroll/detection_area = 0.02
 tilting/max_angle = 90.0
-zooming/min_distance = 5.0
+zooming/min_distance = 1.0
 zooming/max_distance = 200.0
+perspective_panning/enabled = true
+perspective_panning/speed = 5.0
 scrolling/enabled = true
 scrolling/speed = 30
 limits/rect = Rect2( 1, 1, 2559, 2559 )
@@ -127,6 +131,7 @@ script = ExtResource( 9 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/ZoneSystem"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0 )
+visible = false
 material_override = SubResource( 8 )
 
 [node name="GridNode" type="Spatial" parent="HTerrain/ZoneSystem"]
@@ -134,6 +139,7 @@ script = ExtResource( 13 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/ZoneSystem/GridNode"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+visible = false
 material_override = SubResource( 9 )
 
 [node name="Builder" parent="HTerrain" instance=ExtResource( 15 )]
@@ -142,6 +148,7 @@ road_network_np = NodePath("../GlobalRoadNetwork")
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="HTerrain/Builder"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0 )
+visible = false
 material_override = SubResource( 12 )
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]

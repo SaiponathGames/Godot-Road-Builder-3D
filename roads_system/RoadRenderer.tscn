@@ -18,6 +18,7 @@ script = ExtResource( 3 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="IntersectionRenderer"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+visible = false
 material_override = SubResource( 1 )
 
 [node name="SegmentRenderer" type="MeshInstance" parent="."]
@@ -27,4 +28,5 @@ script = ExtResource( 1 )
 
 [node name="ImmediateGeometry" type="ImmediateGeometry" parent="SegmentRenderer"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0 )
+visible = false
 material_override = SubResource( 1 )

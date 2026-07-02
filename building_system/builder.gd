@@ -30,7 +30,7 @@ func _on_Timer_timeout():
 			continue
 		#if seg is RoadSegmentBezier:
 		#	continue
-		var rand_point = randf()
+		var rand_point = clamp(randf(), 0.2, 0.8)
 		var closest_point = (seg).get_point(rand_point)
 		var point_2 = seg.get_point(rand_point+0.01)
 		var point_3 = seg.get_point(rand_point-0.01)
@@ -45,7 +45,7 @@ func _on_Timer_timeout():
 
 		var building = sample_random(buildings)[0]
 
-		var point: Vector3 = closest_point + lr_dir * -((seg.road_network_info.segment_width + building.width)/2)
+		var point: Vector3 = closest_point + lr_dir * -((seg.road_network_info.segment_width + seg.road_network_info.sidewalk_width * 2 + building.width)/2)
 
 
 		var building_transform = calculate_transform(point, closest_point, building)
@@ -91,7 +91,7 @@ static func sample_random(data: Array, size=1):
 
 
 func _on_GlobalRoadNetwork_road_segment_created(seg: RoadSegmentBase):
-	if disabled and true:
+	if disabled or true:
 		return
 	var length = seg.get_length()
 	var building = building_1
