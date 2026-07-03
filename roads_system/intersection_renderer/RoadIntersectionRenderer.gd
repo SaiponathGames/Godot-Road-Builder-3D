@@ -32,8 +32,8 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 		
 		
 		# Use 1.25 for the best looks
-		var end_radius = _road_intersection.road_network_info.segment_width
-		# Implemented by Jaynabonne (Thanks a ton!)
+		var end_radius = _road_intersection.road_network_info.intersection_end_radius * 2
+		# Implemented by Jaynabonne (Thanks a ton!) 
 		var midpoint = compute_edge_intersection(
 			connection.get_left_vertex(), 
 			next_connection.get_right_vertex(), 
@@ -183,7 +183,7 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 			midpoint,
 			next_connection.get_right_vertex(),
 			_road_intersection.position,
-			Color.white,
+			Color.black,
 			resolution
 		)
 #		if not con_idx == new_idx:

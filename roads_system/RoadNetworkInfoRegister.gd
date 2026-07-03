@@ -19,3 +19,6 @@ func find(mask: String):
 		if road_net_info.id.match(mask):
 			matching_array.append(road_net_info)
 	return matching_array
+
+func list():
+	return road_net_infos.values()

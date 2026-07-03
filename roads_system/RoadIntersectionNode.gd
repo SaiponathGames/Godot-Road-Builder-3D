@@ -184,9 +184,9 @@ func calculate_offset(con_idx: int):
 		var result = [outer_half_width, outer_half_width]
 
 		if left_gap > min_gap:
-			result[1] = max(outer_half_width / tan(left_gap * 0.5), outer_half_width)
+			result[1] = max(outer_half_width / tan(left_gap * 0.60), outer_half_width)
 		if right_gap > min_gap:
-			result[0] = max(outer_half_width / tan(right_gap * 0.5), outer_half_width)
+			result[0] = max(outer_half_width / tan(right_gap * 0.60), outer_half_width)
 
 		return result
 	else:

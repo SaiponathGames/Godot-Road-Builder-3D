@@ -6,7 +6,7 @@ func get_road_network_info() -> RoadNetworkInfo:
 		1,
 		2,
 		1,
-		0.3
+		0.1
 	)
 	net_info.add_lane(
 		RoadLaneInfo.new(

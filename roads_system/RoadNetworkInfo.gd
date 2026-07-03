@@ -7,7 +7,7 @@ export var lanes = [] # Array[RoadLaneInfo]
 export var intersection_length: float = 1
 export var segment_width: float = 0.5
 export var intersection_end_radius: float = 0.5
-export var intersection_curvature: float = 0.3
+export var intersection_curvature: float = 0.1
 export var segment_subdivision_length = 5.0
 
 export var sidewalk_height = 0.062
