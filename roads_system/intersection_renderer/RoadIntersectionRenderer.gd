@@ -21,14 +21,15 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 		var dir1 = next_connection.segment.direction_from_intersection(next_connection).normalized()
 		var angle1 = atan2(dir1.x, dir1.z)
 		
-		DrawingUtils.draw_line(_immediate_geo, connection.position, connection.position + dir0 * 2, Color.red)
-		DrawingUtils.draw_line(_immediate_geo, connection.position, connection.position + dir0.cross(Vector3.UP) * 2)
-		
+#		DrawingUtils.draw_line(_immediate_geo, connection.position, connection.position + dir0 * 2, Color.red)
+#		DrawingUtils.draw_line(_immediate_geo, connection.position, connection.position + dir0.cross(Vector3.UP) * 2)
+#
 		if !is_instance_valid(connection.segment) or !is_instance_valid(next_connection.segment):
 			continue
 		
 		
 		print(connection == next_connection)
+		
 		
 		# Use 1.25 for the best looks
 		var end_radius = _road_intersection.road_network_info.segment_width
@@ -148,14 +149,6 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 				resolution
 			)
 			continue
-		_mesh_drawer.draw_curve_triangles(
-			connection.get_left_vertex(),
-			midpoint,
-			next_connection.get_right_vertex(),
-			_road_intersection.position,
-			Color.white,
-			resolution
-		)
 		var v1 = connection.get_left_vertex()
 		var v2 = next_connection.get_right_vertex()
 		var mid = midpoint
@@ -185,13 +178,21 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 			end_radius
 		)
 		
+		_mesh_drawer.draw_curve_triangles(
+			connection.get_left_vertex(),
+			midpoint,
+			next_connection.get_right_vertex(),
+			_road_intersection.position,
+			Color.white,
+			resolution
+		)
 #		if not con_idx == new_idx:
 		_mesh_drawer.draw_triangle(
 			connection.get_left_vertex(), 
 			_road_intersection.position,
 			connection.get_right_vertex()
 		)
-		
+#
 		_mesh_drawer.draw_curved_quad(
 				v1_h, mid_h, v2_h, v1_widHei, sw_midpoint, v2_widHei, Color.sandybrown
 		)
@@ -233,7 +234,7 @@ func left_dir(v: Vector3, up: Vector3 = Vector3.UP) -> Vector3:
 	return v.cross(up)
 
 # Implemented by Jaynabonne.
-func compute_edge_intersection(p0, p1, angle0, angle1, end_radius):
+func compute_edge_intersection(p0, p1, angle0, angle1, end_radius, miter_limit := 2.0):
 	var midpoint = (p0+p1)/2.0
 	var adiff = wrapf(angle1 - angle0, -PI, PI)
 	var arc = abs(adiff)
@@ -242,15 +243,20 @@ func compute_edge_intersection(p0, p1, angle0, angle1, end_radius):
 	var midangle = atan2(v.y, v.x)
 	var offset = Vector3()
 	if not is_zero_approx(arc):
-		offset = Vector3(sin(midangle), 0, cos(midangle))*midpoint.distance_to(p0)/tan(arc/2)
+		var half_width = midpoint.distance_to(p0)
+		var miter_len = half_width / tan(arc/2)
+		var max_len = half_width * miter_limit
+		miter_len = clamp(miter_len, -max_len, max_len)
+		offset = Vector3(sin(midangle), 0, cos(midangle)) * miter_len
 	else:
-		offset = Vector3(sin(midangle), 0, cos(midangle))*midpoint.distance_to(p0) * end_radius
+		offset = Vector3(sin(midangle), 0, cos(midangle)) * midpoint.distance_to(p0) * end_radius
 	return midpoint - offset
 
 # found this on unity Q/A modified it to suite the needs of godot
 func sort_by_angle(a, b, origin):
-	var a_position = a.start_position.position if a.end_position == origin else a.end_position.position
-	var b_position = b.start_position.position if b.end_position == origin else b.end_position.position
+	var a_position = a.start_position.intersection.position if a.end_position.intersection == origin else a.end_position.intersection.position
+	var b_position = b.start_position.intersection.position if b.end_position.intersection == origin else b.end_position.intersection.position
+
 	var a_offset = a_position - origin.position
 	var b_offset = b_position - origin.position
 

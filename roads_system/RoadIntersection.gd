@@ -7,16 +7,21 @@ var position: Vector3
 var connections: Dictionary = {} # Dictionary[RoadIntersectionNode, RoadSegmentBase]
 var visible_connections: Array = []
 
+var _ordered_connections: Dictionary = {} # Dictionary[RoadIntersectionNode, RoadSegmentBase]
+
 var road_network
 var road_network_info
 var visible = true
 var renderer = null
 var id: int = 0
+var sorter: CustomSorter
 
 func _init(_position, _road_net_info):
 	self.position = _position
 	self.road_network_info = _road_net_info
 	renderer = RoadIntersectionRenderer
+	sorter = CustomSorter.new(self, "sort_by_angle", [self])
+	
 
 func set_owner(road_net):
 	self.road_network = road_net
@@ -36,8 +41,11 @@ func get_connected_nodes():
 	return connected_nodes
 
 func update_offsets():
-	for connection in connections:
-		connection.set_offset(Vector2.ONE * NAN)
+	_ordered_connections = sorter.sort_dict(connections.duplicate())
+	var con_idx = 0
+	for connection in _ordered_connections:
+		connection.set_offset(Vector2.ONE * NAN, con_idx)
+		con_idx += 1
 
 # shorthands
 func distance_to(to_intersection: RoadIntersection):
@@ -84,3 +92,19 @@ func _notification(what):
 		NOTIFICATION_PREDELETE:
 			prints("About to be deleted RoadIntersection Intersection ID:", id, "RoadNetwork:", road_network)
 
+func sort_by_angle(a, b, origin):
+	var a_position = a.start_position.intersection.position if a.end_position.intersection == origin else a.end_position.intersection.position
+	var b_position = b.start_position.intersection.position if b.end_position.intersection == origin else b.end_position.intersection.position
+	var a_offset = a_position - origin.position
+	var b_offset = b_position - origin.position
+
+	var angle_1 = atan2(a_offset.x, a_offset.z)
+	var angle_2 = atan2(b_offset.x, b_offset.z)
+
+	if angle_1 > angle_2:
+		return true
+	
+	if angle_1 < angle_2:
+		return false
+
+	return a_offset.length_squared() > b_offset.length_squared()

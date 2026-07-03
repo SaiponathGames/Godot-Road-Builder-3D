@@ -166,7 +166,7 @@ func _on_RoadNetwork_road_segment_created(segment: RoadSegmentBase):
 var angle = 0
 
 func _unhandled_key_input(event):
-	if event.scancode == KEY_KP_PERIOD:
+	if event.scancode == KEY_0:
 		$GridNode/ImmediateGeometry.clear()
 		for grid in road_grid_map.values():
 			angle += 0.1

@@ -28,14 +28,14 @@ func _input(event: InputEvent):
 	$ImmediateGeometry.clear()
 	
 	if event is InputEventMouseButton:
-		if event.pressed and event.button_index == BUTTON_LEFT:
+		if event.pressed and !event.doubleclick and event.button_index == BUTTON_LEFT:
 			if !_is_dragging:
 				update_network_snapping(event)
 				setup_dragging(event)
 			elif _is_dragging:
 				update_network_snapping(event)
 				stop_dragging(event)
-		elif event.pressed and event.button_index == BUTTON_RIGHT:
+		elif event.pressed and !event.doubleclick and event.button_index == BUTTON_RIGHT:
 			if _is_dragging:
 				cancel_dragging(event)
 	if event is InputEventMouseMotion:

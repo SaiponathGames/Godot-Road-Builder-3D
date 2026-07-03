@@ -37,7 +37,6 @@ func _init(_start_position: RoadIntersection, _end_position: RoadIntersection, _
 	positions.append(start_position)
 	positions.append(end_position)
 	renderer = RoadSegmentBaseRenderer
-	self.recalculate_offset()
 
 func set_seg_type(value):
 	if range(0, 64).has(value):
@@ -120,6 +119,7 @@ func set_owner(road_net):
 		id = get_id(road_net.min_vector)
 	self.start_position.set_owner(road_net)
 	self.end_position.set_owner(road_net)
+	self.recalculate_offset()
 	
 
 func get_points(spacing, resolution):

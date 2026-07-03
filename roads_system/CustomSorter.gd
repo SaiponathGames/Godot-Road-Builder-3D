@@ -18,12 +18,12 @@ func sort_array(array: Array) -> Array:
 func sort_dict(dict: Dictionary, sort_by_value = true) -> Dictionary:
 	var sorted_dict = {}
 	if sort_by_value:
-		var values = dict.values()
+		var values = dict.values().duplicate()
 		values.sort_custom(self, "_sort")
 		for value in values:
 			sorted_dict[_find_key(dict, value)] = value
 	else:
-		var keys = dict.keys()
+		var keys = dict.keys().duplicate()
 		keys.sort_custom(self, "_sort")
 		for key in keys:
 			sorted_dict[key] = dict[key]

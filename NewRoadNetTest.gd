@@ -100,6 +100,10 @@ func _unhandled_key_input(event: InputEventKey):
 			OS.window_maximized = !OS.window_maximized
 		elif event.scancode == KEY_N and event.pressed:
 			OS.window_fullscreen = !OS.window_fullscreen
+		elif event.scancode == KEY_KP_PERIOD and event.pressed:
+			if currently_hovering_seg is RoadSegmentBase:
+				currently_hovering_seg.recalculate_offset()
+				
 		elif event.scancode == KEY_KP_1 and event.pressed:
 			var previous_pos = Vector3(rand_range(0, 1275), 0, rand_range(0, 1275))
 			var previous_intersection = RoadIntersection.new(previous_pos, two_lane_info)
