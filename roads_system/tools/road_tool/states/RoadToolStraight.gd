@@ -54,7 +54,7 @@ func cancel_dragging(_event: InputEvent):
 	_is_dragging = false
 	_start_segment = null
 	_end_segment = null
-	if _cache_previous_segment:
+	if is_instance_valid(_cache_previous_segment):
 		local_road_network.delete_segment(_cache_previous_segment)
 		_cache_previous_segment.free()
 	_cache_previous_segment = null

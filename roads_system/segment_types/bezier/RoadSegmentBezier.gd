@@ -125,12 +125,12 @@ func direction_at(point: Vector3):
 #	var p2 = get_point(t2)
 #
 #	print(p1, p2)
-#	return (p2 - p1).normalized()
-	
+#	return -(p2 - p1).normalized()
+#
 	var p0 = start_position.position
 	var p1 = end_position.position
 	var mp0 = middle_position.position
-	
+
 	var dir = 2 * (1 - t) * (mp0 - p0) + 2 * t * (p1 - mp0)
 	return dir.normalized()
 	
@@ -170,21 +170,12 @@ func average_dir(from_int, to_int):
 	print(avg_dir.normalized())
 	return avg_dir.normalized()
 
-func direction_from(from: int) -> Vector3:
-	match from:
-		DirectionFrom.START:
-			return _average_direction(start_position.intersection, middle_position.intersection)
-		DirectionFrom.END:
-			return _average_direction(end_position.intersection, middle_position.intersection)
-		_:
-			return Vector3.ONE * NAN
-
 func direction_from_intersection(intersection: RoadIntersectionNode):
 	match intersection:
 		start_position:
-			return start_position.direction_to(middle_position)
+			return 2 * start_position.direction_to(middle_position)
 		end_position:
-			return end_position.direction_to(middle_position)
+			return 2 * end_position.direction_to(middle_position)
 		middle_position:
 			return average_dir(start_position, end_position)
 		_:

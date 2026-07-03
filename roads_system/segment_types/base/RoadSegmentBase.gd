@@ -96,14 +96,6 @@ func recalculate_offset():
 	self.start_position.intersection.update_offsets()
 	self.end_position.intersection.update_offsets()
 
-func direction_from(from: int) -> Vector3:
-	match from:
-		DirectionFrom.START:
-			return _average_direction(start_position.intersection, end_position.intersection)
-		DirectionFrom.END:
-			return _average_direction(end_position.intersection, start_position.intersection)
-		_:
-			return Vector3.ONE * NAN
 
 func direction_from_intersection(intersection: RoadIntersectionNode) -> Vector3:
 	match intersection:

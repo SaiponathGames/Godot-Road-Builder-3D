@@ -31,19 +31,20 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 	var e_v1 = segment.end_position.get_left_vertex()
 	var e_v2 = segment.end_position.get_right_vertex()
 	
-	var dir = -segment.direction_from_intersection(segment.start_position)
+	var dir = segment.direction_from_intersection(segment.start_position)
+	DrawingUtils.draw_line(debug_immediate_geo, segment.start_position.position, segment.start_position.position + -dir * 2, Color.blueviolet)
+	DrawingUtils.draw_line(debug_immediate_geo, segment.start_position.position, segment.start_position.position + left_dir(-dir) * 2, Color.blueviolet)
 	
-	
-	var last_v1 = get_right_vertex_from_index(0, positions, segment)
-	var last_v2 = get_left_vertex_from_index(0, positions, segment)
+	var last_v1 = s_v1
+	var last_v2 = s_v2
 	
 	var last_v1_sw_hei = last_v2 + Vector3.UP * sidewalk_height
-	var last_v1_sw_widBas = last_v2 + -left_dir(dir) * sidewalk_width
-	var last_v1_sw_widBaseHei = last_v2 + -left_dir(dir) * sidewalk_width + Vector3.UP * sidewalk_height
+	var last_v1_sw_widBas = last_v2 + left_dir(dir) * sidewalk_width
+	var last_v1_sw_widBaseHei = last_v2 + left_dir(dir) * sidewalk_width + Vector3.UP * sidewalk_height
 	
 	var last_v2_sw_hei = last_v1 + Vector3.UP * sidewalk_height
-	var last_v2_sw_widBas = last_v1 + -left_dir(dir) * sidewalk_width
-	var last_v2_sw_widBaseHei = last_v1 + -left_dir(dir) * sidewalk_width + Vector3.UP * sidewalk_height
+	var last_v2_sw_widBas = last_v1 + left_dir(dir) * sidewalk_width
+	var last_v2_sw_widBaseHei = last_v1 + left_dir(dir) * sidewalk_width + Vector3.UP * sidewalk_height
 	
 	
 #	mesh_drawer.draw_triangle(
@@ -68,10 +69,9 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 	var ldir = dir.cross(Vector3.UP)
 	
 	for i in range(1, resolution+2):
-		var v1 = get_left_vertex_from_index(i, positions, segment)
-		var v2 = get_right_vertex_from_index(i, positions, segment)
 		
-		var t = i / float(resolution)
+		var t = (i-1) / float(resolution)
+		prints("New t", t)
 		var tangent = 2 * (1 - t) * (mp0 - sp) + 2 * t * (ep - mp0)
 		dir = tangent.normalized()
 		var raw_extrude = dir.cross(Vector3.UP)
@@ -81,7 +81,10 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 				new_ldir = -new_ldir
 			ldir = new_ldir
 		
-		
+		var v = segment.get_point(t)
+		var v1 = get_left_vertex(v, ldir, segment)
+		var v2 = get_right_vertex(v, ldir, segment)
+		DrawingUtils.draw_line(debug_immediate_geo, v, v + dir * 2, Color.orange)	
 		DrawingUtils.draw_empty_circle(debug_immediate_geo, v1, 0.125, Color.yellow)
 		DrawingUtils.draw_empty_circle(debug_immediate_geo, v2, 0.125, Color.red)
 		mesh_drawer.draw_triangle(
@@ -94,12 +97,12 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 			last_v2)
 		
 		var v1_sw_hei = Vector3(v1.x, v1.y + sidewalk_height, v1.z)
-		var v1_sw_widBas = v1 + -ldir * sidewalk_width
-		var v1_sw_widHeiBas = v1 + -ldir * sidewalk_width + Vector3.UP * sidewalk_height
+		var v1_sw_widBas = v1 + ldir * sidewalk_width
+		var v1_sw_widHeiBas = v1 + ldir * sidewalk_width + Vector3.UP * sidewalk_height
 		
 		var v2_sw_hei = Vector3(v2.x, v2.y + sidewalk_height, v2.z)
-		var v2_sw_widBas = v2 + ldir * sidewalk_width
-		var v2_sw_widHeiBas = v2 + ldir * sidewalk_width + Vector3.UP * sidewalk_height
+		var v2_sw_widBas = v2 + -ldir * sidewalk_width
+		var v2_sw_widHeiBas = v2 + -ldir * sidewalk_width + Vector3.UP * sidewalk_height
 		
 		
 		if i > 1:
@@ -191,7 +194,7 @@ func render(mesh_drawer: MeshDrawer, segment, debug_immediate_geo: ImmediateGeom
 
 func avg_direction(position: Vector3, next_pos: Vector3, previous_pos: Vector3) -> Vector3:
 	if !is_vec_nan(previous_pos) and !is_vec_nan(next_pos):
-		var avg_pos = position.direction_to(next_pos) + previous_pos.direction_to(next_pos)
+		var avg_pos = previous_pos.direction_to(next_pos)
 		return avg_pos.normalized()
 	elif is_vec_nan(next_pos):
 		return previous_pos.direction_to(position).normalized()
@@ -213,32 +216,9 @@ func left_dir(dir, up: Vector3 = Vector3.UP) -> Vector3:
 	var left = dir.cross(up)
 	return left
 
-func get_left_vertex(position: Vector3, next_pos: Vector3, previous_pos: Vector3, segment: RoadSegmentBase):
-	var direction = avg_direction(position, next_pos, previous_pos)
-	var left = Vector3(-direction.z, direction.y, direction.x)
-	return position + left * segment.road_network_info.segment_width/2
+func get_left_vertex(position: Vector3, ldir: Vector3, segment: RoadSegmentBase):
+	return position + ldir * segment.road_network_info.segment_width/2
 
-func get_right_vertex(position: Vector3, next_pos: Vector3, previous_pos: Vector3, segment: RoadSegmentBase):
-	var direction = avg_direction(position, next_pos, previous_pos)
-	var left = Vector3(-direction.z, direction.y, direction.x)
-	return position + -left * segment.road_network_info.segment_width/2
+func get_right_vertex(position: Vector3, ldir: Vector3, segment: RoadSegmentBase):
+	return position + -ldir * segment.road_network_info.segment_width/2
 
-func get_left_vertex_from_index(index, array, segment):
-	var v1
-	if index < 1: # start case
-		v1 = get_left_vertex(array[0], array[1], Vector3(NAN, NAN, NAN), segment)
-	elif index > 0 and index+1 < array.size(): # middle case
-		v1 = get_left_vertex(array[index], array[index+1], array[index-1], segment)
-	elif index < array.size(): # end case
-		v1 = get_left_vertex(array[index], Vector3(NAN, NAN, NAN), array[index-1], segment)
-	return v1
-
-func get_right_vertex_from_index(index, array, segment):
-	var v1
-	if index < 1: # start case
-		v1 = get_right_vertex(array[0], array[1], Vector3(NAN, NAN, NAN), segment)
-	elif index > 0 and index+1 < array.size(): # middle case
-		v1 = get_right_vertex(array[index], array[index+1], array[index-1], segment)
-	elif index < array.size(): # end case
-		v1 = get_right_vertex(array[index], Vector3(NAN, NAN, NAN), array[index-1], segment)
-	return v1

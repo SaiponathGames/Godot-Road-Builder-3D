@@ -58,7 +58,7 @@ func set_offset(value: Vector2):
 	print(offset)
 
 func update_position():
-	direction = segment.direction_from_intersection(self) 
+	direction = segment.direction_from_intersection(self).normalized()
 	print(position)
 	position = _og_position + direction * offset.y
 	position += Vector3(-direction.z, direction.y, direction.x).normalized() * offset.x
@@ -87,7 +87,7 @@ func calculate_offset():
 	var w = segment.road_network_info.segment_width
 	var sw = segment.road_network_info.sidewalk_width
 	prints("SCurve", c, "SLen", l, "DCount", n, "SWidth", w)
-	return ((c + l) * 3 if n >= 5 else 0 + (n * w) * c * 1.25) + sw * 1.15
+	return ((c + l) * 1.1 if n < 5 else 0 + (n * w) * c * 0.95) + sw * 1.15
 
 func is_vec_nan(vec) -> bool:
 	if typeof(vec) == TYPE_VECTOR3:

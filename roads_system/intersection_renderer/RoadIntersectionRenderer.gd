@@ -16,10 +16,13 @@ func render(_mesh_drawer: MeshDrawer, _road_intersection, _immediate_geo: Immedi
 		var new_idx = (con_idx+1) % connections.size()
 		prints(con_idx, new_idx)
 		var next_connection = connections.keys()[new_idx]
-		var dir0 = connection.direction
+		var dir0 = connection.segment.direction_from_intersection(connection).normalized()
 		var angle0 = atan2(dir0.x, dir0.z)
-		var dir1 = next_connection.direction
+		var dir1 = next_connection.segment.direction_from_intersection(next_connection).normalized()
 		var angle1 = atan2(dir1.x, dir1.z)
+		
+		DrawingUtils.draw_line(_immediate_geo, connection.position, connection.position + dir0 * 2, Color.red)
+		DrawingUtils.draw_line(_immediate_geo, connection.position, connection.position + dir0.cross(Vector3.UP) * 2)
 		
 		if !is_instance_valid(connection.segment) or !is_instance_valid(next_connection.segment):
 			continue
